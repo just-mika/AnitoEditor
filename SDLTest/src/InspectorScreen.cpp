@@ -1,0 +1,418 @@
+#include "InspectorScreen.h"
+#include "SceneManager.h"
+#include "GameObjectManager.h"
+#include "CameraManager.h"
+#include "EditorModule.h"
+#include <cmath>
+
+#include "ObjectFactory.h"
+#include "EmptyObject.h"
+#include "Sprite.h"
+#include "AnimatedSprite.h"
+#include "Text.h"
+#include "Background.h"
+#include "Player.h"
+#include "Gem.h"
+#include "Statue.h"
+#include "Gate.h"
+#include "Platform.h"
+#include "PuzzleToken.h"
+#include "PuzzleHint.h"
+#include "PuzzleEnd.h"
+#include "StoryWindow.h"
+#include "GUIButton.h"
+#include "GemInputScreen.h"
+#include "GemInputToken.h"
+#include "GemInputPreview.h"
+#include "InventoryGUI.h"
+#include "LevelEndGUI.h"
+#include "PauseScreen.h"
+#include "ObjectiveIntro.h"
+#include "SpriteAnimator.h"
+#include "Animation.h"
+#include "SpriteRenderer.h"
+#include "TextureManager.h"
+#include <algorithm>
+#include <cstring>
+#include "Settings.h"
+
+
+void InspectorScreen::setMousePos(Vector2D mousePos)
+{
+    this->mousePos = mousePos;
+}
+
+InspectorScreen::InspectorScreen() : AUIScreen("INSPECTOR_SCREEN")
+{
+    this->selectedObject = NULL;
+}
+
+InspectorScreen::~InspectorScreen()
+{
+
+}
+
+void InspectorScreen::DrawUI()
+{
+    // Pull this frame's selection from the shared source of truth (EditorModule),
+    // rather than tracking our own independent copy.
+    this->selectedObject = Editor::EditorModule::getInstance()->getSelectedObject();
+
+    // Floating overlay: only exists while something is selected
+    if (!this->selectedObject)
+    {
+        this->lastSelected = nullptr;
+        return;
+    }
+
+    if (this->selectedObject != this->lastSelected)
+    {
+        this->lastSelected = this->selectedObject;
+        syncBuffers();
+    }
+
+    // Appears at the top-right (below the toolbar) each time it opens,
+    // then the user can drag it anywhere.
+    ImGuiViewport* vp = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(
+        ImVec2(vp->WorkPos.x + vp->WorkSize.x - 12.0f, vp->WorkPos.y + 68.0f),
+        ImGuiCond_Appearing, ImVec2(1.0f, 0.0f));
+    ImGui::SetNextWindowSize(ImVec2(340.0f, 0.0f), ImGuiCond_Always);
+    ImGui::SetNextWindowBgAlpha(0.95f);
+
+    ImGui::Begin("Inspector", nullptr,
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
+
+    // Name + Enabled
+    ImGui::SetNextItemWidth(190.0f);
+    bool commit = ImGui::InputText("##name", nameBuf, sizeof(nameBuf),
+                                   ImGuiInputTextFlags_EnterReturnsTrue);
+    commit |= ImGui::IsItemDeactivatedAfterEdit();
+    if (commit) applyName();
+
+    ImGui::SameLine();
+    bool enabled = selectedObject->getEnabled();
+    if (ImGui::Checkbox("Enabled", &enabled))
+        selectedObject->setEnabled(enabled);
+
+    ImGui::Spacing();
+    ImGuiChildFlags childFlags = ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY;
+    showTransform(childFlags);      // your existing Position / Scale / Rotation
+
+    showTexture();
+    showParent();
+    showObjectType();
+
+    showTypeSpecific();
+
+    ImGui::Separator();
+    showComponents();
+
+    ImGui::End();
+}
+
+void InspectorScreen::showTransform(ImGuiChildFlags childFlags)
+{
+    ImGui::BeginChild("Transform", ImVec2(0, 0), childFlags);
+    if (this->selectedObject == NULL)
+    {
+        ImGui::Text("No game object selected.");
+    }
+    else
+    {
+        std::string objectText;
+        if (this->selectedObject->getIsScreenObject())
+            objectText = "Screen Object: " + this->selectedObject->getName();
+        else
+            objectText = "Game Object: " + this->selectedObject->getName();
+
+        ImGui::Text("%s", objectText.c_str());
+        Vector2D pos = this->selectedObject->getPos();
+        float rot = this->selectedObject->getRot();
+        Vector2D scale = this->selectedObject->getScale();
+
+        float scenePos[] = { pos.x, pos.y };
+        float sceneRot = rot;
+        float sceneScale[] = { scale.x, scale.y };
+
+        if (ImGui::DragFloat2("Position", scenePos))
+        {
+            this->selectedObject->setPos(Vector2D(scenePos[0], scenePos[1]));
+        }
+
+        if (ImGui::DragFloat2("Scale", sceneScale, 0.01f, 0.0f, 0.0f))
+        {
+            this->selectedObject->setScale(Vector2D(sceneScale[0], sceneScale[1]));
+        }
+
+        if (ImGui::DragFloat("Rotation", &sceneRot))
+        {
+            this->selectedObject->setRot(sceneRot);
+        }
+    }
+    ImGui::EndChild();
+}
+
+// Maps a live object back to its ObjectFactory type key (null if it isn't a palette type).
+// None of these classes derive from each other, so test order doesn't matter.
+template <class T>
+static bool isType(AGameObject* o) { return dynamic_cast<T*>(o) != nullptr; }
+
+static const char* typeKeyOf(AGameObject* o)
+{
+    struct Probe { const char* key; bool (*is)(AGameObject*); };
+    static const Probe kProbes[] = {
+        { "empty",             isType<EmptyObject> },
+        { "sprite",            isType<Sprite> },
+        { "animated_sprite",   isType<AnimatedSprite> },
+        { "text",              isType<Text> },
+        { "background",        isType<Background> },
+        { "player",            isType<Player> },
+        { "gem",               isType<Gem> },
+        { "statue",            isType<Statue> },
+        { "gate",              isType<Gate> },
+        { "platform",          isType<Platform> },
+        { "puzzle_token",      isType<PuzzleToken> },
+        { "story_window",      isType<StoryWindow> },
+        { "puzzle_hint",       isType<PuzzleHint> },
+        { "puzzle_end",        isType<PuzzleEnd> },
+        { "gui_button",        isType<GUIButton> },
+        { "gem_input_screen",  isType<GemInputScreen> },
+        { "gem_input_token",   isType<GemInputToken> },
+        { "gem_input_preview", isType<GemInputPreview> },
+        { "inventory_gui",     isType<InventoryGUI> },
+        { "level_end_gui",     isType<LevelEndGUI> },
+        { "pause_screen",      isType<PauseScreen> },
+        { "objective_intro",   isType<ObjectiveIntro> },
+    };
+    for (const Probe& p : kProbes)
+        if (p.is(o)) return p.key;
+    return nullptr;
+}
+
+void InspectorScreen::syncBuffers()
+{
+    memset(nameBuf, 0, sizeof(nameBuf));
+    memset(textBuf, 0, sizeof(textBuf));
+    if (!selectedObject) return;
+
+    strncpy_s(nameBuf, selectedObject->getName().c_str(), sizeof(nameBuf) - 1);
+    if (Text* t = dynamic_cast<Text*>(selectedObject))
+    {
+        strncpy_s(textBuf, t->getMessage().c_str(), sizeof(textBuf) - 1);
+        fontSizeBuf = t->getFontSize();
+    }
+}
+
+void InspectorScreen::applyName()
+{
+    GameObjectManager* gom = GameObjectManager::getInstance();
+    std::string newName = nameBuf;
+
+    // Reject empty or already-used names, and revert the field
+    if (newName.empty() || newName == selectedObject->getName() ||
+        gom->findObjectByName(newName))
+    {
+        syncBuffers();
+        return;
+    }
+
+    if (selectedObject->getParent()) selectedObject->setName(newName);
+    else gom->setObjectName(selectedObject->getName(), newName);
+}
+
+void InspectorScreen::showTexture()
+{
+    SpriteRenderer* sr = (SpriteRenderer*)selectedObject->findComponentByName("SpriteRenderer");
+    if (!sr) return;   // Text objects etc. have no texture
+
+    const std::string current = sr->getTextureKey();
+    if (ImGui::BeginCombo("Texture", current.c_str()))
+    {
+        for (const std::string& n : TextureManager::getInstance()->getTextureNames())
+        {
+            bool sel = (n == current);
+            if (ImGui::Selectable(n.c_str(), sel)) sr->setTextureKey(n);
+            if (sel) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+}
+
+void InspectorScreen::showParent()
+{
+    GameObjectManager* gom = GameObjectManager::getInstance();
+    AGameObject* current = selectedObject->getParent();
+    std::string preview = current ? current->getName() : "None";
+
+    if (ImGui::BeginCombo("Parent", preview.c_str()))
+    {
+        if (ImGui::Selectable("None", current == nullptr) && current != nullptr)
+            gom->reparentObject(selectedObject, nullptr);
+
+        // Candidates: every object except itself and its own descendants
+        std::vector<AGameObject*> all;
+        for (AGameObject* top : gom->getAllObjects())
+        {
+            all.push_back(top);
+            std::vector<AGameObject*> kids = top->getChildrenRecursively();
+            all.insert(all.end(), kids.begin(), kids.end());
+        }
+        std::vector<AGameObject*> mine = selectedObject->getChildrenRecursively();
+
+        for (AGameObject* cand : all)
+        {
+            if (cand == selectedObject) continue;
+            if (cand->getIsScreenObject() != selectedObject->getIsScreenObject()) continue;
+            if (std::find(mine.begin(), mine.end(), cand) != mine.end()) continue;
+
+            ImGui::PushID(cand);   // names may repeat, so ID by pointer
+            bool picked = ImGui::Selectable(cand->getName().c_str(), cand == current);
+            ImGui::PopID();
+
+            if (picked && cand != current)
+            {
+                gom->reparentObject(selectedObject, cand);
+                break;   // tree changed, stop iterating
+            }
+        }
+        ImGui::EndCombo();
+    }
+}
+
+void InspectorScreen::showObjectType()
+{
+    const char* key = typeKeyOf(selectedObject);
+    if (key) ImGui::LabelText("Object Type", "%s", ObjectFactory::getDisplayName(key).c_str());
+    else     ImGui::LabelText("Object Type", "%s", "Object");
+}
+
+// Lists direct children as buttons so composite UI objects (built in initialize())
+// can be drilled into and edited with the generic panels.
+void InspectorScreen::showChildrenList()
+{
+    std::vector<AGameObject*> kids = selectedObject->getChildren();
+    ImGui::Text("Children (%d)", (int)kids.size());
+    for (AGameObject* child : kids)
+    {
+        ImGui::PushID(child);   // names may repeat
+        if (ImGui::Selectable(child->getName().c_str()))
+        {
+            Editor::EditorModule::getInstance()->setSelectedObject(child);
+            ImGui::PopID();
+            return;   // selection changed; stop using this frame's state
+        }
+        ImGui::PopID();
+    }
+}
+
+// Only things the generic panels (transform / texture / parent / component inspectors) can't cover.
+// Color, flip and pivot come from SpriteRenderer::drawInspector; size, offset and trigger from
+// BoxCollider::drawInspector (which Platform, Gem, Statue and Gate interactables all use).
+void InspectorScreen::showTypeSpecific()
+{
+    const char* key = typeKeyOf(selectedObject);
+    if (!key) return;
+    const std::string k = key;
+
+    ImGui::Separator();
+
+    if (k == "text")
+    {
+        Text* t = static_cast<Text*>(selectedObject);
+        ImGui::InputTextMultiline("Text", textBuf, sizeof(textBuf), ImVec2(0, 70));
+        // setMessage() rebuilds the font texture, so apply on click-away, not every keystroke
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            t->setMessage(textBuf);
+
+        ImGui::DragInt("Font Size", &fontSizeBuf, 1.0f, 4, 512);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            t->setFontSize(fontSizeBuf);
+
+        SDL_Color c = t->getColor();
+        float col[4] = { c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f };
+        if (ImGui::ColorEdit4("Text Color", col))
+            t->setColor({ (Uint8)(col[0] * 255), (Uint8)(col[1] * 255), (Uint8)(col[2] * 255), (Uint8)(col[3] * 255) });
+    }
+    else if (k == "animated_sprite")
+    {
+        SpriteAnimator* anim = (SpriteAnimator*)selectedObject->findComponentByName("SpriteAnimator");
+        Animation* cur = anim ? anim->getCurrentAnimation() : nullptr;
+        if (!cur) { ImGui::TextDisabled("No animation loaded."); return; }
+
+        int fps = (int)cur->getFrameRate();
+        if (ImGui::DragInt("Frame Rate", &fps, 0.25f, 1, 120))
+            cur->setFrameRate((Uint8)fps);
+
+        static const char* kTypes[] = { "Once", "Loop", "Yoyo", "Yoyo Once" };
+        int type = (int)cur->getType();
+        if (ImGui::Combo("Play Mode", &type, kTypes, IM_ARRAYSIZE(kTypes)))
+            cur->setType((AnimationType)type);
+
+        if (ImGui::Button("Play"))  anim->play();
+        ImGui::SameLine();
+        if (ImGui::Button("Pause")) anim->pause();
+        ImGui::SameLine();
+        if (ImGui::Button("Stop"))  anim->stop();
+    }
+    else if (k == "puzzle_token")
+    {
+        PuzzleToken* t = static_cast<PuzzleToken*>(selectedObject);
+        int slot = t->getSlot();
+        if (ImGui::InputInt("Slot", &slot)) t->setSlot(slot);
+        bool dropped = t->getDropped();
+        if (ImGui::Checkbox("Dropped", &dropped)) t->setDropped(dropped);
+        ImGui::TextWrapped("Name is also this token's texture key.");
+    }
+    else if (k == "gem_input_token")
+    {
+        GemInputToken* t = static_cast<GemInputToken*>(selectedObject);
+        bool dropped = t->getDropped();
+        if (ImGui::Checkbox("Dropped", &dropped)) t->setDropped(dropped);
+        ImGui::TextWrapped("Name is also this token's texture key.");
+    }
+    else if (k == "gem" || k == "statue")
+    {
+        ImGui::TextWrapped("Name is also this object's texture key (e.g. Gem_Cyan). "
+                           "Pickup area is under the collectable/pickup component below.");
+    }
+    else if (k == "platform")
+    {
+        ImGui::TextWrapped("Platform size is the collider size under the BoxCollider component below.");
+    }
+
+    // Composite UI objects build their content as children in initialize().
+    for (const ObjectTypeInfo& info : ObjectFactory::getRegisteredTypes())
+    {
+        if (info.typeKey == k && info.category == ObjectCategory::UI)
+        {
+            showChildrenList();
+            break;
+        }
+    }
+}
+
+void InspectorScreen::showComponents()
+{
+    // Object-level flags
+    bool screenObj = selectedObject->getIsScreenObject();
+    ImGui::BeginDisabled();   // changing this mid-edit would break positions, so read-only
+    ImGui::Checkbox("Screen Object", &screenObj);
+    ImGui::EndDisabled();
+
+    // Components
+    int idx = 0;
+    for (AComponent* comp : selectedObject->getAllComponents())
+    {
+        ImGui::PushID(idx++);
+
+        if (ImGui::CollapsingHeader(comp->getName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            bool en = comp->getEnabled();
+            if (ImGui::Checkbox("Enabled", &en)) comp->setEnabled(en);
+            comp->drawInspector();
+        }
+
+        ImGui::PopID();
+    }
+}
