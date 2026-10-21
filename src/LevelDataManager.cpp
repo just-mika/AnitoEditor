@@ -50,8 +50,6 @@ bool LevelDataManager::saveLevel(const std::string& fileName)
 	}
 
 	json level = serializeScene();
-	const std::string stem = fileName.substr(0, fileName.rfind('.'));
-	level["levelId"] = currentLevelId.empty() ? stem : currentLevelId;
 
 	const std::string path = writableDir() + fileName;
 	const std::string text = level.dump(2);
@@ -60,7 +58,7 @@ bool LevelDataManager::saveLevel(const std::string& fileName)
 		SDL_Log("[LevelData] save failed: %s", SDL_GetError());
 		return false;
 	}
-
+	currentFile = fileName;
 	SDL_Log("[LevelData] saved %s", path.c_str());
 	return true;
 }
@@ -124,8 +122,21 @@ bool LevelDataManager::loadLevel(const std::string& fileName)
 
 	const size_t dot = fileName.rfind('.');
 	const std::string stem = (dot == std::string::npos) ? fileName : fileName.substr(0, dot);
-	currentLevelId = level.value("levelId", stem);
+	currentFile = fileName;
 	return true;
+}
+
+void LevelDataManager::stepFile(int delta)
+{
+	std::vector<std::string> files = listLevelFiles();   // already sorted + de-duplicated
+	if (files.empty()) return;
+
+	auto it = std::find(files.begin(), files.end(), currentFile);
+	const int n = (int)files.size();
+	int i = (it == files.end()) ? (delta > 0 ? -1 : 0)   // nothing open: start at first / last
+		: (int)(it - files.begin());
+	i = ((i + delta) % n + n) % n;
+	requestLoad(files[i]);
 }
 
 json LevelDataManager::serializeScene() const

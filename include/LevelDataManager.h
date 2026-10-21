@@ -19,8 +19,9 @@ public:
     json serializeScene() const;
     bool buildFromJson(const json& level);
 
-    const std::string& getCurrentLevelId() const { return currentLevelId; }
-    void setCurrentLevelId(const std::string& id) { currentLevelId = id; }
+    const std::string& getCurrentFile() const { return currentFile; }
+    bool hasCurrentFile() const { return !currentFile.empty(); }
+    void stepFile(int delta);
 
 private:
 
@@ -28,7 +29,7 @@ private:
     static constexpr const char* kApp = "BabaylanTales";
     static constexpr const char* kBundledDir = "Assets/levels/";
     std::string pendingLoad;
-    std::string currentLevelId;
+    std::string currentFile;
     
 
     static std::string writableDir();

@@ -19,25 +19,6 @@ namespace
     }
 }
 
-// ---------------------------------------------------------------- public API
-
-void LevelFilePanel::setLevelId(const std::string& id)
-{
-    levelId = sanitizeStem(id);
-    if (levelId.empty()) levelId = "level";
-}
-
-void LevelFilePanel::openSave() { syncLevelId(); pending = Request::Save; }
-void LevelFilePanel::openLoad() { syncLevelId(); pending = Request::Load; }
-
-// The loader is the one place that always knows which level is open.
-void LevelFilePanel::syncLevelId()
-{
-    const std::string& id = LevelDataManager::getInstance()->getCurrentLevelId();
-    if (!id.empty())
-        levelId = sanitizeStem(id);
-}
-
 void LevelFilePanel::draw()
 {
     // Popups must be opened from the same ID stack that later calls BeginPopupModal,
@@ -47,9 +28,9 @@ void LevelFilePanel::draw()
     case Request::Save:
         ImGui::OpenPopup(kSaveId);
         break;
-    case Request::Draft:
+    case Request::SaveAs:
         refreshFiles();
-        strncpy_s(draftBuf, nextDraftName().c_str(), sizeof(draftBuf) - 1);
+        strncpy_s(draftBuf, suggestName().c_str(), sizeof(draftBuf) - 1);
         draftBuf[sizeof(draftBuf) - 1] = '\0';
         ImGui::OpenPopup(kDraftId);
         break;
@@ -63,12 +44,13 @@ void LevelFilePanel::draw()
     pending = Request::None;
 
     drawSavePopup();
-    drawDraftPopup();
+    drawSaveAsPopup();
     drawLoadPopup();
     drawStatusToast();
 }
 
 // ------------------------------------------------------------------- popups
+
 
 void LevelFilePanel::drawSavePopup()
 {
@@ -77,28 +59,27 @@ void LevelFilePanel::drawSavePopup()
     if (!ImGui::BeginPopupModal(kSaveId, &open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings))
         return;
 
-    ImGui::TextDisabled("Level: %s", levelId.c_str());
+    const std::string& cur = LevelDataManager::getInstance()->getCurrentFile();
+    ImGui::TextDisabled("Open file: %s", cur.empty() ? "(none)" : cur.c_str());
     ImGui::Spacing();
 
-    // Canonical file: the one the game actually discovers and plays.
-    if (ImGui::Button("Save as Final", ImVec2(-FLT_MIN, kButtonH)))
+    ImGui::BeginDisabled(cur.empty());
+    if (ImGui::Button("Save", ImVec2(-FLT_MIN, kButtonH)))
     {
-        saveAs(levelId);
+        saveAs(stemOf(cur));            // overwrite the open file
         ImGui::CloseCurrentPopup();
     }
-    ImGui::TextDisabled("Overwrites %s.json", levelId.c_str());
-    ImGui::Spacing();
+    ImGui::EndDisabled();
 
-    if (ImGui::Button("Save as Draft", ImVec2(-FLT_MIN, kButtonH)))
+    if (ImGui::Button("Save As...", ImVec2(-FLT_MIN, kButtonH)))
     {
-        pending = Request::Draft;   // opens next frame
+        pending = Request::SaveAs;      // opens next frame
         ImGui::CloseCurrentPopup();
     }
-
     ImGui::EndPopup();
 }
 
-void LevelFilePanel::drawDraftPopup()
+void LevelFilePanel::drawSaveAsPopup()
 {
     centerNextPopup(0.40f);
     bool open = true;
@@ -139,7 +120,7 @@ void LevelFilePanel::drawLoadPopup()
     if (!ImGui::BeginPopupModal(kLoadId, &open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings))
         return;
 
-    ImGui::TextDisabled("Files for %s", levelId.c_str());
+    ImGui::TextDisabled("Level files");
 
     if (files.empty())
     {
@@ -150,8 +131,8 @@ void LevelFilePanel::drawLoadPopup()
         for (const std::string& f : files)
         {
             // Canonical file gets a tag so it is easy to tell apart from drafts.
-            const bool isFinal = (stemOf(f) == levelId);
-            const std::string label = isFinal ? f + "   (final)" : f;
+			const bool isOpen = (f == LevelDataManager::getInstance()->getCurrentFile());
+            const std::string label = isOpen ? f + "   (open)" : f;
 
             if (ImGui::Selectable(label.c_str(), false, 0, ImVec2(0, 48.0f)))
             {
@@ -199,17 +180,10 @@ void LevelFilePanel::setStatus(const std::string& msg)
     statusUntil = ImGui::GetTime() + 2.5;
 }
 
+
 void LevelFilePanel::refreshFiles()
 {
-    files.clear();
-    for (const std::string& f : LevelDataManager::getInstance()->listLevelFiles())
-    {
-        // Only this level's files: "puzzle_3.json", "puzzle_3_draft.json", ...
-        if (stemOf(f).rfind(levelId, 0) == 0)
-            files.push_back(f);
-    }
-    std::sort(files.begin(), files.end());
-    files.erase(std::unique(files.begin(), files.end()), files.end());   // writable + bundled overlap
+    files = LevelDataManager::getInstance()->listLevelFiles();   // no prefix filter
 }
 
 bool LevelFilePanel::hasFile(const std::string& fileName) const
@@ -217,12 +191,14 @@ bool LevelFilePanel::hasFile(const std::string& fileName) const
     return std::find(files.begin(), files.end(), fileName) != files.end();
 }
 
-std::string LevelFilePanel::nextDraftName() const
+
+std::string LevelFilePanel::suggestName() const
 {
-    // puzzle_3_draft, puzzle_3_draft2, puzzle_3_draft3, ...
-    std::string name = levelId + "_draft";
+    const std::string& cur = LevelDataManager::getInstance()->getCurrentFile();
+    const std::string base = cur.empty() ? "level" : stemOf(cur) + "_copy";
+    std::string name = base;
     for (int n = 2; hasFile(name + ".json"); ++n)
-        name = levelId + "_draft" + std::to_string(n);
+        name = base + std::to_string(n);
     return name;
 }
 

@@ -12,20 +12,17 @@
 class LevelFilePanel
 {
 public:
-    // e.g. "puzzle_3". Call whenever the toolbar's current level changes.
-    void setLevelId(const std::string& levelId);
 
     // Call from the toolbar's Save / Load buttons.
-    void openSave();
-    void openLoad();
+    void openSave() { pending = Request::Save; }
+    void openLoad() { pending = Request::Load; }
 
     // Must be called every frame from inside an ImGui frame (e.g. EditorToolbarScreen::DrawUI).
     void draw();
 
 private:
-    enum class Request { None, Save, Draft, Load };
+    enum class Request { None, Save, SaveAs, Load };
 
-    std::string levelId = "level";
     Request pending = Request::None;
 
     char draftBuf[64] = {};
@@ -34,15 +31,14 @@ private:
     std::string statusMsg;
     double statusUntil = 0.0;
 
-    void syncLevelId();
     void refreshFiles();
-    std::string nextDraftName() const;
+    std::string suggestName() const;
     static std::string sanitizeStem(const std::string& raw);
     static std::string stemOf(const std::string& fileName);
     bool hasFile(const std::string& fileName) const;
 
     void drawSavePopup();
-    void drawDraftPopup();
+    void drawSaveAsPopup();
     void drawLoadPopup();
     void drawStatusToast();
 

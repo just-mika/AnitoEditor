@@ -127,6 +127,17 @@ void EditorToolbarScreen::DrawUI()
             sceneManager->loadScene((SceneTag)newIndex);
         }
 
+        // ---- file switch (add here) ----
+        LevelDataManager* ldm = LevelDataManager::getInstance();
+        ImGui::SameLine();
+        if (ImGui::ArrowButton("##prevFile", ImGuiDir_Up))   ldm->stepFile(-1);
+        ImGui::SameLine();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted(ldm->hasCurrentFile() ? ldm->getCurrentFile().c_str() : "(no file)");
+        ImGui::SameLine();
+        if (ImGui::ArrowButton("##nextFile", ImGuiDir_Down)) ldm->stepFile(+1);
+        // --------------------------------
+
         // 3. Play button, centered horizontally in the bar
         ImGui::SameLine((ImGui::GetWindowWidth() - button_width) * 0.5f);
         if (ImGui::Button("##play", ImVec2(button_width, 0)))
