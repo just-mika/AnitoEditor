@@ -122,8 +122,23 @@ void ObjectPalette::DrawUI()
             }
 
             const auto& item = registeredTypes[i];
-            if (ImGui::Button(item.displayName.c_str(), button_size)) {
+            const std::vector<std::string> missing = ObjectFactory::getMissingDependencies(item.typeKey);
+            const bool blocked = !missing.empty();
+
+            if (blocked) ImGui::BeginDisabled();
+            if (ImGui::Button(item.displayName.c_str(), button_size))
                 spawnObject(item.typeKey, item.isScreenObject);
+            if (blocked) ImGui::EndDisabled();
+
+            if (blocked && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                std::string tip = "Needs: ";
+                for (size_t k = 0; k < missing.size(); ++k)
+                    tip += (k ? ", " : "") + missing[k];
+
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+                ImGui::SetTooltip("%s", tip.c_str());
+                ImGui::PopStyleColor();
             }
 
             ImGui::PopID();

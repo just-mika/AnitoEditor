@@ -1,5 +1,9 @@
 #include "ObjectFactory.h"
 
+#include "PhysicsSystem.h"
+#include "GemInputManager.h"
+#include "DataAssetManager.h"
+
 // Primitives & General Containers
 #include "EmptyObject.h"
 #include "Sprite.h"
@@ -40,11 +44,11 @@ static const std::vector<ObjectTypeInfo> S_REGISTERED_TYPES = {
     { "background",        "Background",        ObjectCategory::Primitive, false },
 
     // --- Gameplay Entities ---
-    { "player",            "Player",            ObjectCategory::Gameplay,  false },
-    { "gem",               "Gem",               ObjectCategory::Gameplay,  false },
-    { "statue",            "Statue",            ObjectCategory::Gameplay,  false },
-    { "gate",              "Gate",              ObjectCategory::Gameplay,  false },
-    { "platform",          "Platform",          ObjectCategory::Gameplay,  false },
+    { "player",           "Player",           ObjectCategory::Gameplay, false,{ Dependency::Physics } },
+	{ "gem",              "Gem",              ObjectCategory::Gameplay, false,{ Dependency::Physics, Dependency::GemDataAsset } },
+	{ "statue",           "Statue",           ObjectCategory::Gameplay, false,{ Dependency::Physics } },
+	{ "gate",             "Gate",             ObjectCategory::Gameplay, false,{ Dependency::Physics } },
+	{ "platform",         "Platform",         ObjectCategory::Gameplay, false,{ Dependency::Physics } },
     { "puzzle_token",      "Puzzle Token",      ObjectCategory::Gameplay,  false },
 
     // --- UI & Narrative Composites ---
@@ -52,11 +56,11 @@ static const std::vector<ObjectTypeInfo> S_REGISTERED_TYPES = {
     { "puzzle_hint",       "Puzzle Hint",       ObjectCategory::UI,        true  },
     { "puzzle_end",        "Puzzle End",        ObjectCategory::UI,        true  },
     { "gui_button",        "GUI Button",        ObjectCategory::UI,        true  },
-    { "gem_input_screen",  "Gem Input Screen",  ObjectCategory::UI,        true  },
+	{ "gem_input_screen", "Gem Input Screen", ObjectCategory::UI, true,{ Dependency::GemInputManager, Dependency::GemDataAsset } },
     { "gem_input_token",   "Gem Input Token",   ObjectCategory::UI,        true  },
-    { "gem_input_preview", "Gem Input Preview", ObjectCategory::UI,        true  },
-    { "inventory_gui",     "Inventory GUI",     ObjectCategory::UI,        true  },
-    { "level_end_gui",     "Level End GUI",     ObjectCategory::UI,        true  },
+	{ "gem_input_preview","Gem Input Preview",ObjectCategory::UI, true,{ Dependency::GemDataAsset } },
+    { "inventory_gui",    "Inventory GUI",    ObjectCategory::UI, true,{ Dependency::GemDataAsset } },
+	{ "level_end_gui",     "Level End GUI",     ObjectCategory::UI,        true  },
     { "pause_screen",      "Pause Screen",      ObjectCategory::UI,        true  },
     { "objective_intro",   "Objective Intro",   ObjectCategory::UI,        true  }
 };
@@ -88,7 +92,16 @@ std::string ObjectFactory::getDisplayName(const std::string& typeKey) {
 }
 
 AGameObject* ObjectFactory::createObject(const std::string& typeKey, const std::string& customName) {
-    // Most objects just need a unique display name.
+    const std::vector<std::string> missing = getMissingDependencies(typeKey);
+    if (!missing.empty())
+    {
+        std::string list;
+        for (const std::string& m : missing) list += (list.empty() ? "" : ", ") + m;
+        SDL_Log("[ObjectFactory] cannot create '%s', missing: %s", typeKey.c_str(), list.c_str());
+        return nullptr;
+    }
+	
+	// Most objects just need a unique display name.
     const std::string uniqueName = customName.empty() ? generateUniqueName(typeKey) : customName;
 
     // These types use their *name* as the texture key (SpriteRenderer(strName) in initialize()),
@@ -180,4 +193,64 @@ AGameObject* ObjectFactory::createObject(const std::string& typeKey, const std::
     }
 
     return newObj;
+}
+
+template <class T>
+static bool isType(AGameObject* o) { return dynamic_cast<T*>(o) != nullptr; }
+
+const char* ObjectFactory::typeKeyOf(AGameObject* o)
+{
+    struct Probe { const char* key; bool (*is)(AGameObject*); };
+    static const Probe kProbes[] = {
+        { "empty",             isType<EmptyObject> },
+        { "sprite",            isType<Sprite> },
+        { "animated_sprite",   isType<AnimatedSprite> },
+        { "text",              isType<Text> },
+        { "background",        isType<Background> },
+        { "player",            isType<Player> },
+        { "gem",               isType<Gem> },
+        { "statue",            isType<Statue> },
+        { "gate",              isType<Gate> },
+        { "platform",          isType<Platform> },
+        { "puzzle_token",      isType<PuzzleToken> },
+        { "story_window",      isType<StoryWindow> },
+        { "puzzle_hint",       isType<PuzzleHint> },
+        { "puzzle_end",        isType<PuzzleEnd> },
+        { "gui_button",        isType<GUIButton> },
+        { "gem_input_screen",  isType<GemInputScreen> },
+        { "gem_input_token",   isType<GemInputToken> },
+        { "gem_input_preview", isType<GemInputPreview> },
+        { "inventory_gui",     isType<InventoryGUI> },
+        { "level_end_gui",     isType<LevelEndGUI> },
+        { "pause_screen",      isType<PauseScreen> },
+        { "objective_intro",   isType<ObjectiveIntro> },
+    };
+    for (const Probe& p : kProbes)
+        if (p.is(o)) return p.key;
+    return nullptr;
+}
+
+static const char* missingName(Dependency d)
+{
+    switch (d)
+    {
+    case Dependency::Physics:
+        return PhysicsSystem::getInstance() ? nullptr : "PhysicsSystem";
+    case Dependency::GemInputManager:
+        return GemInputManager::getInstance() ? nullptr : "GemInputManager";
+    case Dependency::GemDataAsset:
+        return DataAssetManager::getInstance()->getDataAsset("CollectableGemDataAsset")
+            ? nullptr : "CollectableGemDataAsset";
+    }
+    return nullptr;
+}
+
+std::vector<std::string> ObjectFactory::getMissingDependencies(const std::string& typeKey)
+{
+    std::vector<std::string> missing;
+    for (const auto& info : S_REGISTERED_TYPES)
+        if (info.typeKey == typeKey)
+            for (Dependency d : info.dependencies)
+                if (const char* n = missingName(d)) missing.push_back(n);
+    return missing;
 }

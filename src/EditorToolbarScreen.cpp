@@ -1,5 +1,6 @@
 #include "EditorToolbarScreen.h"
 #include "EditorModule.h"
+#include "LevelDataManager.h"
 #include "SceneManager.h"
 #include "UIManager.h"
 #include "Settings.h"
@@ -118,13 +119,24 @@ void EditorToolbarScreen::DrawUI()
 
         newIndex = SDL_clamp(newIndex,
             (int)SceneTag::PLATFORMER_LEVEL_1_SCENE,
-            (int)SceneTag::PUZZLE_LEVEL_1_SCENE);
+            (int)SceneTag::LOADED_SCENE);
 
         if (newIndex != sceneIndex)
         {
             editor->setSelectedObject(nullptr);
             sceneManager->loadScene((SceneTag)newIndex);
         }
+
+        // ---- file switch (add here) ----
+        LevelDataManager* ldm = LevelDataManager::getInstance();
+        ImGui::SameLine();
+        if (ImGui::ArrowButton("##prevFile", ImGuiDir_Up))   ldm->stepFile(-1);
+        ImGui::SameLine();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted(ldm->hasCurrentFile() ? ldm->getCurrentFile().c_str() : "(no file)");
+        ImGui::SameLine();
+        if (ImGui::ArrowButton("##nextFile", ImGuiDir_Down)) ldm->stepFile(+1);
+        // --------------------------------
 
         // 3. Play button, centered horizontally in the bar
         ImGui::SameLine((ImGui::GetWindowWidth() - button_width) * 0.5f);
@@ -135,15 +147,16 @@ void EditorToolbarScreen::DrawUI()
         // 4. Save / Load, right-aligned (placeholders for now)
         ImGui::SameLine(ImGui::GetWindowWidth() - style.WindowPadding.x
                         - button_width * 2 - style.ItemSpacing.x);
+        
+    	static const char* kTestLevel = "test_level.json";
         if (ImGui::Button("Save", ImVec2(button_width, 0)))
-        {
-            // TODO: save level
-        }
-        ImGui::SameLine();
+            filePanel.openSave();
+    	
+    	ImGui::SameLine();
         if (ImGui::Button("Load", ImVec2(button_width, 0)))
-        {
-            // TODO: load level
-        }
+            filePanel.openLoad();
     }
     ImGui::End();
+
+    filePanel.draw();
 }

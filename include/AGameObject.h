@@ -44,6 +44,8 @@ public:
     std::vector<AGameObject*> getChildren();
     std::vector<AGameObject*> getChildrenRecursively();
     void adoptChild(AGameObject* pChild); // adopt child w/o reinitializing
+    void toJson();
+    void fromJson();
 
     void attachComponent(AComponent* pComponent);
     void detachComponent(AComponent* pComponent);

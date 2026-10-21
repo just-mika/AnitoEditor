@@ -76,6 +76,9 @@
     <Filter Include="Utils">
       <UniqueIdentifier>{97957f03-926b-4312-a1a4-90d2caebeb94}</UniqueIdentifier>
     </Filter>
+    <Filter Include="nlohmann">
+      <UniqueIdentifier>{12eeac62-33a0-4e7e-b662-f7ac32bd1813}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Runner.cpp">
@@ -433,6 +436,15 @@
       <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="src\ObjectFactory.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LevelDataManager.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LoadedScene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LevelFilePanel.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
   </ItemGroup>
@@ -851,6 +863,18 @@
       <Filter>GUI</Filter>
     </ClInclude>
     <ClInclude Include="include\ObjectFactory.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LevelDataManager.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="nlohmann\json.hpp">
+      <Filter>nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LoadedScene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LevelFilePanel.h">
       <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>
