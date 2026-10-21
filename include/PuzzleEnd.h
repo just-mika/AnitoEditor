@@ -26,6 +26,8 @@ public:
 	// Inherited via IAnimatorListener
 	void onAnimationFinished() override;
 
+	void setDragons(AGameObject* inc, AGameObject* comp) { incDragon = inc; compDragon = comp; }
+
 	
 };
 

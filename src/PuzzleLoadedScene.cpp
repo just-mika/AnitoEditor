@@ -5,6 +5,9 @@
 #include "GameObjectManager.h"
 #include "SequenceGameManager.h"
 #include "PuzzleToken.h"
+#include "GUIToggle.h"
+#include "EnumEventKey.h"
+#include "PuzzleEnd.h"
 
 PuzzleLoadedScene::PuzzleLoadedScene() : LoadedScene(SceneTag::PUZZLE_LOADED_SCENE) {}
 PuzzleLoadedScene::~PuzzleLoadedScene() {}
@@ -69,8 +72,9 @@ void PuzzleLoadedScene::rewire()
         SequenceGameManager* manager = SequenceGameManager::getInstance();
         manager->reset();
     }
-    SequenceGameManager::initialize();
+
     SequenceGameManager* sgm = SequenceGameManager::getInstance();
+    sgm->reset();
 
     std::vector<std::string> names;
     for (AGameObject* o : gom->getAllObjects())
@@ -84,4 +88,16 @@ void PuzzleLoadedScene::rewire()
     const std::vector<std::string>& combo = (combination.size() == 3) ? combination : names;
     if (combo.size() == 3)
         sgm->setCombination(combo[0], combo[1], combo[2]);
+	
+    if (AGameObject* b = gom->findObjectByName("Pause_Button"))
+        if (!b->findComponentByName("GUIToggle"))
+            b->attachComponent(new GUIToggle(EventKey::PAUSE_SCREEN));
+
+    if (AGameObject* b = gom->findObjectByName("Story_Button"))
+        if (!b->findComponentByName("GUIToggle"))
+            b->attachComponent(new GUIToggle(EventKey::STORY_SCREEN));
+
+    if (PuzzleEnd* end = dynamic_cast<PuzzleEnd*>(gom->findObjectByName("EndScreen")))
+        end->setDragons(gom->findObjectByName("DragonContainer"),
+            gom->findObjectByName("Complete_Dragon"));
 }

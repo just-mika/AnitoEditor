@@ -153,6 +153,7 @@ void EditorToolbarScreen::DrawUI()
         
         if (ImGui::Button("New", ImVec2(button_width, 0)))
             ImGui::OpenPopup("NewLevelPopup");
+        ImGui::SameLine();
 
         ImGui::BeginDisabled(!ldm->hasActiveScene());
         if (ImGui::Button("Save", ImVec2(button_width, 0)))

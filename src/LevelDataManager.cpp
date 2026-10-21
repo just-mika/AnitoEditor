@@ -293,6 +293,9 @@ SpriteRenderer* LevelDataManager::spriteRendererOf(AGameObject* o)
 //save
 json LevelDataManager::serializeObject(AGameObject* o)
 {
+	if (o->isSystemObject())
+		return nullptr;
+
 	const char* type = ObjectFactory::typeKeyOf(o);
 	if (!type)
 	{
@@ -441,8 +444,8 @@ void LevelDataManager::clearScene()
 #endif
 	GameObjectManager* gom = GameObjectManager::getInstance();
 	for (AGameObject* o : gom->getAllObjects())
-		if (ObjectFactory::typeKeyOf(o))      // only what the editor can recreate
-			gom->deleteObject(o);             // queues only, safe while iterating
+		if (!o->isSystemObject() && ObjectFactory::typeKeyOf(o))
+			gom->deleteObject(o);
 	gom->cleanUpDeletedObjects();
 }
 

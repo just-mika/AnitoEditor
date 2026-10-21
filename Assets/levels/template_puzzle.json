@@ -26,6 +26,9 @@
     { "type": "puzzle_token", "name": "Token_Eyes",  "texture": "Token_Eyes",  "position": [280, -375],  "scale": [0.08, 0.08] },
 
     { "type": "sprite", "name": "Complete_Dragon", "texture": "Full_Dragon", "position": [50, 75], "scale": [0.55, 0.55], "enabled": false },
+    
+    { "type": "gui_button", "name": "Pause_Button", "texture": "Pause_Button", "position": [800, 400], "scale": [0.08, 0.08] },
+{ "type": "gui_button", "name": "Story_Button", "texture": "Story_Button", "position": [600, 400], "scale": [0.08, 0.08] },
 
     { "type": "puzzle_hint", "name": "PuzzleHintWindow", "enabled": false },
     { "type": "pause_screen", "name": "PauseScreen", "position": [0, 0] },
