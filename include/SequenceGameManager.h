@@ -25,6 +25,7 @@ public:
     void assignTokenSlot(PuzzleToken* pToken, int nSlot);
     void checkToken(int nSlot, std::string strTokenName);
     void checkCombination();
+    void reset();
 
     /* * * * * * * * * * * * * * * * * * * * *
      *       SINGLETON-RELATED CONTENT       *

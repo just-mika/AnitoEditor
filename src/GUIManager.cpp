@@ -29,6 +29,7 @@ void GUIManager::initialize()
     EmptyObject* pManagerObject = new EmptyObject("GUI Manager");
     P_SHARED_INSTANCE = new GUIManager();
     pManagerObject->attachComponent(P_SHARED_INSTANCE);
+    pManagerObject->setIsSystemObject(true);
     GameObjectManager::getInstance()->addObject(pManagerObject);
 }
 

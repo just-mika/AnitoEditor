@@ -181,6 +181,7 @@ void GemInputManager::initialize()
     EmptyObject* pManagerObject = new EmptyObject("GemInputManager");
     P_SHARED_INSTANCE = new GemInputManager();
     pManagerObject->attachComponent(P_SHARED_INSTANCE);
+    pManagerObject->setIsSystemObject(true);
     GameObjectManager::getInstance()->addObject(pManagerObject);
 }
 

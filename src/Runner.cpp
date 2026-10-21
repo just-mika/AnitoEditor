@@ -40,6 +40,7 @@
 #include "PlatformerLevel1Scene.h"
 #include "PuzzleLevel1Scene.h"
 #include "LoadedScene.h"
+#include "PuzzleLoadedScene.h"
 #include "RendererContext.h"
 
 // Constructor / Destructor: startup and teardown costs are not per-frame.
@@ -342,18 +343,18 @@ void Runner::registerScenes()
 {
 	auto platformerL1 = new PlatformerLevel1Scene();
 	auto puzzleL1 = new PuzzleLevel1Scene();
-	auto testScene = new LoadedScene();
+	auto puzzleLoaded = new PuzzleLoadedScene();
 
 	SceneManager::getInstance()->registerScene(platformerL1);
 	SceneManager::getInstance()->registerScene(puzzleL1);
-	SceneManager::getInstance()->registerScene(testScene);
+	SceneManager::getInstance()->registerScene(puzzleLoaded);
 
 	// --- load time tracking --- 
 	// // start timer before load, end after load completes 
 	MetricsManager::getInstance()->startLoadTimer(); 
 
 	//load initial scene
-	SceneManager::getInstance()->loadScene(SceneTag::LOADED_SCENE);
+	//SceneManager::getInstance()->loadScene(SceneTag::LOADED_SCENE);
 	
 	MetricsManager::getInstance()->endLoadTimer();
 }

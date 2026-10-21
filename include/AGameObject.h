@@ -21,6 +21,7 @@ protected:
     float fRot;
 
     bool m_isScreenObject = false;
+    bool bIsSystemObject = false;
 
 public:
     AGameObject(std::string strName);
@@ -84,4 +85,6 @@ public:
     void setScreenObject(bool isScreen) { m_isScreenObject = isScreen; }
     bool isScreenObject() const { return m_isScreenObject; }
 
+    void setIsSystemObject(bool b) { bIsSystemObject = b; }
+    bool isSystemObject() const { return bIsSystemObject; }
 };

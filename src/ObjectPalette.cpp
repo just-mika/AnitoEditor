@@ -1,5 +1,6 @@
 #include "ObjectPalette.h"
 #include "GameObjectManager.h"
+#include "LevelDataManager.h"
 #include "Camera.h"
 #include "Settings.h"
 #include "imgui.h"
@@ -40,6 +41,7 @@ ObjectPalette::~ObjectPalette()
 
 void ObjectPalette::spawnObject(const std::string& typeKey, bool isScreenObject)
 {
+    if (!LevelDataManager::getInstance()->hasActiveScene()) return;
     // 1. Instantiate via factory
     AGameObject* newObj = ObjectFactory::createObject(typeKey);
     if (!newObj) return;
@@ -114,34 +116,32 @@ void ObjectPalette::DrawUI()
         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.2f, 0.22f, 0.25f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
 
-        for (int i = 0; i < static_cast<int>(registeredTypes.size()); ++i) {
-            ImGui::PushID(i);
+        if (!LevelDataManager::getInstance()->hasActiveScene())
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+            ImGui::TextUnformatted("Load or create a level to add objects.");
+            ImGui::PopStyleColor();
+        }
+        else
+        {
+            int shown = 0;
+            for (int i = 0; i < static_cast<int>(registeredTypes.size()); ++i) {
+                const auto& item = registeredTypes[i];
 
-            if (i % columns != 0) {
-                ImGui::SameLine();
+                // hide types whose subsystems aren't present in this scene
+                if (!ObjectFactory::getMissingDependencies(item.typeKey).empty())
+                    continue;
+
+                ImGui::PushID(i);
+                if (shown % columns != 0)
+                    ImGui::SameLine();
+
+                if (ImGui::Button(item.displayName.c_str(), button_size))
+                    spawnObject(item.typeKey, item.isScreenObject);
+
+                ImGui::PopID();
+                ++shown;
             }
-
-            const auto& item = registeredTypes[i];
-            const std::vector<std::string> missing = ObjectFactory::getMissingDependencies(item.typeKey);
-            const bool blocked = !missing.empty();
-
-            if (blocked) ImGui::BeginDisabled();
-            if (ImGui::Button(item.displayName.c_str(), button_size))
-                spawnObject(item.typeKey, item.isScreenObject);
-            if (blocked) ImGui::EndDisabled();
-
-            if (blocked && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-            {
-                std::string tip = "Needs: ";
-                for (size_t k = 0; k < missing.size(); ++k)
-                    tip += (k ? ", " : "") + missing[k];
-
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-                ImGui::SetTooltip("%s", tip.c_str());
-                ImGui::PopStyleColor();
-            }
-
-            ImGui::PopID();
         }
 
         ImGui::PopStyleColor(5);

@@ -4,6 +4,7 @@
 #include "SpriteRenderer.h"
 #include "Text.h"
 #include "EditorMode.h"
+#include "SceneManager.h"
 
 #if EDITOR_MODE
 #include "EditorModule.h"
@@ -37,6 +38,11 @@ LevelDataManager* LevelDataManager::getInstance()
 
 bool LevelDataManager::saveLevel(const std::string& fileName)
 {
+	if (!activeScene)
+	{
+		SDL_Log("[LevelData] no level scene is active");
+		return false;
+	}
 #if EDITOR_MODE
 	if (Editor::EditorModule::getInstance()->isPlaying()) {
 		SDL_Log("[LevelData] stop play mode before saving");
@@ -50,6 +56,8 @@ bool LevelDataManager::saveLevel(const std::string& fileName)
 	}
 
 	json level = serializeScene();
+	level["genre"] = activeScene->getGenre();
+	activeScene->writeLevelData(level);
 
 	const std::string path = writableDir() + fileName;
 	const std::string text = level.dump(2);
@@ -59,6 +67,7 @@ bool LevelDataManager::saveLevel(const std::string& fileName)
 		return false;
 	}
 	currentFile = fileName;
+	currentFileGenre = activeScene->getGenre();
 	SDL_Log("[LevelData] saved %s", path.c_str());
 	return true;
 }
@@ -74,12 +83,18 @@ void LevelDataManager::applyPending()
 
 	std::string name = std::move(pendingLoad);
 	pendingLoad.clear();
-	loadLevel(name);
+
+	if (!loadLevel(name) && loadingTemplate)
+	{
+		loadingTemplate = false;
+		newBlankLevel(templateGenre);
+	}
 }
 
 static SDL_EnumerationResult enumerateLevelFile(void* userdata, const char* dirname, const char* fname)
 {
 	std::string n = fname;
+	if (n.rfind("template_", 0) == 0) return SDL_ENUM_CONTINUE;
 	if (n.size() > 5 && n.compare(n.size() - 5, 5, ".json") == 0)
 		static_cast<std::vector<std::string>*>(userdata)->push_back(n);
 	return SDL_ENUM_CONTINUE;
@@ -116,27 +131,70 @@ bool LevelDataManager::loadLevel(const std::string& fileName)
 		return false;
 	}
 
+	const std::string genre = level.value("genre", activeScene ? activeScene->getGenre() : std::string());
+	if (genre.empty())
+	{
+		SDL_Log("[LevelData] '%s' has no genre", fileName.c_str());
+		return false;
+	}
+
+	if (!activeScene || genre != activeScene->getGenre())
+	{
+		const SceneTag tag = sceneTagFor(genre);
+		if (tag == SceneTag::NONE)
+		{
+			SDL_Log("[LevelData] '%s' has unknown genre '%s'", fileName.c_str(), genre.c_str());
+			return false;
+		}
+		nextFile = fileName;
+		SceneManager::getInstance()->loadScene(tag);
+		return true;
+	}
+
+	activeScene->readLevelData(level);
 	clearScene();
 	if (!buildFromJson(level))
 		return false;
+	activeScene->rewire();
 
-	const size_t dot = fileName.rfind('.');
-	const std::string stem = (dot == std::string::npos) ? fileName : fileName.substr(0, dot);
 	currentFile = fileName;
+	currentFileGenre = genre;
+
+	// a template starts an untitled level: Save must go to Save As
+	if (loadingTemplate)
+	{
+		currentFile.clear();
+		currentFileGenre.clear();
+		loadingTemplate = false;
+	}
 	return true;
 }
 
-void LevelDataManager::stepFile(int delta)
+SceneTag LevelDataManager::sceneTagFor(const std::string& genre)
 {
-	std::vector<std::string> files = listLevelFiles();   // already sorted + de-duplicated
-	if (files.empty()) return;
+	if (genre == "puzzle")     return SceneTag::PUZZLE_LOADED_SCENE;
+	if (genre == "platformer") return SceneTag::PLATFORMER_LOADED_SCENE;
+	return SceneTag::NONE;
+}
 
-	auto it = std::find(files.begin(), files.end(), currentFile);
-	const int n = (int)files.size();
-	int i = (it == files.end()) ? (delta > 0 ? -1 : 0)   // nothing open: start at first / last
-		: (int)(it - files.begin());
-	i = ((i + delta) % n + n) % n;
-	requestLoad(files[i]);
+void LevelDataManager::enterScene(LoadedScene* scene)
+{
+	activeScene = scene;
+
+	if (!nextFile.empty())
+	{
+		requestLoad(nextFile);
+		nextFile.clear();
+	}
+	else if (hasCurrentFile() && currentFileGenre == scene->getGenre())
+		requestLoad(currentFile);            // re-enter the open file
+	else
+		currentFile.clear();                 // the open file belongs to another genre
+}
+
+void LevelDataManager::leaveScene(LoadedScene* scene)
+{
+	if (activeScene == scene) activeScene = nullptr;
 }
 
 json LevelDataManager::serializeScene() const
@@ -387,3 +445,53 @@ void LevelDataManager::clearScene()
 			gom->deleteObject(o);             // queues only, safe while iterating
 	gom->cleanUpDeletedObjects();
 }
+
+void LevelDataManager::newLevel(const std::string& genre)
+{
+	if (sceneTagFor(genre) == SceneTag::NONE)
+	{
+		SDL_Log("[LevelData] cannot create a new '%s' level: no scene for that genre", genre.c_str());
+		return;
+	}
+
+	nextFile.clear();
+	currentFile.clear();
+	currentFileGenre.clear();
+
+	loadingTemplate = true;
+	templateGenre = genre;
+	requestLoad("template_" + genre + ".json");
+}
+
+void LevelDataManager::newBlankLevel(const std::string& genre)
+{
+	const SceneTag tag = sceneTagFor(genre);
+	if (tag == SceneTag::NONE)
+	{
+		SDL_Log("[LevelData] cannot create a new '%s' level: no scene for that genre", genre.c_str());
+		return;
+	}
+
+	// a new level has no file until it is saved
+	nextFile.clear();
+	currentFile.clear();
+	currentFileGenre.clear();
+
+	// same genre: just empty the current scene
+	if (activeScene && activeScene->getGenre() == genre)
+	{
+		clearScene();
+		activeScene->rewire();
+		return;
+	}
+
+	// different genre or no scene yet: load that genre's scene.
+	// enterScene() finds no file to load, so the scene stays empty.
+	SceneManager::getInstance()->loadScene(tag);
+}
+
+bool LevelDataManager::canCreate(const std::string& genre) const
+{
+	return sceneTagFor(genre) != SceneTag::NONE;
+}
+

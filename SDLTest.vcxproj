@@ -211,6 +211,7 @@
     <ClCompile Include="src\PlayerInput.cpp" />
     <ClCompile Include="src\PlayerManager.cpp" />
     <ClCompile Include="src\PuzzleEnd.cpp" />
+    <ClCompile Include="src\PuzzleLoadedScene.cpp" />
     <ClCompile Include="src\Sprite.cpp" />
     <ClCompile Include="src\AComponent.cpp" />
     <ClCompile Include="src\AGameObject.cpp" />
@@ -344,6 +345,7 @@
     <ClInclude Include="include\PuzzleEnd.h" />
     <ClInclude Include="include\PuzzleHint.h" />
     <ClInclude Include="include\PuzzleLevel1Scene.h" />
+    <ClInclude Include="include\PuzzleLoadedScene.h" />
     <ClInclude Include="include\PuzzleToken.h" />
     <ClInclude Include="include\RendererContext.h" />
     <ClInclude Include="include\RigidBody.h" />

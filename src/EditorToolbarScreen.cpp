@@ -108,34 +108,37 @@ void EditorToolbarScreen::DrawUI()
         SceneManager* sceneManager = SceneManager::getInstance();
         const int sceneCount = sceneManager->getRegisteredSceneAmount();
         const int sceneIndex = (int)sceneManager->getLoadedSceneTag();
+        const bool noScene = (sceneIndex == (int)SceneTag::NONE);
         int newIndex = sceneIndex;
 
+        ImGui::BeginDisabled(noScene);
         if (ImGui::ArrowButton("##prevScene", ImGuiDir_Left)) newIndex--;
         ImGui::SameLine();
         ImGui::AlignTextToFramePadding();
-        ImGui::Text("Scene %d", sceneIndex);
+        if (noScene) ImGui::TextUnformatted("(no level)");
+        else         ImGui::Text("Scene %d", sceneIndex);
         ImGui::SameLine();
         if (ImGui::ArrowButton("##nextScene", ImGuiDir_Right)) newIndex++;
+        ImGui::EndDisabled();
 
-        newIndex = SDL_clamp(newIndex,
-            (int)SceneTag::PLATFORMER_LEVEL_1_SCENE,
-            (int)SceneTag::LOADED_SCENE);
-
-        if (newIndex != sceneIndex)
+        if (!noScene)
         {
-            editor->setSelectedObject(nullptr);
-            sceneManager->loadScene((SceneTag)newIndex);
+            newIndex = SDL_clamp(newIndex,
+                (int)SceneTag::PLATFORMER_LEVEL_1_SCENE,
+                (int)SceneTag::PUZZLE_LOADED_SCENE);   // last tag in your enum
+
+            if (newIndex != sceneIndex)
+            {
+                editor->setSelectedObject(nullptr);
+                sceneManager->loadScene((SceneTag)newIndex);
+            }
         }
 
         // ---- file switch (add here) ----
         LevelDataManager* ldm = LevelDataManager::getInstance();
         ImGui::SameLine();
-        if (ImGui::ArrowButton("##prevFile", ImGuiDir_Up))   ldm->stepFile(-1);
-        ImGui::SameLine();
         ImGui::AlignTextToFramePadding();
         ImGui::TextUnformatted(ldm->hasCurrentFile() ? ldm->getCurrentFile().c_str() : "(no file)");
-        ImGui::SameLine();
-        if (ImGui::ArrowButton("##nextFile", ImGuiDir_Down)) ldm->stepFile(+1);
         // --------------------------------
 
         // 3. Play button, centered horizontally in the bar
@@ -146,15 +149,41 @@ void EditorToolbarScreen::DrawUI()
 
         // 4. Save / Load, right-aligned (placeholders for now)
         ImGui::SameLine(ImGui::GetWindowWidth() - style.WindowPadding.x
-                        - button_width * 2 - style.ItemSpacing.x);
+            - button_width * 3 - style.ItemSpacing.x * 2);
         
-    	static const char* kTestLevel = "test_level.json";
+        if (ImGui::Button("New", ImVec2(button_width, 0)))
+            ImGui::OpenPopup("NewLevelPopup");
+
+        ImGui::BeginDisabled(!ldm->hasActiveScene());
         if (ImGui::Button("Save", ImVec2(button_width, 0)))
             filePanel.openSave();
-    	
-    	ImGui::SameLine();
+        ImGui::EndDisabled();
+
+        ImGui::SameLine();
         if (ImGui::Button("Load", ImVec2(button_width, 0)))
             filePanel.openLoad();
+
+        if (ImGui::BeginPopup("NewLevelPopup"))
+        {
+            if (ImGui::Selectable("Puzzle level"))
+            {
+                editor->setSelectedObject(nullptr);
+                ldm->newLevel("puzzle");
+            }
+
+            // enable once PlatformerLoadedScene exists
+            ImGui::BeginDisabled(!ldm->canCreate("platformer"));
+            if (ImGui::Selectable("Platformer level"))
+            {
+                editor->setSelectedObject(nullptr);
+                ldm->newLevel("platformer");
+            }
+            ImGui::EndDisabled();
+
+            ImGui::EndPopup();
+        }
+
+        
     }
     ImGui::End();
 

@@ -150,6 +150,7 @@ SequenceGameManager::SequenceGameManager() : AComponent("SequenceGameManager", C
 void SequenceGameManager::initialize()
 {
     EmptyObject* pManagerObject = new EmptyObject("SequenceGameManager");
+    pManagerObject->setIsSystemObject(true);
     P_SHARED_INSTANCE = new SequenceGameManager();
     pManagerObject->attachComponent(P_SHARED_INSTANCE);
     GameObjectManager::getInstance()->addObject(pManagerObject);
@@ -163,4 +164,12 @@ void SequenceGameManager::destroy()
 SequenceGameManager* SequenceGameManager::getInstance()
 {
     return P_SHARED_INSTANCE;
+}
+
+void SequenceGameManager::reset()
+{
+    vecToken.clear();   // clearScene() already deleted the old tokens
+    std::fill(vecTokenHolder.begin(), vecTokenHolder.end(), nullptr);
+    std::fill(vecCombinationCheck.begin(), vecCombinationCheck.end(), false);
+    for (auto& entry : mapCombi) entry.second.clear();
 }
