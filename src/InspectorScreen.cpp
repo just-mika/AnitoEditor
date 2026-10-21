@@ -6,28 +6,14 @@
 #include <cmath>
 
 #include "ObjectFactory.h"
-#include "EmptyObject.h"
-#include "Sprite.h"
-#include "AnimatedSprite.h"
+
 #include "Text.h"
-#include "Background.h"
-#include "Player.h"
-#include "Gem.h"
-#include "Statue.h"
-#include "Gate.h"
-#include "Platform.h"
+
 #include "PuzzleToken.h"
 #include "PuzzleHint.h"
-#include "PuzzleEnd.h"
-#include "StoryWindow.h"
-#include "GUIButton.h"
-#include "GemInputScreen.h"
+
 #include "GemInputToken.h"
-#include "GemInputPreview.h"
-#include "InventoryGUI.h"
-#include "LevelEndGUI.h"
-#include "PauseScreen.h"
-#include "ObjectiveIntro.h"
+
 #include "SpriteAnimator.h"
 #include "Animation.h"
 #include "SpriteRenderer.h"
@@ -164,40 +150,6 @@ void InspectorScreen::showTransform(ImGuiChildFlags childFlags)
 
 // Maps a live object back to its ObjectFactory type key (null if it isn't a palette type).
 // None of these classes derive from each other, so test order doesn't matter.
-template <class T>
-static bool isType(AGameObject* o) { return dynamic_cast<T*>(o) != nullptr; }
-
-static const char* typeKeyOf(AGameObject* o)
-{
-    struct Probe { const char* key; bool (*is)(AGameObject*); };
-    static const Probe kProbes[] = {
-        { "empty",             isType<EmptyObject> },
-        { "sprite",            isType<Sprite> },
-        { "animated_sprite",   isType<AnimatedSprite> },
-        { "text",              isType<Text> },
-        { "background",        isType<Background> },
-        { "player",            isType<Player> },
-        { "gem",               isType<Gem> },
-        { "statue",            isType<Statue> },
-        { "gate",              isType<Gate> },
-        { "platform",          isType<Platform> },
-        { "puzzle_token",      isType<PuzzleToken> },
-        { "story_window",      isType<StoryWindow> },
-        { "puzzle_hint",       isType<PuzzleHint> },
-        { "puzzle_end",        isType<PuzzleEnd> },
-        { "gui_button",        isType<GUIButton> },
-        { "gem_input_screen",  isType<GemInputScreen> },
-        { "gem_input_token",   isType<GemInputToken> },
-        { "gem_input_preview", isType<GemInputPreview> },
-        { "inventory_gui",     isType<InventoryGUI> },
-        { "level_end_gui",     isType<LevelEndGUI> },
-        { "pause_screen",      isType<PauseScreen> },
-        { "objective_intro",   isType<ObjectiveIntro> },
-    };
-    for (const Probe& p : kProbes)
-        if (p.is(o)) return p.key;
-    return nullptr;
-}
 
 void InspectorScreen::syncBuffers()
 {
@@ -307,7 +259,7 @@ void InspectorScreen::performDelete()
 
 void InspectorScreen::showObjectType()
 {
-    const char* key = typeKeyOf(selectedObject);
+    const char* key = ObjectFactory::typeKeyOf(selectedObject);
     if (key) ImGui::LabelText("Object Type", "%s", ObjectFactory::getDisplayName(key).c_str());
     else     ImGui::LabelText("Object Type", "%s", "Object");
 }
@@ -342,7 +294,7 @@ void InspectorScreen::showChildrenList()
 // BoxCollider::drawInspector (which Platform, Gem, Statue and Gate interactables all use).
 void InspectorScreen::showTypeSpecific()
 {
-    const char* key = typeKeyOf(selectedObject);
+    const char* key = ObjectFactory::typeKeyOf(selectedObject);
     if (!key) return;
     const std::string k = key;
 

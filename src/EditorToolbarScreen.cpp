@@ -1,5 +1,6 @@
 #include "EditorToolbarScreen.h"
 #include "EditorModule.h"
+#include "LevelDataManager.h"
 #include "SceneManager.h"
 #include "UIManager.h"
 #include "Settings.h"
@@ -118,7 +119,7 @@ void EditorToolbarScreen::DrawUI()
 
         newIndex = SDL_clamp(newIndex,
             (int)SceneTag::PLATFORMER_LEVEL_1_SCENE,
-            (int)SceneTag::PUZZLE_LEVEL_1_SCENE);
+            (int)SceneTag::LOADED_SCENE);
 
         if (newIndex != sceneIndex)
         {
@@ -135,14 +136,15 @@ void EditorToolbarScreen::DrawUI()
         // 4. Save / Load, right-aligned (placeholders for now)
         ImGui::SameLine(ImGui::GetWindowWidth() - style.WindowPadding.x
                         - button_width * 2 - style.ItemSpacing.x);
+        
+    	static const char* kTestLevel = "test_level.json";
         if (ImGui::Button("Save", ImVec2(button_width, 0)))
-        {
-            // TODO: save level
-        }
-        ImGui::SameLine();
+            LevelDataManager::getInstance()->saveLevel(kTestLevel);
+    	
+    	ImGui::SameLine();
         if (ImGui::Button("Load", ImVec2(button_width, 0)))
         {
-            // TODO: load level
+            LevelDataManager::getInstance()->requestLoad(kTestLevel);
         }
     }
     ImGui::End();

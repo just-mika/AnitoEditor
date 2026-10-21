@@ -159,8 +159,8 @@ void Editor::EditorModule::processEditorInput(const SDL_Event* eEvent)
     {
         case SDL_EVENT_MOUSE_WHEEL:
         {
-            SDL_Log("[Editor] WHEEL y=%.2f (integer_y=%d) wantCaptureMouse=%d",
-                    eEvent->wheel.y, eEvent->wheel.integer_y, (int)io.WantCaptureMouse);
+            //SDL_Log("[Editor] WHEEL y=%.2f (integer_y=%d) wantCaptureMouse=%d",
+            //        eEvent->wheel.y, eEvent->wheel.integer_y, (int)io.WantCaptureMouse);
 
             Vector2D wheelPos = this->windowToLogical(eEvent->wheel.mouse_x, eEvent->wheel.mouse_y);
             if (this->isPointerOverUI(wheelPos)) break;
@@ -169,8 +169,8 @@ void Editor::EditorModule::processEditorInput(const SDL_Event* eEvent)
             Vector2D pivot = this->windowToLogical(eEvent->wheel.mouse_x, eEvent->wheel.mouse_y);
             this->zoomCamera(powf(this->fWheelZoomStep, eEvent->wheel.y), pivot);
 
-            SDL_Log("[Editor] camera scale now %.3f",
-                    CameraManager::getInstance()->getCurrentCamera()->getScale().x);
+            //SDL_Log("[Editor] camera scale now %.3f",
+            //        CameraManager::getInstance()->getCurrentCamera()->getScale().x);
             break;
         }
 

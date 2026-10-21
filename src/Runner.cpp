@@ -36,8 +36,10 @@
 #include <streambuf>
 
 // scenes
+#include "LevelDataManager.h"
 #include "PlatformerLevel1Scene.h"
 #include "PuzzleLevel1Scene.h"
+#include "LoadedScene.h"
 #include "RendererContext.h"
 
 // Constructor / Destructor: startup and teardown costs are not per-frame.
@@ -47,7 +49,7 @@
 // increasing sizes of G/R/M at runtime if more content is created.
 Runner::Runner()
 {
-    if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0)
+    if (!SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_AUDIO))
 	{
 		SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "1");
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init failed (%s)", SDL_GetError());
@@ -98,6 +100,7 @@ Runner::Runner()
 	//initialize systems
 	std::cout << "[Runner] Initializing systems..." << std::endl;
 	GameObjectManager::initialize();
+	LevelDataManager::initialize();
 	SceneManager::initialize();
 	InputManager::initialize();
 	TextureManager::initialize(this->pRenderer);
@@ -139,6 +142,7 @@ Runner::~Runner()
 	InputManager::destroy();
 	SceneManager::destroy();
 	GameObjectManager::destroy();
+	LevelDataManager::destroy();
 	SceneTransitionManager::destroy();
 	MetricsManager::destroy();
 	RendererContext::destroy();
@@ -174,6 +178,9 @@ void Runner::run()
 
 	while (running)
 	{
+
+		LevelDataManager::getInstance()->applyPending();
+
 		// ---------- EVENT PROCESSING LOOP ----------
 		// Complexity: O(E * costPerEvent)
 		// - SDL_PollEvent yields E events this frame
@@ -335,16 +342,18 @@ void Runner::registerScenes()
 {
 	auto platformerL1 = new PlatformerLevel1Scene();
 	auto puzzleL1 = new PuzzleLevel1Scene();
+	auto testScene = new LoadedScene();
 
 	SceneManager::getInstance()->registerScene(platformerL1);
 	SceneManager::getInstance()->registerScene(puzzleL1);
+	SceneManager::getInstance()->registerScene(testScene);
 
 	// --- load time tracking --- 
 	// // start timer before load, end after load completes 
 	MetricsManager::getInstance()->startLoadTimer(); 
 
 	//load initial scene
-	SceneManager::getInstance()->loadScene(SceneTag::PLATFORMER_LEVEL_1_SCENE);
+	SceneManager::getInstance()->loadScene(SceneTag::LOADED_SCENE);
 	
 	MetricsManager::getInstance()->endLoadTimer();
 }

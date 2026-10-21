@@ -75,8 +75,8 @@ namespace Editor
 
     private:
         EditorModule();
-        EditorModule(const EditorModule&) {};
-        EditorModule& operator = (const EditorModule&) {};
+        EditorModule(const EditorModule&) = delete;
+        EditorModule& operator=(const EditorModule&) = delete;
 
     public:
         static void initialize();

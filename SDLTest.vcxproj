@@ -77,6 +77,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>;$(SolutionDir)nlohmann</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -91,6 +92,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>;$(SolutionDir)nlohmann</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -105,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)SDL\include;$(SolutionDir)include;$(SolutionDir)SDL3_image-3.2.4\include;$(SolutionDir)imgui\include;$(SolutionDir)SDL3_ttf-3.1.0\include;$(SolutionDir)tweeny\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)SDL\include;$(SolutionDir)include;$(SolutionDir)SDL3_image-3.2.4\include;$(SolutionDir)imgui\include;$(SolutionDir)SDL3_ttf-3.1.0\include;$(SolutionDir)tweeny\include;%(AdditionalIncludeDirectories);$(SolutionDir)nlohmann</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -123,6 +125,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>;$(SolutionDir)nlohmann</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -154,7 +157,9 @@
     <ClCompile Include="src\InteractableGate.cpp" />
     <ClCompile Include="src\InventoryGUI.cpp" />
     <ClCompile Include="src\JumpButtonController.cpp" />
+    <ClCompile Include="src\LevelDataManager.cpp" />
     <ClCompile Include="src\LevelEndGUI.cpp" />
+    <ClCompile Include="src\LoadedScene.cpp" />
     <ClCompile Include="src\ManifestLoader.cpp" />
     <ClCompile Include="src\ObjectFactory.cpp" />
     <ClCompile Include="src\ObjectiveButton_Controller.cpp" />
@@ -312,7 +317,9 @@
     <ClInclude Include="include\InteractableGate.h" />
     <ClInclude Include="include\InventoryGUI.h" />
     <ClInclude Include="include\JumpButtonController.h" />
+    <ClInclude Include="include\LevelDataManager.h" />
     <ClInclude Include="include\LevelEndGUI.h" />
+    <ClInclude Include="include\LoadedScene.h" />
     <ClInclude Include="include\ManifestLoader.h" />
     <ClInclude Include="include\MathUtils.h" />
     <ClInclude Include="include\ObjectFactory.h" />
@@ -366,6 +373,7 @@
     <ClInclude Include="include\Vector2D.h" />
     <ClInclude Include="include\VirtualJoystick.h" />
     <ClInclude Include="include\InteractButtonController.h" />
+    <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="tweeny\include\dispatcher.h" />
     <ClInclude Include="tweeny\include\easing.h" />
     <ClInclude Include="tweeny\include\easingresolve.h" />
