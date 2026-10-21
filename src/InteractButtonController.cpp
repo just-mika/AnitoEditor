@@ -61,6 +61,6 @@ void InteractButtonController::perform()
             this->playerInput->setInteracted(true);
             SDL_Log("Virtual Interacted");
         }
-        else if (!isAnyFingerInRect && this->playerInput->getInteracted()) this->playerInput->setInteracted(false);
+        else if (!isAnyFingerInRect && this->playerInput->getVirtualInteract()) this->playerInput->setVirtualInteract(false);
     
 }

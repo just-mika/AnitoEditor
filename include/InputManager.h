@@ -19,6 +19,9 @@ private:
     const bool debugKeyboard = true; // set to true to log keyboard events
     long frame = 0;
 
+    static constexpr Uint64 MOUSE_FINGER_ID = 0xFFFFFFFFFFFFFF00ull; // synthetic finger for the left mouse button
+    void setMouseFinger(SDL_WindowID windowID, float mouseX, float mouseY);
+
     TouchMap activeTouchMap; // track active touches by their ID
     KeySet activeKeySet;
 

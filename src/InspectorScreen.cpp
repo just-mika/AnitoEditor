@@ -34,6 +34,7 @@
 #include "TextureManager.h"
 #include <algorithm>
 #include <cstring>
+#include <cstdio>
 #include "Settings.h"
 
 
@@ -77,7 +78,7 @@ void InspectorScreen::DrawUI()
     ImGui::SetNextWindowPos(
         ImVec2(vp->WorkPos.x + vp->WorkSize.x - 12.0f, vp->WorkPos.y + 68.0f),
         ImGuiCond_Appearing, ImVec2(1.0f, 0.0f));
-    ImGui::SetNextWindowSize(ImVec2(340.0f, 0.0f), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(440.0f, 0.0f), ImGuiCond_Always);
     ImGui::SetNextWindowBgAlpha(0.95f);
 
     ImGui::Begin("Inspector", nullptr,
@@ -105,10 +106,18 @@ void InspectorScreen::DrawUI()
 
     showTypeSpecific();
 
+    showChildrenList();   // only draws when the object actually has children
+
     ImGui::Separator();
     showComponents();
 
+    ImGui::Separator();
+    showDelete();
+
     ImGui::End();
+
+    // Deleting inside the window would leave the rest of this frame using a dead selection
+    if (pendingDelete) performDelete();
 }
 
 void InspectorScreen::showTransform(ImGuiChildFlags childFlags)
@@ -239,45 +248,61 @@ void InspectorScreen::showTexture()
     }
 }
 
+// Read-only: reparenting is done by dragging in the Hierarchy. Unparent is a quick escape hatch.
 void InspectorScreen::showParent()
 {
-    GameObjectManager* gom = GameObjectManager::getInstance();
     AGameObject* current = selectedObject->getParent();
-    std::string preview = current ? current->getName() : "None";
-
-    if (ImGui::BeginCombo("Parent", preview.c_str()))
+    ImGui::LabelText("Parent", "%s", current ? current->getName().c_str() : "None");
+    if (current)
     {
-        if (ImGui::Selectable("None", current == nullptr) && current != nullptr)
-            gom->reparentObject(selectedObject, nullptr);
-
-        // Candidates: every object except itself and its own descendants
-        std::vector<AGameObject*> all;
-        for (AGameObject* top : gom->getAllObjects())
-        {
-            all.push_back(top);
-            std::vector<AGameObject*> kids = top->getChildrenRecursively();
-            all.insert(all.end(), kids.begin(), kids.end());
-        }
-        std::vector<AGameObject*> mine = selectedObject->getChildrenRecursively();
-
-        for (AGameObject* cand : all)
-        {
-            if (cand == selectedObject) continue;
-            if (cand->getIsScreenObject() != selectedObject->getIsScreenObject()) continue;
-            if (std::find(mine.begin(), mine.end(), cand) != mine.end()) continue;
-
-            ImGui::PushID(cand);   // names may repeat, so ID by pointer
-            bool picked = ImGui::Selectable(cand->getName().c_str(), cand == current);
-            ImGui::PopID();
-
-            if (picked && cand != current)
-            {
-                gom->reparentObject(selectedObject, cand);
-                break;   // tree changed, stop iterating
-            }
-        }
-        ImGui::EndCombo();
+        ImGui::SameLine();
+        if (ImGui::SmallButton("Unparent"))
+            GameObjectManager::getInstance()->reparentObject(selectedObject, nullptr);
     }
+}
+
+void InspectorScreen::showDelete()
+{
+    ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.70f, 0.18f, 0.18f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.55f, 0.12f, 0.12f, 1.0f));
+    bool clicked = ImGui::Button("Delete Object", ImVec2(-1.0f, 0.0f));
+    ImGui::PopStyleColor(3);
+    if (clicked) ImGui::OpenPopup("Delete Object?");
+
+    if (ImGui::BeginPopupModal("Delete Object?", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Delete \"%s\"?", selectedObject->getName().c_str());
+        if (!selectedObject->getChildren().empty())
+            ImGui::TextDisabled("Its %d child object(s) will be deleted too.", (int)selectedObject->getChildren().size());
+
+        if (ImGui::Button("Delete", ImVec2(120, 0)))
+        {
+            pendingDelete = true;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+            ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
+    }
+}
+
+void InspectorScreen::performDelete()
+{
+    pendingDelete = false;
+    AGameObject* obj = selectedObject;
+
+    // Drop every reference to the selection first; actual deletion is deferred by the manager.
+    Editor::EditorModule::getInstance()->setSelectedObject(nullptr);
+    this->selectedObject = nullptr;
+    this->lastSelected = nullptr;
+    if (!obj) return;
+
+    GameObjectManager* gom = GameObjectManager::getInstance();
+    // The manager only deletes top-level objects, so lift children out of their parent first.
+    if (obj->getParent()) gom->reparentObject(obj, nullptr);
+    gom->deleteObject(obj);
 }
 
 void InspectorScreen::showObjectType()
@@ -292,7 +317,13 @@ void InspectorScreen::showObjectType()
 void InspectorScreen::showChildrenList()
 {
     std::vector<AGameObject*> kids = selectedObject->getChildren();
-    ImGui::Text("Children (%d)", (int)kids.size());
+    if (kids.empty()) return;
+    char header[64];
+    snprintf(header, sizeof(header), "Children (%d)###ChildrenList", (int)kids.size());
+
+    // Closed by default (no DefaultOpen flag); the ### keeps its open/closed state stable as the count changes
+    if (!ImGui::CollapsingHeader(header)) return;
+
     for (AGameObject* child : kids)
     {
         ImGui::PushID(child);   // names may repeat
@@ -379,16 +410,6 @@ void InspectorScreen::showTypeSpecific()
     else if (k == "platform")
     {
         ImGui::TextWrapped("Platform size is the collider size under the BoxCollider component below.");
-    }
-
-    // Composite UI objects build their content as children in initialize().
-    for (const ObjectTypeInfo& info : ObjectFactory::getRegisteredTypes())
-    {
-        if (info.typeKey == k && info.category == ObjectCategory::UI)
-        {
-            showChildrenList();
-            break;
-        }
     }
 }
 

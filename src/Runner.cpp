@@ -193,9 +193,6 @@ void Runner::run()
             if (e.type == SDL_EVENT_KEY_DOWN)
                 SDL_Log("Key pressed: %d", e.key.key);
 
-            if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_P)
-                Editor::EditorModule::getInstance()->togglePlayMode();
-
 			if (Editor::EditorModule::getInstance()->isPlaying())
 				this->processEvents(&e);
 			else
@@ -248,7 +245,11 @@ void Runner::run()
 		if (Editor::EditorModule::getInstance()->isPlaying())
 			this->update(fDeltaTime);
 		else
+		{
 			Editor::EditorModule::getInstance()->updateGameObjects(fDeltaTime);
+			// Runner::update() is skipped in edit mode, so flush editor deletions here.
+			GameObjectManager::getInstance()->cleanUpDeletedObjects();
+		}
 #else
 		this->update(fDeltaTime);
 #endif

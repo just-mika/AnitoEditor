@@ -11,6 +11,7 @@ private:
     char nameBuf[128] = {};
     char textBuf[512] = {};
     int fontSizeBuf = 45;
+    bool pendingDelete = false;
 
 public:
     void setMousePos(Vector2D mousePos);
@@ -32,4 +33,6 @@ private:
     void showTypeSpecific();
     void showObjectType();
     void showChildrenList();
+    void showDelete();
+    void performDelete();
 };

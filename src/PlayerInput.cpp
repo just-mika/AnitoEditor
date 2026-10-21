@@ -44,12 +44,23 @@ bool PlayerInput::getJumped() const
 
 bool PlayerInput::getInteracted() const
 {
-	return this->bInteracted;
+	return this->bInteracted || this->bVirtualInteract;
 }
 
 void PlayerInput::setInteracted(bool interacted)
 {
 	this->bInteracted = interacted;
+	if (!interacted) this->bVirtualInteract = false;
+}
+
+void PlayerInput::setVirtualInteract(bool pressed)
+{
+	this->bVirtualInteract = pressed;
+}
+
+bool PlayerInput::getVirtualInteract() const
+{
+	return this->bVirtualInteract;
 }
 
 void PlayerInput::onKeyDown(SDL_Keycode key)
@@ -76,6 +87,7 @@ void PlayerInput::onKeyDown(SDL_Keycode key)
 		break;
 
 	case SDLK_E:
+	case SDLK_F:
 		this->bInteracted = true;
 		break;
 
@@ -108,7 +120,9 @@ void PlayerInput::onKeyUp(SDL_Keycode key)
 		break;
 
 	case SDLK_E:
-		this->bInteracted = false;
+	case SDLK_F:
+		// Intentionally not cleared here: the press stays latched until PlayerController
+		// consumes it (or the player enters a new interactable), so a fast tap isn't lost.
 		break;
 
 	default:

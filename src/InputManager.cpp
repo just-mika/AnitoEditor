@@ -56,6 +56,26 @@ void InputManager::processEvents(SDL_Event* e)
         break;
     }
 
+    // Desktop: let the left mouse button drive the on-screen controls (joystick, jump, interact)
+    // by synthesizing a touch. Mouse events SDL itself generated from a real touch are skipped,
+    // otherwise a touchscreen would register every finger twice.
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+    case SDL_EVENT_MOUSE_BUTTON_UP:
+    {
+        if (e->button.which == SDL_TOUCH_MOUSEID || e->button.button != SDL_BUTTON_LEFT) break;
+        if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) setMouseFinger(e->button.windowID, e->button.x, e->button.y);
+        else activeTouchMap.erase(MOUSE_FINGER_ID);
+        break;
+    }
+
+    case SDL_EVENT_MOUSE_MOTION:
+    {
+        if (e->motion.which == SDL_TOUCH_MOUSEID) break;
+        if (activeTouchMap.contains(MOUSE_FINGER_ID))
+            setMouseFinger(e->motion.windowID, e->motion.x, e->motion.y);
+        break;
+    }
+
     case SDL_EVENT_FINGER_DOWN:
     {
         activeTouchMap[e->tfinger.fingerID] = e->tfinger;
@@ -89,6 +109,27 @@ void InputManager::processEvents(SDL_Event* e)
     default:
         break;
     }
+}
+
+// Stores the mouse as a normalized (0..1) touch so every existing finger query works unchanged.
+void InputManager::setMouseFinger(SDL_WindowID windowID, float mouseX, float mouseY)
+{
+    SDL_Window* window = SDL_GetWindowFromID(windowID);
+    if (!window) return;
+
+    int w = 0, h = 0;
+    SDL_GetWindowSize(window, &w, &h);
+    if (w <= 0 || h <= 0) return;
+
+    SDL_TouchFingerEvent finger{};
+    finger.type = SDL_EVENT_FINGER_MOTION;
+    finger.touchID = SDL_MOUSE_TOUCHID;
+    finger.fingerID = MOUSE_FINGER_ID;
+    finger.x = mouseX / (float)w;
+    finger.y = mouseY / (float)h;
+    finger.pressure = 1.0f;
+    finger.windowID = windowID;
+    activeTouchMap[MOUSE_FINGER_ID] = finger;
 }
 
 bool InputManager::isKeyDown(const SDL_Scancode& key) const

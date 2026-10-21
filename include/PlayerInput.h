@@ -8,7 +8,8 @@ private:
 	bool bHoldingDown;
 	bool bHoldingUp;
 
-	bool bInteracted;
+	bool bInteracted;         // keyboard press, latched until consumed
+	bool bVirtualInteract = false;
 	bool bJumped;
 	Vector2D movement;
 
@@ -21,7 +22,11 @@ public:
 	Vector2D getMovement() const;
 	bool getJumped() const;
 	bool getInteracted() const;
+	// Consumes the interact request (clears both keyboard and touch sources).
 	void setInteracted(bool interacted);
+	// Touch/mouse Interact button. Kept separate so it can't clear a keyboard press.
+	void setVirtualInteract(bool pressed);
+	bool getVirtualInteract() const;
 
     void setVirtualMovement(const Vector2D& v);
     void setVirtualJump(bool pressed);
