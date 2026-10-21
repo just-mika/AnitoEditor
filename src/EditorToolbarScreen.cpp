@@ -139,13 +139,13 @@ void EditorToolbarScreen::DrawUI()
         
     	static const char* kTestLevel = "test_level.json";
         if (ImGui::Button("Save", ImVec2(button_width, 0)))
-            LevelDataManager::getInstance()->saveLevel(kTestLevel);
+            filePanel.openSave();
     	
     	ImGui::SameLine();
         if (ImGui::Button("Load", ImVec2(button_width, 0)))
-        {
-            LevelDataManager::getInstance()->requestLoad(kTestLevel);
-        }
+            filePanel.openLoad();
     }
     ImGui::End();
+
+    filePanel.draw();
 }

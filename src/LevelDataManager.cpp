@@ -11,6 +11,7 @@
 
 #include <SDL3/SDL.h>
 #include <unordered_set>
+#include <algorithm>
 
 using json = nlohmann::json;
 LevelDataManager::LevelDataManager() {
@@ -49,7 +50,8 @@ bool LevelDataManager::saveLevel(const std::string& fileName)
 	}
 
 	json level = serializeScene();
-	level["levelId"] = fileName.substr(0, fileName.rfind('.'));
+	const std::string stem = fileName.substr(0, fileName.rfind('.'));
+	level["levelId"] = currentLevelId.empty() ? stem : currentLevelId;
 
 	const std::string path = writableDir() + fileName;
 	const std::string text = level.dump(2);
@@ -77,7 +79,7 @@ void LevelDataManager::applyPending()
 	loadLevel(name);
 }
 
-SDL_EnumerationResult enumerateLevelFile(void* userdata, const char* dirname, const char* fname)
+static SDL_EnumerationResult enumerateLevelFile(void* userdata, const char* dirname, const char* fname)
 {
 	std::string n = fname;
 	if (n.size() > 5 && n.compare(n.size() - 5, 5, ".json") == 0)
@@ -89,6 +91,11 @@ std::vector<std::string> LevelDataManager::listLevelFiles() const
 {
 	std::vector<std::string> files;
 	SDL_EnumerateDirectory(writableDir().c_str(), enumerateLevelFile, &files);
+
+	SDL_EnumerateDirectory(kBundledDir, enumerateLevelFile, &files);
+
+	std::sort(files.begin(), files.end());
+	files.erase(std::unique(files.begin(), files.end()), files.end());   // writable + bundled overlap
 	return files;
 }
 
@@ -112,7 +119,13 @@ bool LevelDataManager::loadLevel(const std::string& fileName)
 	}
 
 	clearScene();
-	return buildFromJson(level);
+	if (!buildFromJson(level))
+		return false;
+
+	const size_t dot = fileName.rfind('.');
+	const std::string stem = (dot == std::string::npos) ? fileName : fileName.substr(0, dot);
+	currentLevelId = level.value("levelId", stem);
+	return true;
 }
 
 json LevelDataManager::serializeScene() const

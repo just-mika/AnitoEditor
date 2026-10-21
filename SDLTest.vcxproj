@@ -159,6 +159,7 @@
     <ClCompile Include="src\JumpButtonController.cpp" />
     <ClCompile Include="src\LevelDataManager.cpp" />
     <ClCompile Include="src\LevelEndGUI.cpp" />
+    <ClCompile Include="src\LevelFilePanel.cpp" />
     <ClCompile Include="src\LoadedScene.cpp" />
     <ClCompile Include="src\ManifestLoader.cpp" />
     <ClCompile Include="src\ObjectFactory.cpp" />
@@ -319,6 +320,7 @@
     <ClInclude Include="include\JumpButtonController.h" />
     <ClInclude Include="include\LevelDataManager.h" />
     <ClInclude Include="include\LevelEndGUI.h" />
+    <ClInclude Include="include\LevelFilePanel.h" />
     <ClInclude Include="include\LoadedScene.h" />
     <ClInclude Include="include\ManifestLoader.h" />
     <ClInclude Include="include\MathUtils.h" />

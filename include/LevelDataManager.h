@@ -19,13 +19,16 @@ public:
     json serializeScene() const;
     bool buildFromJson(const json& level);
 
+    const std::string& getCurrentLevelId() const { return currentLevelId; }
+    void setCurrentLevelId(const std::string& id) { currentLevelId = id; }
+
 private:
 
-    static constexpr const char* kOrg = "AnitorEditor";
+    static constexpr const char* kOrg = "AnitoEditor";
     static constexpr const char* kApp = "BabaylanTales";
     static constexpr const char* kBundledDir = "Assets/levels/";
     std::string pendingLoad;
-
+    std::string currentLevelId;
     
 
     static std::string writableDir();

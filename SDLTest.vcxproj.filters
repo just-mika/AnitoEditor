@@ -444,6 +444,9 @@
     <ClCompile Include="src\LoadedScene.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\LevelFilePanel.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Runner.h">
@@ -870,6 +873,9 @@
     </ClInclude>
     <ClInclude Include="include\LoadedScene.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LevelFilePanel.h">
+      <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
