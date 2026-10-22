@@ -15,6 +15,8 @@ public:
     virtual void readLevelData(const nlohmann::json& level) {}
     virtual void writeLevelData(nlohmann::json& level) const {}
 
+    virtual void resetSubsystems() {};
+
     // connect objects to this genre's subsystems. Called after a load, and (add it yourself) when play starts
     virtual void rewire() {}
 

@@ -58,6 +58,10 @@ void PuzzleLevel1Scene::onLoadObjects()
 	CameraManager::getInstance()->getCurrentCamera()->setPos(Vector2D(0.0f));
 	SequenceGameManager::initialize();
 
+	SequenceGameManager::getInstance()->configure(
+		{ Vector2D(-280.0f, -375.0f), Vector2D(0.0f, -375.0f), Vector2D(280.0f, -375.0f) },
+		{ Vector2D(-380.0f, 27.0f),   Vector2D(0.0f, 27.0f),   Vector2D(380.0f, 27.0f) });
+
 	Background* pBG = new Background("Background", "BG", Vector2D(1.0f, 0.9f));
 	GameObjectManager::getInstance()->addObject(pBG);
 

@@ -21,6 +21,7 @@ public:
     std::vector<SDL_Texture*> getTexture(std::string strName, int nStart = -1, int nEnd = -1);
     SDL_Texture* get(const std::string& strName);
     std::vector<std::string> getTextureNames();
+    std::string getKey(SDL_Texture* pTexture);
 
     /* * * * * * * * * * * * * * * * * * * * *
      *       SINGLETON-RELATED CONTENT       *

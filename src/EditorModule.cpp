@@ -13,6 +13,8 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include <cmath>
+
+#include "LevelDataManager.h"
 #include "Settings.h"
 
 bool showWidgets = false;
@@ -51,6 +53,9 @@ void Editor::EditorModule::togglePlayMode(){
     UIManager::getInstance()->setEnabled("HIERARCHY_SCREEN", !this->bIsPlaying);
     UIManager::getInstance()->setEnabled("OBJECT_PALETTE", !this->bIsPlaying);
     AudioManager::getInstance()->setVolume(AudioGroupTag::MUSIC, this->bIsPlaying ? 1.0f : 0.0f);
+
+    if (this->bIsPlaying) LevelDataManager::getInstance()->beginPlay();
+    else LevelDataManager::getInstance()->endPlay();
 }
 
 Vector2D Editor::EditorModule::windowToLogical(float x, float y) const

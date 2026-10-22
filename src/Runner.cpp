@@ -40,6 +40,7 @@
 #include "PlatformerLevel1Scene.h"
 #include "PuzzleLevel1Scene.h"
 #include "LoadedScene.h"
+#include "PlatformerLoadedScene.h"
 #include "PuzzleLoadedScene.h"
 #include "RendererContext.h"
 
@@ -344,10 +345,12 @@ void Runner::registerScenes()
 	auto platformerL1 = new PlatformerLevel1Scene();
 	auto puzzleL1 = new PuzzleLevel1Scene();
 	auto puzzleLoaded = new PuzzleLoadedScene();
+	auto platformerLoaded = new PlatformerLoadedScene();
 
 	SceneManager::getInstance()->registerScene(platformerL1);
 	SceneManager::getInstance()->registerScene(puzzleL1);
 	SceneManager::getInstance()->registerScene(puzzleLoaded);
+	SceneManager::getInstance()->registerScene(platformerLoaded);
 
 	// --- load time tracking --- 
 	// // start timer before load, end after load completes 

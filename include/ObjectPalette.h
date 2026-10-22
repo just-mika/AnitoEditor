@@ -22,5 +22,5 @@ protected:
 	friend class UIManager;
 
 private:
-	void spawnObject(const std::string& typeKey, bool isScreenObject);
+	void spawnObject(const std::string& typeKey, bool isScreenObject, const std::string& variant = "");
 };

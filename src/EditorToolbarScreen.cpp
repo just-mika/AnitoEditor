@@ -125,7 +125,7 @@ void EditorToolbarScreen::DrawUI()
         {
             newIndex = SDL_clamp(newIndex,
                 (int)SceneTag::PLATFORMER_LEVEL_1_SCENE,
-                (int)SceneTag::PUZZLE_LOADED_SCENE);   // last tag in your enum
+                (int)SceneTag::PLATFORMER_LOADED_SCENE);   // last tag in your enum
 
             if (newIndex != sceneIndex)
             {

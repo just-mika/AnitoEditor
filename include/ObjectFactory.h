@@ -19,6 +19,7 @@ struct ObjectTypeInfo {
     ObjectCategory category;
     bool isScreenObject;
     std::vector<Dependency> dependencies; 
+    std::vector<std::string> variants;
 };
 
 class ObjectFactory {

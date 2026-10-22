@@ -45,11 +45,14 @@ static const std::vector<ObjectTypeInfo> S_REGISTERED_TYPES = {
 
     // --- Gameplay Entities ---
     { "player",           "Player",           ObjectCategory::Gameplay, false,{ Dependency::Physics } },
-	{ "gem",              "Gem",              ObjectCategory::Gameplay, false,{ Dependency::Physics, Dependency::GemDataAsset } },
-	{ "statue",           "Statue",           ObjectCategory::Gameplay, false,{ Dependency::Physics } },
+    { "gem",          "Gem",          ObjectCategory::Gameplay, false,{ Dependency::Physics, Dependency::GemDataAsset }, 
+    	{ "Gem_Cyan", "Gem_Green", "Gem_Orange", "Gem_Purple", "Gem_Red" } },
+	{ "statue",       "Statue",       ObjectCategory::Gameplay, false,{ Dependency::Physics },{ "Statue_Carabao" } },
 	{ "gate",             "Gate",             ObjectCategory::Gameplay, false,{ Dependency::Physics } },
 	{ "platform",         "Platform",         ObjectCategory::Gameplay, false,{ Dependency::Physics } },
-    { "puzzle_token",      "Puzzle Token",      ObjectCategory::Gameplay,  false },
+    { "puzzle_token", "Puzzle Token", ObjectCategory::Gameplay, false,{},
+  { "Token_Horns", "Token_Claws", "Token_Eyes", "Token_Heart", "Token_Mouth",
+			"Token_Scales", "Token_Fire", "Token_Claw", "Token_Wing" } },
 
     // --- UI & Narrative Composites ---
     { "story_window",      "Story Window",      ObjectCategory::UI,        true  },

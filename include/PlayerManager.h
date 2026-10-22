@@ -6,8 +6,8 @@
 class PlayerManager : public AComponent
 {
 private:
-	Player* pPlayer;
-    PlayerController* pController;
+	Player* pPlayer = nullptr;
+    PlayerController* pController = nullptr;
 
     float fJumpForce = 100.0f;
     float fMoveSpeed = 100.0f;
@@ -16,6 +16,12 @@ public:
     void perform() override;
 	void setPlayer(Player* pPlayer);
     PlayerController* getPlayerController() const;
+
+    void reset()
+    {
+        pPlayer = nullptr;
+        pController = nullptr;
+    }
 
     /* * * * * * * * * * * * * * * * * * * * *
      *       SINGLETON-RELATED CONTENT       *

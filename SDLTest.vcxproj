@@ -206,6 +206,7 @@
     <ClCompile Include="src\ButtonInput.cpp" />
     <ClCompile Include="src\PhysicsSystem.cpp" />
     <ClCompile Include="src\Platform.cpp" />
+    <ClCompile Include="src\PlatformerLoadedScene.cpp" />
     <ClCompile Include="src\PlatformerPickupGUI.cpp" />
     <ClCompile Include="src\PlayerController.cpp" />
     <ClCompile Include="src\PlayerInput.cpp" />
@@ -282,6 +283,7 @@
     <ClInclude Include="include\GemInputPreview.h" />
     <ClInclude Include="include\GemInputScreen.h" />
     <ClInclude Include="include\GemInputToken.h" />
+    <ClInclude Include="include\PlatformerLoadedScene.h" />
     <ClInclude Include="include\HierarchyScreen.h" />
     <ClInclude Include="include\IAudioPlayerListener.h" />
     <ClInclude Include="include\ICollisionListener.h" />

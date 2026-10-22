@@ -79,6 +79,12 @@ void LevelDataManager::requestLoad(const std::string& fileName)
 
 void LevelDataManager::applyPending()
 {
+	if (restorePending)
+	{
+		restorePending = false;
+		restoreSnapshot();
+	}
+
 	if (pendingLoad.empty()) return;
 
 	std::string name = std::move(pendingLoad);
@@ -152,7 +158,10 @@ bool LevelDataManager::loadLevel(const std::string& fileName)
 	}
 
 	activeScene->readLevelData(level);
+
 	clearScene();
+	activeScene->resetSubsystems();
+
 	if (!buildFromJson(level))
 		return false;
 	activeScene->rewire();
@@ -233,6 +242,10 @@ bool LevelDataManager::buildFromJson(const json& level)
 			continue;
 		}
 
+		if (oj.contains("position")) o->setLocalPos(jsonToVec(oj["position"]));
+		if (oj.contains("scale"))    o->setLocalScale(jsonToVec(oj["scale"]));
+		if (oj.contains("rotation")) o->setLocalRot(oj["rotation"].get<float>());
+		
 		gom->addObject(o);
 		applyFields(o, oj);
 		applyChildren(o, oj);
@@ -330,6 +343,7 @@ json LevelDataManager::serializeObject(AGameObject* o)
 		j["fontSize"] = t->getFontSize();
 		j["color"] = json::array({ c.r, c.g, c.b, c.a });
 	}
+
 
 	json children = json::array();
 	for (AGameObject* c : o->getChildren())
@@ -439,6 +453,7 @@ void LevelDataManager::applyChildren(AGameObject* parent, const json& j)
 
 void LevelDataManager::clearScene()
 {
+	EventBroadcaster::getInstance()->unregisterAllListeners();
 #if EDITOR_MODE
 	Editor::EditorModule::getInstance()->setSelectedObject(nullptr);
 #endif
@@ -498,3 +513,24 @@ bool LevelDataManager::canCreate(const std::string& genre) const
 	return sceneTagFor(genre) != SceneTag::NONE;
 }
 
+void LevelDataManager::beginPlay()
+{
+	if (!activeScene) return;
+	playSnapshot = serializeScene();
+	restorePending = true;
+}
+
+void LevelDataManager::endPlay()
+{
+	if (!activeScene || playSnapshot.is_null()) return;
+	restorePending = true;
+}
+
+void LevelDataManager::restoreSnapshot()
+{
+	if (!activeScene || playSnapshot.is_null()) return;
+	clearScene();
+	activeScene->resetSubsystems();
+	buildFromJson(playSnapshot);
+	activeScene->rewire();
+}

@@ -6,28 +6,21 @@ void EventBroadcaster::registerListener(EventListener* pListener) {
     this->mapListener[EKey].push_back(pListener);
     this->vecListener.push_back(pListener);
 }
-
 void EventBroadcaster::unregisterListener(EventListener* pListener) {
     EventKey EKey = pListener->getKey();
-    std::vector<EventListener*> vecListener = this->mapListener[EKey];
-    int nIndex = this->findListener(pListener, vecListener);
-    this->mapListener[EKey].erase(this->mapListener[EKey].begin() + nIndex);
+    auto& vec = this->mapListener[EKey];
+    int nIndex = this->findListener(pListener, vec);
+    if (nIndex != -1)
+        vec.erase(vec.begin() + nIndex);
 
     nIndex = this->findListener(pListener);
-    if(nIndex != -1) {
+    if (nIndex != -1)
         this->vecListener.erase(this->vecListener.begin() + nIndex);
-    }
 }
 
 void EventBroadcaster::unregisterAllListeners() {
-    std::vector<EventListener*> vecCopy = this->vecListener;
-
-    for (EventListener* pListener : vecCopy)
-        this->unregisterListener(pListener);
-
     this->vecListener.clear();
     this->mapListener.clear();
-
 }
 
 void EventBroadcaster::broadcast(EventKey EKey, std::unordered_map<std::string, void*> mapParameter) {

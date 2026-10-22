@@ -5,6 +5,8 @@
 #include "SceneTransitionManager.h"
 #include "SceneManager.h"
 #include <iostream>
+#include "EditorMode.h"
+#include "EditorModule.h"
 
 SceneTransitionManager* SceneTransitionManager::P_SHARED_INSTANCE = nullptr;
 
@@ -28,7 +30,15 @@ SceneTransitionManager* SceneTransitionManager::getInstance() {
 // requestTransition: marks the start of a fade transition. Cheap.
 // Complexity: O(1)
 void SceneTransitionManager::requestTransition(SceneTag nextScene, TransitionType type) {
-    if (inTransition) {
+#if EDITOR_MODE
+    if (Editor::EditorModule::getInstance()->isPlaying())
+    {
+        Editor::EditorModule::getInstance()->togglePlayMode();   // Return -> back to the editor
+        return;
+    }
+#endif
+	
+	if (inTransition) {
         std::cout << "[SceneTransitionManager] Already transitioning." << std::endl;
         return;
     }

@@ -131,6 +131,13 @@ int PhysicsSystem::findTrackedCollider(ACollider* pCollider) {
     return nIndex;
 }
 
+void PhysicsSystem::reset()
+{
+    this->vecTrackedCollider.clear();
+    this->vecUntrackedCollider.clear();
+    this->vecRigidBody.clear();
+}
+
 /* * * * * * * * * * * * * * * * * * * * *
  *       SINGLETON-RELATED CONTENT       *
  * * * * * * * * * * * * * * * * * * * * */

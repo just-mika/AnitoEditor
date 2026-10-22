@@ -9,7 +9,10 @@
 #include "EnumEventKey.h"
 #include "PuzzleEnd.h"
 
-PuzzleLoadedScene::PuzzleLoadedScene() : LoadedScene(SceneTag::PUZZLE_LOADED_SCENE) {}
+PuzzleLoadedScene::PuzzleLoadedScene() : LoadedScene(SceneTag::PUZZLE_LOADED_SCENE)
+{
+    this->setDefaults();
+}
 PuzzleLoadedScene::~PuzzleLoadedScene() {}
 
 void PuzzleLoadedScene::onLoadResources()
@@ -26,6 +29,12 @@ void PuzzleLoadedScene::onLoadResources()
     tm->load("sequence_game/Token_Horns.png", "Token_Horns");
     tm->load("sequence_game/Token_Claws.png", "Token_Claws");
     tm->load("sequence_game/Token_Eyes.png", "Token_Eyes");
+    tm->load("sequence_game/Token_Heart.png", "Token_Heart");
+    tm->load("sequence_game/Token_Mouth.png", "Token_Mouth");
+    tm->load("sequence_game/Token_Scales.png", "Token_Scales");
+    tm->load("sequence_game/Token_Fire.png", "Token_Fire");
+    tm->load("sequence_game/Token_Claw.png", "Token_Claw");
+    tm->load("sequence_game/Token_Wing.png", "Token_Wing");
     tm->load("GUI/pause.png", "Pause_Button");
     tm->load("GUI/story.png", "Story_Button");
     tm->load("GUI/tablet.png", "Tablet");
@@ -49,19 +58,37 @@ void PuzzleLoadedScene::setUpSubsystems()
     SequenceGameManager::initialize();
 }
 
+static std::vector<Vector2D> readSlots(const nlohmann::json& a)
+{
+    std::vector<Vector2D> v;
+    for (const auto& p : a)
+        v.push_back(Vector2D(p.at(0).get<float>(), p.at(1).get<float>()));
+    return v;
+}
+
 void PuzzleLoadedScene::readLevelData(const nlohmann::json& level)
 {
-    combination.clear();
-    if (level.contains("puzzle") && level["puzzle"].contains("combination"))
-        combination = level["puzzle"]["combination"].get<std::vector<std::string>>();
+    setDefaults();
+    if (!level.contains("puzzle")) return;
+    const nlohmann::json& p = level["puzzle"];
+
+    if (p.contains("startSlots"))  startSlots = readSlots(p["startSlots"]);
+    if (p.contains("targetSlots")) targetSlots = readSlots(p["targetSlots"]);
+    if (p.contains("combination")) combination = p["combination"].get<std::vector<std::string>>();
+    if (p.contains("hints"))       hints = p["hints"].get<std::unordered_map<std::string, std::string>>();
 }
 
 void PuzzleLoadedScene::writeLevelData(nlohmann::json& level) const
 {
-    if (combination.size() == 3)
-        level["puzzle"]["combination"] = combination;
+    nlohmann::json p;
+    p["startSlots"] = nlohmann::json::array();
+    p["targetSlots"] = nlohmann::json::array();
+    for (const Vector2D& v : startSlots)  p["startSlots"].push_back({ v.x, v.y });
+    for (const Vector2D& v : targetSlots) p["targetSlots"].push_back({ v.x, v.y });
+    p["combination"] = combination;
+    p["hints"] = hints;
+    level["puzzle"] = std::move(p);
 }
-
 void PuzzleLoadedScene::rewire()
 {
     GameObjectManager* gom = GameObjectManager::getInstance();
@@ -70,11 +97,11 @@ void PuzzleLoadedScene::rewire()
     if (SequenceGameManager* old = SequenceGameManager::getInstance())
     {
         SequenceGameManager* manager = SequenceGameManager::getInstance();
-        manager->reset();
+        manager->configure(startSlots, targetSlots);
     }
 
     SequenceGameManager* sgm = SequenceGameManager::getInstance();
-    sgm->reset();
+    sgm->configure(startSlots, targetSlots);
 
     std::vector<std::string> names;
     for (AGameObject* o : gom->getAllObjects())
@@ -101,3 +128,12 @@ void PuzzleLoadedScene::rewire()
         end->setDragons(gom->findObjectByName("DragonContainer"),
             gom->findObjectByName("Complete_Dragon"));
 }
+
+void PuzzleLoadedScene::setDefaults()
+{
+    startSlots.clear();
+    targetSlots.clear();
+    combination.clear();
+    hints.clear();
+}
+

@@ -21,5 +21,8 @@ protected:
     void setUpSubsystems() override;
 
 private:
-    std::vector<std::string> combination;   // 3 token names in solution order
+    std::vector<Vector2D> startSlots, targetSlots;
+    std::vector<std::string> combination;                 // one token name per target slot
+    std::unordered_map<std::string, std::string> hints;   // token name -> hint text
+    void setDefaults();
 };

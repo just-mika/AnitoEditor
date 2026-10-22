@@ -12,7 +12,12 @@ private:
     std::vector<PuzzleToken*> vecToken;
     std::vector<Vector2D> vecPosition;
     std::vector<PuzzleToken*> vecTokenHolder;
-    std::unordered_map<int, std::string> mapCombi;
+    std::vector<std::string> vecCombination;   // token name per target slot
+    size_t nStartSlots = 0;
+
+    
+    void setCombination(const std::vector<std::string>& combo);
+    void clearSlot(int nSlot);
     std::vector<bool> vecCombinationCheck;
 
 public:
@@ -23,9 +28,9 @@ public:
     void setCombination(std::string strFirst, std::string strSecond, std::string strThird);
     int getSlotIndex(PuzzleToken* pToken);
     void assignTokenSlot(PuzzleToken* pToken, int nSlot);
-    void checkToken(int nSlot, std::string strTokenName);
+    void checkToken(int nSlot, const std::string& strTokenName);
     void checkCombination();
-    void reset();
+    void configure(const std::vector<Vector2D>& start, const std::vector<Vector2D>& target);
 
     /* * * * * * * * * * * * * * * * * * * * *
      *       SINGLETON-RELATED CONTENT       *

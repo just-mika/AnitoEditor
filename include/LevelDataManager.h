@@ -30,7 +30,13 @@ public:
     bool hasActiveScene() const { return activeScene != nullptr; }
     bool canCreate(const std::string& genre) const;
 
+
+    void beginPlay();
+    void endPlay();
 private:
+    json playSnapshot;
+    bool restorePending = false;
+    void restoreSnapshot();
 
     static constexpr const char* kOrg = "AnitoEditor";
     static constexpr const char* kApp = "BabaylanTales";
@@ -69,6 +75,8 @@ public:
     static void destroy();
 
     static LevelDataManager* getInstance();
+
+
 
 private:
     static LevelDataManager* P_SHARED_INSTANCE;

@@ -14,10 +14,13 @@ private:
 	Text* pText;
 	EventKey EKey;
 	bool bListenerEnabled;
+	std::unordered_map<std::string, std::string> mapHint;
 public:
 	PuzzleHint(std::string strName);
 	~PuzzleHint();
 	void initialize();
+
+	void setHints(const std::unordered_map<std::string, std::string>& hints) { mapHint = hints; }
 
 	// Inherited via EventListener
 	void onEventTrigger(std::unordered_map<std::string, void*> mapParameter) override;

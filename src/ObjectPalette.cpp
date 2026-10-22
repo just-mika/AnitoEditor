@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <variant>
 
 #include "CameraManager.h"
 #include "EditorModule.h"
@@ -39,11 +40,10 @@ ObjectPalette::~ObjectPalette()
 
 }
 
-void ObjectPalette::spawnObject(const std::string& typeKey, bool isScreenObject)
+void ObjectPalette::spawnObject(const std::string& typeKey, bool isScreenObject, const std::string& variant)
 {
     if (!LevelDataManager::getInstance()->hasActiveScene()) return;
-    // 1. Instantiate via factory
-    AGameObject* newObj = ObjectFactory::createObject(typeKey);
+    AGameObject* newObj = ObjectFactory::createObject(typeKey, variant);
     if (!newObj) return;
 
     // 2. Position object in the active viewport
@@ -127,20 +127,33 @@ void ObjectPalette::DrawUI()
             int shown = 0;
             for (int i = 0; i < static_cast<int>(registeredTypes.size()); ++i) {
                 const auto& item = registeredTypes[i];
-
-                // hide types whose subsystems aren't present in this scene
                 if (!ObjectFactory::getMissingDependencies(item.typeKey).empty())
                     continue;
 
-                ImGui::PushID(i);
-                if (shown % columns != 0)
-                    ImGui::SameLine();
+                if (item.variants.empty())
+                {
+                    ImGui::PushID(i);
+                    if (shown % columns != 0) ImGui::SameLine();
+                    if (ImGui::Button(item.displayName.c_str(), button_size))
+                        spawnObject(item.typeKey, item.isScreenObject, "");
+                    ImGui::PopID();
+                    ++shown;
+                }
+                else
+                {
+                    for (const std::string& v : item.variants)
+                    {
+                        if (GameObjectManager::getInstance()->findObjectByName(v))
+                            continue;                                   // already in the level
 
-                if (ImGui::Button(item.displayName.c_str(), button_size))
-                    spawnObject(item.typeKey, item.isScreenObject);
-
-                ImGui::PopID();
-                ++shown;
+                        ImGui::PushID((i * 100) + (int)(&v - &item.variants[0]));
+                        if (shown % columns != 0) ImGui::SameLine();
+                        if (ImGui::Button(v.c_str(), button_size))
+                            spawnObject(item.typeKey, item.isScreenObject, v);
+                        ImGui::PopID();
+                        ++shown;
+                    }
+                }
             }
         }
 
