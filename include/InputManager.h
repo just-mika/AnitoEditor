@@ -59,8 +59,6 @@ public:
 
     // Touch
     bool hasActiveTouches() const;
-    int getActiveTouchCount() const;
-    bool isFingerActive(Uint64 fingerId) const;
     bool getFingerPosition(Uint64 fingerId, float& outX, float& outY) const;
     bool getFingerRawPosition(Uint64 fingerId, float& outX, float& outY) const;
     bool isAnyFingerInRect(SDL_FRect fRect, Uint64& fingerId) const;
