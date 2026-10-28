@@ -13,7 +13,10 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include <cmath>
+
+#include "LevelDataManager.h"
 #include "Settings.h"
+#include "TextRenderer.h"
 
 bool showWidgets = false;
 
@@ -21,60 +24,61 @@ bool Editor::EditorModule::isPlaying() const {
     return this->bIsPlaying;
 }
 
+//called to switch Play mode -> Editor mode and vice versa
 void Editor::EditorModule::togglePlayMode(){
     this->bIsPlaying = !this->bIsPlaying;
 
     // Drop any in-progress pan/drag/pinch so it can't carry across the mode switch
     this->cancelInteraction();
-    this->mapFingers.clear();
-    this->bIsPinching = false;
 
     Camera* cam = CameraManager::getInstance()->getCurrentCamera();
     if (cam)
     {
         if (this->bIsPlaying)
         {
-            // Remember the editor view, then play at the default zoom
+            // Record editor camera state then play at the default zoom
             this->editorCamPos = cam->getPos();
             this->editorCamScale = cam->getScale();
             cam->setScale(Vector2D(1.0f, 1.0f));
+            cam->setPos(Vector2D(0.0f, 0.0f));
         }
         else
         {
-            // Back to editing: restore the view the user had
+            // Restore the previous editor camera state
             cam->setPos(this->editorCamPos);
             cam->setScale(this->editorCamScale);
         }
     }
-    showWidgets = !this->bIsPlaying;
+
+    //only show at editor mode
+    showWidgets = !this->bIsPlaying; 
     UIManager::getInstance()->setEnabled("INSPECTOR_SCREEN", !this->bIsPlaying);
     UIManager::getInstance()->setEnabled("HIERARCHY_SCREEN", !this->bIsPlaying);
     UIManager::getInstance()->setEnabled("OBJECT_PALETTE", !this->bIsPlaying);
+
+    //only play music at play mode
     AudioManager::getInstance()->setVolume(AudioGroupTag::MUSIC, this->bIsPlaying ? 1.0f : 0.0f);
+
+    if (this->bIsPlaying) 
+        LevelDataManager::getInstance()->beginPlay();
+    else 
+    	LevelDataManager::getInstance()->endPlay();
 }
 
+// Takes mouse input, converts window coordinates to logical coordinates
 Vector2D Editor::EditorModule::windowToLogical(float x, float y) const
 {
     SDL_Renderer* renderer = RendererContext::getInstance()->getRenderer();
     float lx = x, ly = y;
-    if (renderer) SDL_RenderCoordinatesFromWindow(renderer, x, y, &lx, &ly);
-    uiToGame(lx, ly, lx, ly);          // this line is the fix
+
+    if (renderer) 
+        SDL_RenderCoordinatesFromWindow(renderer, x, y, &lx, &ly);
+
+    uiToGame(lx, ly, lx, ly);
     return Vector2D(lx, ly);
 }
 
-// Finger events give NORMALIZED (0..1) coordinates over the whole window.
-Vector2D Editor::EditorModule::fingerToLogical(float nx, float ny) const
-{
-    SDL_Renderer* renderer = RendererContext::getInstance()->getRenderer();
-    if (!renderer) return Vector2D(nx * gameWidth, ny * gameHeight);
-
-    int w = 0, h = 0;
-    SDL_GetWindowSize(SDL_GetRenderWindow(renderer), &w, &h);
-    return windowToLogical(nx * w, ny * h);
-}
-
-// screenDelta is in logical screen pixels. Dragging right moves the camera left;
-// dragging down moves the camera up in world space (world +Y is up).
+//pans the camera in a 2d space
 void Editor::EditorModule::panCamera(const Vector2D& screenDelta)
 {
     Camera* cam = CameraManager::getInstance()->getCurrentCamera();
@@ -86,20 +90,23 @@ void Editor::EditorModule::panCamera(const Vector2D& screenDelta)
     cam->setPos(pos);
 }
 
-// Zooms while keeping the world point under screenPivot fixed on screen.
+// zooms the camera in a 2d space, while keeping world point fixed on screen.
 void Editor::EditorModule::zoomCamera(float fFactor, const Vector2D& screenPivot)
 {
     Camera* cam = CameraManager::getInstance()->getCurrentCamera();
+    Vector2D worldBefore = cam->screenToWorldPoint(screenPivot); //gets mouse position before zoom
 
-    Vector2D worldBefore = cam->screenToWorldPoint(screenPivot);
-
+    //multiply and set scale
     float fNewScale = SDL_clamp(cam->getScale().x * fFactor, this->fMinScale, this->fMaxScale);
     cam->setScale(Vector2D(fNewScale, fNewScale));
 
-    Vector2D worldAfter = cam->screenToWorldPoint(screenPivot);
+    Vector2D worldAfter = cam->screenToWorldPoint(screenPivot); //get same mouse position AFTER zoom
     cam->setPos(cam->getPos() + (worldBefore - worldAfter));
+    //shift camera position by worldBefore - worldAfter to reflect drift caused by scaling
 }
 
+// checks if a point in the screen is over a UI panel
+// mostly used to block editor input over the UI
 bool Editor::EditorModule::isPointerOverUI(const Vector2D& logicalPos) const
 {
     ImGuiContext* g = ImGui::GetCurrentContext();
@@ -110,45 +117,41 @@ bool Editor::EditorModule::isPointerOverUI(const Vector2D& logicalPos) const
 
     for (ImGuiWindow* w : g->Windows)
     {
-        if (!w->Active || w->Hidden) continue;
-        if (w->Flags & ImGuiWindowFlags_ChildWindow) continue;     // inside its parent's rect anyway
-        if (w->Flags & ImGuiWindowFlags_NoMouseInputs) continue;   // tooltips, drag previews, overlays
-        if (w->Rect().Contains(p)) return true;                    // a collapsed window is just its title bar
+        if (!w->Active || w->Hidden) continue; //skip inactive windows
+        if (w->Flags & ImGuiWindowFlags_ChildWindow) continue; //skip subregions
+        if (w->Flags & ImGuiWindowFlags_NoMouseInputs) continue; // skip tooltips, drag previews, overlays
+        if (w->Rect().Contains(p)) return true; //point in screen is over a UI panel
     }
     return false;
 }
 
+//cancels editor interaction
 void Editor::EditorModule::cancelInteraction()
 {
     this->dTicks = 0.0;
-    this->bIsHolding = false;
-    this->bIsDragging = false;
-    this->bIsMovingCam = false;
+    this->eState = InteractionState::Idle;
 }
 
-void Editor::EditorModule::updatePinch()
+//helper to find the topmost hitted object recursively
+AGameObject* Editor::EditorModule::hitTestObject(AGameObject* obj, const Vector2D& pos)
 {
-    if (this->mapFingers.size() != 2) { this->bIsPinching = false; return; }
+    const auto& children = obj->getChildren();
 
-    auto it = this->mapFingers.begin();
-    Vector2D a = it->second; ++it;
-    Vector2D b = it->second;
-
-    Vector2D center = (a + b) * 0.5f;
-    float fDist = (a - b).Magnitude();
-
-    if (this->bIsPinching && this->fLastPinchDist > 1.0f && fDist > 1.0f)
+    for (auto child = children.rbegin(); child != children.rend(); ++child)
     {
-        // Fingers spreading apart (dist grows) => zoom in => scale shrinks
-        this->zoomCamera(this->fLastPinchDist / fDist, center);
-        this->panCamera(center - this->lastPinchCenter);
+        //recursive case: check if the hit object has children
+        AGameObject* hit = hitTestObject(*child, pos);
+        if (hit)
+            return hit;
     }
-
-    this->bIsPinching = true;
-    this->fLastPinchDist = fDist;
-    this->lastPinchCenter = center;
+    
+    //base case: obj has no children
+    if (contains(obj, pos))
+        return obj;
+	return nullptr;
 }
 
+//processes editor input from keyboard or mouse
 void Editor::EditorModule::processEditorInput(const SDL_Event* eEvent)
 {
     InspectorScreen* inspector = static_cast<InspectorScreen*>(
@@ -157,33 +160,26 @@ void Editor::EditorModule::processEditorInput(const SDL_Event* eEvent)
 
     switch (eEvent->type)
     {
-        case SDL_EVENT_MOUSE_WHEEL:
+        case SDL_EVENT_MOUSE_WHEEL: //for zooming camera via mouse scroll
         {
-            //SDL_Log("[Editor] WHEEL y=%.2f (integer_y=%d) wantCaptureMouse=%d",
-            //        eEvent->wheel.y, eEvent->wheel.integer_y, (int)io.WantCaptureMouse);
-
             Vector2D wheelPos = this->windowToLogical(eEvent->wheel.mouse_x, eEvent->wheel.mouse_y);
             if (this->isPointerOverUI(wheelPos)) break;
 
-            // wheel.y > 0 = scroll up = zoom in = smaller scale
-            Vector2D pivot = this->windowToLogical(eEvent->wheel.mouse_x, eEvent->wheel.mouse_y);
-            this->zoomCamera(powf(this->fWheelZoomStep, eEvent->wheel.y), pivot);
-
-            //SDL_Log("[Editor] camera scale now %.3f",
-            //        CameraManager::getInstance()->getCurrentCamera()->getScale().x);
+            this->zoomCamera(powf(this->fWheelZoomStep, eEvent->wheel.y), wheelPos);
             break;
         }
 
-            // Keyboard zoom fallback (also handy on emulators that don't send wheel events).
-            // '=' / '+' / numpad+ zoom in, '-' / numpad- zoom out. Zooms around screen center.
-        case SDL_EVENT_KEY_DOWN:
+        case SDL_EVENT_KEY_DOWN: //for zooming camera via +, -, and = keys
         {
             if (io.WantTextInput) break;
-
             float fFactor = 0.0f;
+
+    		//zoom in
             if (eEvent->key.key == SDLK_EQUALS || eEvent->key.key == SDLK_PLUS ||
                 eEvent->key.key == SDLK_KP_PLUS)
                 fFactor = this->fWheelZoomStep;
+
+            //zoom out
             else if (eEvent->key.key == SDLK_MINUS || eEvent->key.key == SDLK_KP_MINUS)
                 fFactor = 1.0f / this->fWheelZoomStep;
 
@@ -192,63 +188,57 @@ void Editor::EditorModule::processEditorInput(const SDL_Event* eEvent)
             break;
         }
 
-        case SDL_EVENT_MOUSE_MOTION:
+        case SDL_EVENT_MOUSE_MOTION: //for camera panning
         {
             Vector2D newPos = this->windowToLogical(eEvent->motion.x, eEvent->motion.y);
             Vector2D delta = newPos - this->mousePos;
             this->mousePos = newPos;
-            if (inspector) inspector->setMousePos(this->mousePos);
 
-            // While two fingers are down, the pinch handler owns the camera
-            if (this->bIsMovingCam && this->mapFingers.size() < 2)
+            if (inspector) 
+                inspector->setMousePos(this->mousePos);
+
+            if (this->eState == InteractionState::PanningCam)
                 this->panCamera(delta);
             break;
         }
 
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
         {
-            // IMPORTANT for touch: a finger tap has no hover motion before it, so
-            // mousePos would be stale. Always refresh it from the press itself.
             this->mousePos = this->windowToLogical(eEvent->button.x, eEvent->button.y);
-            if (inspector) inspector->setMousePos(this->mousePos);
+        	
+            if (this->isPointerOverUI(this->mousePos)) break; //ignore editor input if clicked on a UI panel
 
-            if (this->isPointerOverUI(this->mousePos)) break; // clicked on an ImGui panel
-            if (this->mapFingers.size() >= 2) break; // pinching, not clicking
+        	if (inspector) 
+                inspector->setMousePos(this->mousePos);
 
             if (eEvent->button.button == SDL_BUTTON_LEFT)
             {
-                this->bIsHolding = true;
-                bool bHitSomething = false;
+                this->eState = InteractionState::Holding;
 
-                std::vector<AGameObject*> vecObject = GameObjectManager::getInstance()->getAllObjects();
-                for (auto parent : vecObject)
+                AGameObject* hit = nullptr;
+                const auto& roots = GameObjectManager::getInstance()->getAllObjects();
+
+                for (auto root = roots.rbegin(); root != roots.rend() && !hit; ++root)
+                    hit = hitTestObject(*root, this->mousePos);
+
+                this->setSelectedObject(hit);
+
+                if (hit)
                 {
-                    std::vector<AGameObject*> vecObjectTree = parent->getChildrenRecursively();
-                    vecObjectTree.push_back(parent);
-                    for (auto obj : vecObjectTree)
-                    {
-                        if (contains(obj, this->mousePos))
-                        {
-                            bHitSomething = true;
-                            this->setSelectedObject(obj);
-                            if (obj->getIsScreenObject())
-                                this->offsetPos = this->mousePos - obj->getPos();
-                            else
-                                this->offsetPos = this->getMouseWorldPos() - obj->getPos();
-                        }
-                    }
+                    if (hit->getIsScreenObject())
+                        this->offsetPos = this->mousePos - hit->getPos();
+                    else
+                        this->offsetPos = this->getMouseWorldPos() - hit->getPos();
                 }
-
-                if (!bHitSomething)
+				else
                 {
-                    this->setSelectedObject(nullptr);
-                    this->bIsMovingCam = true;   // drag on empty space = pan
+                    this->eState = InteractionState::PanningCam; // drag on empty space = pan
                 }
             }
             else if (eEvent->button.button == SDL_BUTTON_RIGHT ||
                      eEvent->button.button == SDL_BUTTON_MIDDLE)
             {
-                this->bIsMovingCam = true;
+                this->eState = InteractionState::PanningCam;
             }
             break;
         }
@@ -257,60 +247,28 @@ void Editor::EditorModule::processEditorInput(const SDL_Event* eEvent)
             this->cancelInteraction();
             break;
 
-            // ---- Touch: two fingers = pinch zoom + pan ----
-        case SDL_EVENT_FINGER_DOWN:
-            this->mapFingers[eEvent->tfinger.fingerID] =
-                    this->fingerToLogical(eEvent->tfinger.x, eEvent->tfinger.y);
-
-            if (this->mapFingers.size() >= 2)
-            {
-                // Second finger landed: abort whatever the first finger started
-                // (SDL's synthetic mouse events would otherwise select/drag/pan).
-                this->cancelInteraction();
-                this->bIsPinching = false;
-                this->updatePinch();   // initialise baseline distance/center
-            }
-            break;
-
-        case SDL_EVENT_FINGER_MOTION:
-            if (this->mapFingers.count(eEvent->tfinger.fingerID))
-            {
-                this->mapFingers[eEvent->tfinger.fingerID] =
-                        this->fingerToLogical(eEvent->tfinger.x, eEvent->tfinger.y);
-                this->updatePinch();
-            }
-            break;
-
-        case SDL_EVENT_FINGER_UP:
-        case SDL_EVENT_FINGER_CANCELED:
-            this->mapFingers.erase(eEvent->tfinger.fingerID);
-            this->bIsPinching = false;
-            if (this->mapFingers.size() < 2) this->cancelInteraction();
-            break;
-
         default:
             break;
     }
 }
 
-void Editor::EditorModule::updateGameObjects(float fDeltaTime)
+//updates object position from dragging
+void Editor::EditorModule::updateObjectDragging(float fDeltaTime)
 {
-    // Camera pan/zoom is now applied directly in processEditorInput (it is
-    // event-driven and must not be scaled by frame time).
     AGameObject* selected = this->getSelectedObject();
     if (!selected) return;
 
-    if (this->bIsHolding)
+    if (this->eState == InteractionState::Holding)
     {
         this->dTicks += fDeltaTime;
-        if (this->dTicks >= D_MAX_DRAG_TICKS)
+        if (this->dTicks >= D_MAX_DRAG_TICKS) //wait for max threshold before dragging
         {
             this->dTicks = 0.0;
-            this->bIsDragging = true;
+            this->eState = InteractionState::Dragging;
         }
     }
 
-    if (this->bIsDragging)
+    if (this->eState == InteractionState::Dragging) //drag object
     {
         if (selected->getIsScreenObject())
             selected->setPos(this->mousePos - this->offsetPos);
@@ -319,50 +277,144 @@ void Editor::EditorModule::updateGameObjects(float fDeltaTime)
     }
 }
 
+// Decides whether an object gets an editor handle (and can be clicked/dragged)
 bool Editor::EditorModule::hasVisibleSprite(AGameObject* pObject)
 {
-    if (!pObject->getComponents(ComponentType::ANIMATOR).empty()) return true;
+    if (!pObject->getComponents(ComponentType::ANIMATOR).empty()) //all objects w/ animator component have a visible sprite
+        return true;
 
-    for (auto pComp : pObject->getComponents(ComponentType::RENDERER))
+    for (auto pComp : pObject->getComponents(ComponentType::RENDERER)) //find sprite component 
     {
+
         SpriteRenderer* pSprite = dynamic_cast<SpriteRenderer*>(pComp);
-        if (pSprite) { if (pSprite->getTexture() != nullptr) return true; }
-        else return true;
+        if (pSprite) {
+            if (pSprite->getTexture() != nullptr) //object has a loaded sprite
+                return true;
+        }
+        else if (dynamic_cast<TextRenderer*>(pComp)) //text objects are always visible
+            return true;
     }
-    return false;
+
+    //no visible renderer of its own: still gets a handle if any child (or deeper) is visible
+    for (AGameObject* pChild : pObject->getChildren())
+    {
+        if (pChild->getEnabled() && hasVisibleSprite(pChild))
+            return true;
+    }
+
+    return false; //if spriteRender is not found = default no visible sprite.
 }
 
-void Editor::EditorModule::drawEditor(SDL_Renderer* pRenderer)
+// Screen rect of an object's editor handle
+SDL_FRect Editor::EditorModule::getHandleRect(AGameObject* pObject, SDL_FRect* pOutBounds) const
 {
     Camera* pCam = CameraManager::getInstance()->getCurrentCamera();
 
-    //SDL_RenderLine(pRenderer, 0, 540, 1920, 540);
+    Vector2D pos;
+
+    if (pObject->getIsScreenObject())
+        pos = pObject->getPos();
+	else
+		pos = pCam->worldToScreenPoint(pObject->getPos());
+
+    SDL_FRect handle = { pos.x - fTexW * 0.5f, pos.y - fTexH * 0.5f, fTexW, fTexH };
+    SDL_FRect bounds{};
+
+    //checks if object is an empty container
+    if (!pObject->findComponentByName("SpriteRenderer"))
+    {
+        bool bHasBounds = false;
+        //traverse through children
+        for (AGameObject* pDesc : pObject->getChildrenRecursively())
+        {
+            if (!pDesc->isGloballyEnabled()) //skip children currently disabled
+                continue;
+
+            SpriteRenderer* pSprite = (SpriteRenderer*)pDesc->findComponentByName("SpriteRenderer");
+            
+            //skip children with no sprite
+        	if (!pSprite || !pSprite->getTexture()) 
+                continue;
+
+            //uses AABB Merging 
+            SDL_FRect r = pSprite->getRect();
+            if (!bHasBounds)
+            {
+                bounds = r; //child's rectangle area
+                bHasBounds = true; 
+            }
+            else
+            {
+                //if bounds are already found (from prev. valid sprite,
+                // compute the bound union of current and prev sprite
+                SDL_GetRectUnionFloat(&bounds, &r, &bounds);
+            }
+        }
+
+        if (bHasBounds)
+        {
+            handle.x = bounds.x - fTexW;   // put widget in the top-left corner
+            handle.y = bounds.y - fTexH;
+        }
+    }
+
+    if (pOutBounds)
+        *pOutBounds = bounds; //pass bounds to the pointer
+    return handle;
+}
+
+//draws editor (called in render loop)
+void Editor::EditorModule::draw(SDL_Renderer* pRenderer)
+{
+    AGameObject* selected = this->getSelectedObject();
 
     std::vector<AGameObject*> vecObject = GameObjectManager::getInstance()->getAllObjects();
-    for (auto parent : vecObject)
+    
+	//draw object selections
+	for (auto parent : vecObject)
     {
         std::vector<AGameObject*> vecObjectTree = parent->getChildrenRecursively();
         vecObjectTree.push_back(parent);
         for (auto obj : vecObjectTree)
         {
-            if (obj->isGloballyEnabled() && hasVisibleSprite(obj))
+            if (!obj->isGloballyEnabled() || !hasVisibleSprite(obj)) 
+                continue; //skip disabled objects
+
+            SDL_FRect bounds{};
+            SDL_FRect handle = this->getHandleRect(obj, &bounds);
+
+            // Outline around children
+            if (bounds.w > 0 && bounds.h > 0)
             {
-                SDL_FRect mDestRect{};
-                mDestRect.w = this->fTexW;
-                mDestRect.h = this->fTexH;
+                //render outline
+                SDL_SetRenderDrawBlendMode(pRenderer, SDL_BLENDMODE_BLEND);
+                SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 127);
+                SDL_RenderRect(pRenderer, &bounds);
 
-                Vector2D screenPos;
-                if (obj->getIsScreenObject()) screenPos = obj->getPos();
-                else screenPos = pCam->worldToScreenPoint(obj->getPos());
-
-                mDestRect.x = screenPos.x - (mDestRect.w * 0.5f);
-                mDestRect.y = screenPos.y - (mDestRect.h * 0.5f);
-
-                SDL_RenderTexture(pRenderer, this->pWidget, NULL, &mDestRect);
+                if (obj == selected) //change color of outline for selected parent
+                {
+                    SDL_SetRenderDrawColor(pRenderer, 0, 230, 204, 255);
+                    for (int i = 0; i < 2; i++)
+                    {
+                        SDL_FRect b = bounds;
+                        b.x -= i;
+                        b.y -= i;
+                        b.w += i * 2.0f;
+                        b.h += i * 2.0f;
+                        SDL_RenderRect(pRenderer, &b);
+                    }
+                }
             }
+
+            // Handle & widget is cyan when selected, normal colors otherwise
+            if (obj == selected)
+                SDL_SetTextureColorMod(this->pWidget, 0, 230, 204);
+            else
+                SDL_SetTextureColorMod(this->pWidget, 255, 255, 255);
+
+            SDL_RenderTexture(pRenderer, this->pWidget, NULL, &handle);
         }
     }
-
     // MetricsManager::getInstance()->drawGUI();
 }
 
@@ -376,30 +428,21 @@ AGameObject* Editor::EditorModule::getSelectedObject()
     return this->selectedObject;
 }
 
+// checks if the mouse position is currently inside the object's rectangle area 
 bool Editor::EditorModule::contains(AGameObject* pObject, Vector2D mousePos)
 {
-    if (!this->pWidget) return false;
-    if (!pObject->isGloballyEnabled() || !hasVisibleSprite(pObject)) return false;
+    if (!this->pWidget) //no widget
+        return false;
+    //not enabled
+    if (!pObject->isGloballyEnabled() || !hasVisibleSprite(pObject)) 
+        return false;
 
-    Camera* cam = CameraManager::getInstance()->getCurrentCamera();
-
-    SDL_FRect pointRect = { mousePos.x, mousePos.y, 1, 1};
-    SDL_FRect spriteRect = {};
-    Vector2D objPos;
-
-    if (pObject->getIsScreenObject()) objPos = pObject->getPos();
-    else objPos = cam->worldToScreenPoint(pObject->getPos());
-    //std::cout << objPos << " " << objScreenPos << "\n";
-
-    spriteRect.x = objPos.x - (fTexW * 0.5f);
-    spriteRect.y = objPos.y - (fTexH * 0.5f);
-    spriteRect.w = fTexW;
-    spriteRect.h = fTexH;
-
-
-    return SDL_HasRectIntersectionFloat(&spriteRect, &pointRect);
+    SDL_FPoint p = { mousePos.x, mousePos.y }; //mouse current position as SDL Point
+    SDL_FRect handle = this->getHandleRect(pObject); //get rectangle area
+    return SDL_PointInRectFloat(&p, &handle);
 }
 
+//gets the mouse position mapped inside the game world space
 Vector2D Editor::EditorModule::getMouseWorldPos() const
 {
     Camera* cam = CameraManager::getInstance()->getCurrentCamera();
