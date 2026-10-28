@@ -206,11 +206,13 @@
     <ClCompile Include="src\ButtonInput.cpp" />
     <ClCompile Include="src\PhysicsSystem.cpp" />
     <ClCompile Include="src\Platform.cpp" />
+    <ClCompile Include="src\PlatformerLoadedScene.cpp" />
     <ClCompile Include="src\PlatformerPickupGUI.cpp" />
     <ClCompile Include="src\PlayerController.cpp" />
     <ClCompile Include="src\PlayerInput.cpp" />
     <ClCompile Include="src\PlayerManager.cpp" />
     <ClCompile Include="src\PuzzleEnd.cpp" />
+    <ClCompile Include="src\PuzzleLoadedScene.cpp" />
     <ClCompile Include="src\Sprite.cpp" />
     <ClCompile Include="src\AComponent.cpp" />
     <ClCompile Include="src\AGameObject.cpp" />
@@ -239,6 +241,7 @@
     <ClCompile Include="src\Text.cpp" />
     <ClCompile Include="src\TextRenderer.cpp" />
     <ClCompile Include="src\TextureManager.cpp" />
+    <ClCompile Include="src\TiledImporter.cpp" />
     <ClCompile Include="src\TileMap.cpp" />
     <ClCompile Include="src\TileMapRenderer.cpp" />
     <ClCompile Include="src\TokenController.cpp" />
@@ -261,6 +264,7 @@
     <ClInclude Include="include\EditorToolbarScreen.h" />
     <ClInclude Include="include\EngineTime.h" />
     <ClInclude Include="include\EnumAudioGroupTag.h" />
+    <ClInclude Include="include\EnumInteractionState.h" />
     <ClInclude Include="include\EnumOnAnimFinished.h" />
     <ClInclude Include="include\EnumOnAudioFinished.h" />
     <ClInclude Include="include\ACollider.h" />
@@ -336,6 +340,7 @@
     <ClInclude Include="include\ButtonInput.h" />
     <ClInclude Include="include\PhysicsSystem.h" />
     <ClInclude Include="include\Platform.h" />
+    <ClInclude Include="include\PlatformerLoadedScene.h" />
     <ClInclude Include="include\PlatformerPickupGUI.h" />
     <ClInclude Include="include\Player.h" />
     <ClInclude Include="include\PlayerController.h" />
@@ -344,6 +349,7 @@
     <ClInclude Include="include\PuzzleEnd.h" />
     <ClInclude Include="include\PuzzleHint.h" />
     <ClInclude Include="include\PuzzleLevel1Scene.h" />
+    <ClInclude Include="include\PuzzleLoadedScene.h" />
     <ClInclude Include="include\PuzzleToken.h" />
     <ClInclude Include="include\RendererContext.h" />
     <ClInclude Include="include\RigidBody.h" />
@@ -364,6 +370,7 @@
     <ClInclude Include="include\Text.h" />
     <ClInclude Include="include\TextRenderer.h" />
     <ClInclude Include="include\TextureManager.h" />
+    <ClInclude Include="include\TiledImporter.h" />
     <ClInclude Include="include\TileMap.h" />
     <ClInclude Include="include\TileMapRenderer.h" />
     <ClInclude Include="include\Sprite.h" />
