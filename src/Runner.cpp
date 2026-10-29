@@ -40,6 +40,8 @@
 #include "PlatformerLevel1Scene.h"
 #include "PuzzleLevel1Scene.h"
 #include "LoadedScene.h"
+#include "PlatformerLoadedScene.h"
+#include "PuzzleLoadedScene.h"
 #include "RendererContext.h"
 
 // Constructor / Destructor: startup and teardown costs are not per-frame.
@@ -72,7 +74,7 @@ Runner::Runner()
 	// debug
 	std::cout << "Screen size: " << screenWidth << "x" << screenHeight << std::endl;
 
-	this->strWindowTitle = "Babaylan Tales";
+	this->strWindowTitle = "Anito Editor";
 	float scaleX = (float)screenWidth / gameWidth;
 	float scaleY = (float)screenHeight / gameHeight;
 	float scale = (std::min)(scaleX, scaleY);
@@ -195,17 +197,6 @@ void Runner::run()
 		while (SDL_PollEvent(&e))
 		{
 			UIManager::getInstance()->processEvent(&e);
-// Editor mode input may have its own costs (dependent on editor internals)
-#if EDITOR_MODE
-            if (e.type == SDL_EVENT_KEY_DOWN)
-                SDL_Log("Key pressed: %d", e.key.key);
-
-			if (Editor::EditorModule::getInstance()->isPlaying())
-				this->processEvents(&e);
-			else
-				Editor::EditorModule::getInstance()->processEditorInput(&e);
-#endif
-
 			switch (e.type)
 			{
 			case SDL_EVENT_QUIT:
@@ -214,14 +205,21 @@ void Runner::run()
 
 			case SDL_EVENT_WINDOW_RESIZED:
 				/*
+				// NOTE: Camera scaling handled in render loop to avoid viewport desync on resize
+
 				// setWindowSize likely O(1) or O(#render targets)
 				int w, h; SDL_GetWindowSizeInPixels(this->pWindow, &w, &h);
 				CameraManager::getInstance()->setWindowSize(this->pWindow);
-				CameraManager::getInstance()->setWindowScale(w / gameWidth, h / gameHeight);
-				break;*/
+				CameraManager::getInstance()->setWindowScale(w / gameWidth, h / gameHeight);*/
+				break;
 
 			default:
 #if EDITOR_MODE
+				// processEvents only at play mode
+				if (Editor::EditorModule::getInstance()->isPlaying())
+					this->processEvents(&e);
+				else
+					Editor::EditorModule::getInstance()->processEditorInput(&e);
 #else
 				// processEvents delegates to GameObjectManager::processInput which is O(G)
 				// This line is where per-event scanning becomes expensive if events are many.
@@ -253,7 +251,7 @@ void Runner::run()
 			this->update(fDeltaTime);
 		else
 		{
-			Editor::EditorModule::getInstance()->updateGameObjects(fDeltaTime);
+			Editor::EditorModule::getInstance()->updateObjectDragging(fDeltaTime);
 			// Runner::update() is skipped in edit mode, so flush editor deletions here.
 			GameObjectManager::getInstance()->cleanUpDeletedObjects();
 		}
@@ -322,7 +320,7 @@ void Runner::render()
 	GameObjectManager::getInstance()->draw(this->pRenderer);
 #if EDITOR_MODE
 	if (!Editor::EditorModule::getInstance()->isPlaying())
-		Editor::EditorModule::getInstance()->drawEditor(this->pRenderer);
+		Editor::EditorModule::getInstance()->draw(this->pRenderer);
 #endif
 	SceneTransitionManager::getInstance()->draw(this->pRenderer);
 
@@ -342,18 +340,20 @@ void Runner::registerScenes()
 {
 	auto platformerL1 = new PlatformerLevel1Scene();
 	auto puzzleL1 = new PuzzleLevel1Scene();
-	auto testScene = new LoadedScene();
+	auto puzzleLoaded = new PuzzleLoadedScene();
+	auto platformerLoaded = new PlatformerLoadedScene();
 
 	SceneManager::getInstance()->registerScene(platformerL1);
 	SceneManager::getInstance()->registerScene(puzzleL1);
-	SceneManager::getInstance()->registerScene(testScene);
+	SceneManager::getInstance()->registerScene(puzzleLoaded);
+	SceneManager::getInstance()->registerScene(platformerLoaded);
 
 	// --- load time tracking --- 
 	// // start timer before load, end after load completes 
 	MetricsManager::getInstance()->startLoadTimer(); 
 
 	//load initial scene
-	SceneManager::getInstance()->loadScene(SceneTag::LOADED_SCENE);
+	//SceneManager::getInstance()->loadScene(SceneTag::LOADED_SCENE);
 	
 	MetricsManager::getInstance()->endLoadTimer();
 }

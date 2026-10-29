@@ -2,6 +2,14 @@
 #include "AUIScreen.h"
 #include "AGameObject.h"
 
+//for drag and drop reparent/reorder
+struct PendingMove
+{
+    AGameObject* obj = nullptr;
+    AGameObject* newParent = nullptr;   // nullptr = root
+    int index = 0;
+};
+
 class HierarchyScreen : public AUIScreen
 {
 private:
@@ -11,14 +19,7 @@ private:
     AGameObject* lastSelectedObject = nullptr;
     bool scrollToSelection = false;
 
-    // Drag & drop reorder/reparent. The move is queued while the tree is being drawn and
-    // applied after the table ends, so we never mutate the lists we're iterating.
-    struct PendingMove
-    {
-        AGameObject* obj       = nullptr;
-        AGameObject* newParent = nullptr;   // nullptr = root
-        int          index     = 0;
-    };
+    //for drag and drop reparent/reorder
     PendingMove pendingMove;
     bool hasPendingMove = false;
 
@@ -32,7 +33,7 @@ public:
 protected:
     HierarchyScreen();
     ~HierarchyScreen();
-    void DrawUI() override;
+    void draw() override;
 
     friend class UIManager;
 

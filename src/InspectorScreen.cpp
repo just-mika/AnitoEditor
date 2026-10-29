@@ -39,7 +39,7 @@ InspectorScreen::~InspectorScreen()
 
 }
 
-void InspectorScreen::DrawUI()
+void InspectorScreen::draw()
 {
     // Pull this frame's selection from the shared source of truth (EditorModule),
     // rather than tracking our own independent copy.
@@ -341,11 +341,18 @@ void InspectorScreen::showTypeSpecific()
     else if (k == "puzzle_token")
     {
         PuzzleToken* t = static_cast<PuzzleToken*>(selectedObject);
-        int slot = t->getSlot();
-        if (ImGui::InputInt("Slot", &slot)) t->setSlot(slot);
-        bool dropped = t->getDropped();
-        if (ImGui::Checkbox("Dropped", &dropped)) t->setDropped(dropped);
-        ImGui::TextWrapped("Name is also this token's texture key.");
+
+        bool has = t->hasTargetPos();
+        if (ImGui::Checkbox("Has target slot", &has))
+            t->setTargetPos(has ? t->getPos() : Vector2D(0.0f));   // see note below
+        if (has) {
+            float v[2] = { t->getTargetPos().x, t->getTargetPos().y };
+            if (ImGui::DragFloat2("Target slot", v)) t->setTargetPos(Vector2D(v[0], v[1]));
+        }
+
+        char buf[1024];
+        snprintf(buf, sizeof(buf), "%s", t->getHint().c_str());
+        if (ImGui::InputTextMultiline("Hint", buf, sizeof(buf))) t->setHint(buf);
     }
     else if (k == "gem_input_token")
     {

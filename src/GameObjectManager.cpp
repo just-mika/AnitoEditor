@@ -141,8 +141,8 @@ AGameObject* GameObjectManager::findObjectByName(const std::string& strName) con
     if (it != mapGameObject.end())
         return it->second;
 
-    std::cout << "[ERROR] GameObjectManager::findObjectByName � \""
-              << strName << "\" not found.\n";
+   // std::cout << "[ERROR] GameObjectManager::findObjectByName � \""
+     //         << strName << "\" not found.\n";
     return nullptr;
 }
 
@@ -206,18 +206,20 @@ bool GameObjectManager::canMoveObject(AGameObject* pObject, AGameObject* pNewPar
 
 void GameObjectManager::moveObject(AGameObject* pObject, AGameObject* pNewParent, int nIndex)
 {
-    if (!canMoveObject(pObject, pNewParent)) return;
+    if (!canMoveObject(pObject, pNewParent)) 
+        return;
 
     AGameObject* pOldParent = pObject->getParent();
 
-    // Remember the world transform so the object doesn't visually jump when its parent changes.
+    // record world transform so the object doesn't visually jump when its parent changes.
     Vector2D worldPos   = pObject->getPos();
     Vector2D worldScale = pObject->getScale();
     float    worldRot   = pObject->getRot();
 
     // 1) Remove from the old container.
     int nOldIndex = this->getSiblingIndex(pObject);
-    if (nOldIndex < 0) return;
+    if (nOldIndex < 0) 
+        return;
 
     if (pOldParent)
         pOldParent->detachChild(pObject);

@@ -357,6 +357,14 @@ std::vector<std::string> TextureManager::getTextureNames()
     return names;
 }
 
+std::string TextureManager::getKey(SDL_Texture* pTexture)
+{
+    for (const auto& kv : mapTexture)
+        if (!kv.second.empty() && kv.second[0] == pTexture)
+            return kv.first;
+    return "";
+}
+
 /* * * * * * * * * * * * * * * * * * * * * 
  *       SINGLETON-RELATED CONTENT       * 
  * * * * * * * * * * * * * * * * * * * * */

@@ -447,6 +447,15 @@
     <ClCompile Include="src\LevelFilePanel.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="src\TiledImporter.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlatformerLoadedScene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PuzzleLoadedScene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Runner.h">
@@ -876,6 +885,18 @@
     </ClInclude>
     <ClInclude Include="include\LevelFilePanel.h">
       <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EnumInteractionState.h">
+      <Filter>Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TiledImporter.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PlatformerLoadedScene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PuzzleLoadedScene.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

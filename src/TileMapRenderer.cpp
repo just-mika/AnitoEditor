@@ -134,3 +134,8 @@ Vector2D TileMapRenderer::getTilePosition(Uint64 c, Uint64 r, bool clamp)
 
     return pos;
 }
+
+void TileMapRenderer::setGridSize(Uint64 nColumns, Uint64 nRows)
+{
+    this->vecTile.assign(nColumns, std::vector<SDL_Texture*>(nRows, nullptr));
+}

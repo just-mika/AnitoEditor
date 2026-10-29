@@ -19,7 +19,7 @@ public:
 protected:
     InspectorScreen();
     ~InspectorScreen();
-    void DrawUI() override;
+    void draw() override;
     void showComponents();
 
     friend class UIManager;

@@ -58,6 +58,10 @@ void PuzzleLevel1Scene::onLoadObjects()
 	CameraManager::getInstance()->getCurrentCamera()->setPos(Vector2D(0.0f));
 	SequenceGameManager::initialize();
 
+	SequenceGameManager::getInstance()->configure(
+		{ Vector2D(-280.0f, -375.0f), Vector2D(0.0f, -375.0f), Vector2D(280.0f, -375.0f) },
+		{ Vector2D(-380.0f, 27.0f),   Vector2D(0.0f, 27.0f),   Vector2D(380.0f, 27.0f) });
+
 	Background* pBG = new Background("Background", "BG", Vector2D(1.0f, 0.9f));
 	GameObjectManager::getInstance()->addObject(pBG);
 
@@ -113,9 +117,14 @@ void PuzzleLevel1Scene::onLoadObjects()
 	GameObjectManager::getInstance()->addObject(pBlank2);
 	GameObjectManager::getInstance()->addObject(pBlank3);
 
-	PuzzleToken* pTokenHorns = new PuzzleToken("Token_Horns", Vector2D(-280.0f, -375.0f), Vector2D(0.08f));
-	PuzzleToken* pTokenClaws = new PuzzleToken("Token_Claws", Vector2D(0.0f, -375.0f), Vector2D(0.08f));
-	PuzzleToken* pTokenEyes = new PuzzleToken("Token_Eyes", Vector2D(280.0f, -375.0f), Vector2D(0.08f));
+	PuzzleToken* pTokenHorns = new PuzzleToken("Token_Horns", Vector2D(-280.0f, -375.0f), Vector2D(0.08f), "Token_Horns");
+	PuzzleToken* pTokenClaws = new PuzzleToken("Token_Claws", Vector2D(0.0f, -375.0f), Vector2D(0.08f), "Token_Claws");
+	PuzzleToken* pTokenEyes = new PuzzleToken("Token_Eyes", Vector2D(280.0f, -375.0f), Vector2D(0.08f), "Token_Eyes");
+
+
+	pTokenHorns->setHint(" \"Bathala planted tall bamboo trees so that\n Bakunawa would not be able to swallow the\n moon so easily. These bamboo trees looked\nlike stains or dark spots on the surface of the\n moon from afar.\"");
+	pTokenClaws->setHint(" \"Bakunawa sprung from the pitch-black \n ocean and bolted towards the sky he opened \n his mouth wide as he could around one of\n the moons and with one powerful swoop,\n swallowed it whole. As he did so a huge wave\n of earthquakes shook the ancient land of\n the Philippines.\"");
+	pTokenEyes->setHint(" \"The ancient Filipinos ran to the ocean while\n banging their pots and pans and shouted\n together, 'Return our moon'. Bakunawa was\n so startled by the loud sudden noise that it \n spat out the seventh moon.\"");
 
 	GameObjectManager::getInstance()->addObject(pTokenHorns);
 	GameObjectManager::getInstance()->addObject(pTokenClaws);

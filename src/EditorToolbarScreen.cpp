@@ -4,6 +4,8 @@
 #include "SceneManager.h"
 #include "UIManager.h"
 #include "Settings.h"
+#include "TiledImporter.h"
+#include "TileMap.h"
 
 EditorToolbarScreen::EditorToolbarScreen() : AUIScreen("EDITOR_TOOLBAR_SCREEN")
 {
@@ -13,7 +15,7 @@ EditorToolbarScreen::~EditorToolbarScreen()
 {
 }
 
-// Draws a ▶ centered on the last submitted button.
+// Draws play mode button
 static void drawPlayIcon()
 {
     ImVec2 min = ImGui::GetItemRectMin();
@@ -28,7 +30,7 @@ static void drawPlayIcon()
             ImGui::GetColorU32(ImGuiCol_Text));
 }
 
-// Draws a ■ centered on the last submitted button.
+// Draws stop play mode button
 static void drawStopIcon()
 {
     ImVec2 min = ImGui::GetItemRectMin();
@@ -42,15 +44,12 @@ static void drawStopIcon()
             ImGui::GetColorU32(ImGuiCol_Text));
 }
 
-void EditorToolbarScreen::DrawUI()
+void EditorToolbarScreen::draw()
 {
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     Editor::EditorModule* editor = Editor::EditorModule::getInstance();
 
-    // ---------------------------------------------------------------
-    // PLAY MODE: the toolbar disappears entirely. Only a small stop
-    // button remains, floating at the top-center of the screen.
-    // ---------------------------------------------------------------
+	//Play mode: only show Stop button to go back to editor
     if (editor->isPlaying())
     {
         const float top_margin = 24.0f;
@@ -80,16 +79,14 @@ void EditorToolbarScreen::DrawUI()
         return;
     }
 
-    // ---------------------------------------------------------------
-    // EDIT MODE: full-width toolbar pinned to the top of the screen.
-    // Collapsing shrinks it down to just the arrow button's row.
-    // ---------------------------------------------------------------
+    //Edit mode: draw the toolbar
     const float toolbar_height = kToolbarH;
     const float button_width   = 60.0f;
 
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, toolbar_height));
 
+    //flags keep the toolbar docked
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoMove |
                              ImGuiWindowFlags_NoResize |
                              ImGuiWindowFlags_NoCollapse |
@@ -97,66 +94,71 @@ void EditorToolbarScreen::DrawUI()
                              ImGuiWindowFlags_NoScrollbar |
                              ImGuiWindowFlags_NoScrollWithMouse;
 
-    if (ImGui::Begin("EditorToolbar", NULL, flags))
+    if (ImGui::Begin("EditorToolbar", NULL, flags)) 
     {
         UIManager* ui = UIManager::getInstance();
         const ImGuiStyle& style = ImGui::GetStyle();
 
         ImGui::SetCursorPosY((toolbar_height - ImGui::GetFrameHeight()) * 0.5f);
 
-        // 2. Scene switch:  <  Scene N  >
-        SceneManager* sceneManager = SceneManager::getInstance();
-        const int sceneCount = sceneManager->getRegisteredSceneAmount();
-        const int sceneIndex = (int)sceneManager->getLoadedSceneTag();
-        int newIndex = sceneIndex;
-
-        if (ImGui::ArrowButton("##prevScene", ImGuiDir_Left)) newIndex--;
-        ImGui::SameLine();
-        ImGui::AlignTextToFramePadding();
-        ImGui::Text("Scene %d", sceneIndex);
-        ImGui::SameLine();
-        if (ImGui::ArrowButton("##nextScene", ImGuiDir_Right)) newIndex++;
-
-        newIndex = SDL_clamp(newIndex,
-            (int)SceneTag::PLATFORMER_LEVEL_1_SCENE,
-            (int)SceneTag::LOADED_SCENE);
-
-        if (newIndex != sceneIndex)
-        {
-            editor->setSelectedObject(nullptr);
-            sceneManager->loadScene((SceneTag)newIndex);
-        }
-
-        // ---- file switch (add here) ----
+        //Show filename on top if a file is loaded
         LevelDataManager* ldm = LevelDataManager::getInstance();
         ImGui::SameLine();
-        if (ImGui::ArrowButton("##prevFile", ImGuiDir_Up))   ldm->stepFile(-1);
-        ImGui::SameLine();
         ImGui::AlignTextToFramePadding();
-        ImGui::TextUnformatted(ldm->hasCurrentFile() ? ldm->getCurrentFile().c_str() : "(no file)");
-        ImGui::SameLine();
-        if (ImGui::ArrowButton("##nextFile", ImGuiDir_Down)) ldm->stepFile(+1);
-        // --------------------------------
 
-        // 3. Play button, centered horizontally in the bar
+        if (ldm->hasCurrentFile())
+			ImGui::TextUnformatted(ldm->getCurrentFile().c_str());
+        else
+            ImGui::TextUnformatted("(no file)");
+
+        // draw play button
         ImGui::SameLine((ImGui::GetWindowWidth() - button_width) * 0.5f);
+        ImGui::BeginDisabled(!ldm->hasActiveScene());
         if (ImGui::Button("##play", ImVec2(button_width, 0)))
             editor->togglePlayMode();
         drawPlayIcon();
+        ImGui::EndDisabled();
 
-        // 4. Save / Load, right-aligned (placeholders for now)
         ImGui::SameLine(ImGui::GetWindowWidth() - style.WindowPadding.x
-                        - button_width * 2 - style.ItemSpacing.x);
+            - button_width * 3 - style.ItemSpacing.x * 2);
         
-    	static const char* kTestLevel = "test_level.json";
+        //draw "New" button (for new file)
+        if (ImGui::Button("New", ImVec2(button_width, 0)))
+            ImGui::OpenPopup("NewLevelPopup");
+        ImGui::SameLine();
+
+        //draw "Save" button (for save current level to a JSON)
+        ImGui::BeginDisabled(!ldm->hasActiveScene());
         if (ImGui::Button("Save", ImVec2(button_width, 0)))
             filePanel.openSave();
-    	
-    	ImGui::SameLine();
+        ImGui::EndDisabled();
+
+        //draw "Load" button (for loading JSON file to level)
+        ImGui::SameLine();
         if (ImGui::Button("Load", ImVec2(button_width, 0)))
             filePanel.openLoad();
+
+        //pop-up to select new level template: puzzle or platformer
+        if (ImGui::BeginPopup("NewLevelPopup"))
+        {
+            if (ImGui::Selectable("Puzzle level"))
+            {
+                editor->setSelectedObject(nullptr);
+                ldm->newLevel("puzzle");
+            }
+
+            if (ImGui::Selectable("Platformer level"))
+            {
+                editor->setSelectedObject(nullptr);
+                ldm->newLevel("platformer");
+            }
+
+            ImGui::EndPopup();
+        }
+
+        
     }
     ImGui::End();
 
-    filePanel.draw();
+    filePanel.draw(); //draw file selection panel (only visible if Save or Load is selected)
 }

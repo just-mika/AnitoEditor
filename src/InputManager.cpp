@@ -56,15 +56,16 @@ void InputManager::processEvents(SDL_Event* e)
         break;
     }
 
-    // Desktop: let the left mouse button drive the on-screen controls (joystick, jump, interact)
-    // by synthesizing a touch. Mouse events SDL itself generated from a real touch are skipped,
-    // otherwise a touchscreen would register every finger twice.
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
+    {
+        if (e->button.which == SDL_TOUCH_MOUSEID || e->button.button != SDL_BUTTON_LEFT) break;
+        setMouseFinger(e->button.windowID, e->button.x, e->button.y);
+        break;
+    }
     case SDL_EVENT_MOUSE_BUTTON_UP:
     {
         if (e->button.which == SDL_TOUCH_MOUSEID || e->button.button != SDL_BUTTON_LEFT) break;
-        if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) setMouseFinger(e->button.windowID, e->button.x, e->button.y);
-        else activeTouchMap.erase(MOUSE_FINGER_ID);
+        activeTouchMap.erase(MOUSE_FINGER_ID);
         break;
     }
 
@@ -75,107 +76,47 @@ void InputManager::processEvents(SDL_Event* e)
             setMouseFinger(e->motion.windowID, e->motion.x, e->motion.y);
         break;
     }
-
-    case SDL_EVENT_FINGER_DOWN:
-    {
-        activeTouchMap[e->tfinger.fingerID] = e->tfinger;
-        if (debugTouches) {
-            SDL_Log("[InputManager] Finger down: ID=%" SDL_PRIu64 " at (%.2f, %.2f) with pressure %.2f",
-                e->tfinger.fingerID, e->tfinger.x, e->tfinger.y, e->tfinger.pressure);
-        }
-        break;
-    }
-
-    case SDL_EVENT_FINGER_MOTION:
-    {
-        activeTouchMap[e->tfinger.fingerID] = e->tfinger;
-        if (debugTouches) {
-            SDL_Log("[InputManager] Finger motion: ID=%" SDL_PRIu64 " at (%.2f, %.2f) with pressure %.2f",
-                e->tfinger.fingerID, e->tfinger.x, e->tfinger.y, e->tfinger.pressure);
-        }
-        break;
-    }
-
-    case SDL_EVENT_FINGER_UP:
-    case SDL_EVENT_FINGER_CANCELED:
-    {
-        activeTouchMap.erase(e->tfinger.fingerID);
-        if (debugTouches) {
-            SDL_Log("[InputManager] Finger up/canceled: ID=%" SDL_PRIu64, e->tfinger.fingerID);
-        }
-        break;
-    }
-
     default:
         break;
     }
 }
 
-// Stores the mouse as a normalized (0..1) touch so every existing finger query works unchanged.
-void InputManager::setMouseFinger(SDL_WindowID windowID, float mouseX, float mouseY)
+//simulates touch screen by converting mouse coordinates to touch input format
+// then registers it as an actual touch input in activeTouchMap.
+void InputManager::setMouseFinger(Uint32 windowID, float mouseX, float mouseY)
 {
-    SDL_Window* window = SDL_GetWindowFromID(windowID);
-    if (!window) return;
+    SDL_Renderer* renderer = RendererContext::getInstance()->getRenderer();
+    if (!renderer) return;
 
-    int w = 0, h = 0;
-    SDL_GetWindowSize(window, &w, &h);
-    if (w <= 0 || h <= 0) return;
+    SDL_Window* window = SDL_GetRenderWindow(renderer);
+    int w = 1, h = 1;
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
-    SDL_TouchFingerEvent finger{};
-    finger.type = SDL_EVENT_FINGER_MOTION;
-    finger.touchID = SDL_MOUSE_TOUCHID;
-    finger.fingerID = MOUSE_FINGER_ID;
-    finger.x = mouseX / (float)w;
-    finger.y = mouseY / (float)h;
-    finger.pressure = 1.0f;
-    finger.windowID = windowID;
-    activeTouchMap[MOUSE_FINGER_ID] = finger;
+    SDL_TouchFingerEvent fakeTouch{};
+    fakeTouch.fingerID = MOUSE_FINGER_ID;
+
+    // Normalize absolute mouse pixels into [0.0, 1.0] range expected by touch math
+    fakeTouch.x = mouseX / static_cast<float>(w);
+    fakeTouch.y = mouseY / static_cast<float>(h);
+    fakeTouch.pressure = 1.0f;
+
+    activeTouchMap[MOUSE_FINGER_ID] = fakeTouch;
 }
 
-bool InputManager::isKeyDown(const SDL_Scancode& key) const
-{
-    bool isKeyDown = this->activeKeySet.contains(key);
-    return isKeyDown;
-}
-
-bool InputManager::isMouseButtonDown(Uint8 button) const
-{
-    SDL_MouseButtonFlags mouseState = SDL_GetMouseState(nullptr, nullptr);
-    return (mouseState & SDL_BUTTON_MASK(button)) != 0;
-}
-
-bool InputManager::getMousePosition(float& outX, float& outY) const
-{
-    float x = 0.0f;
-    float y = 0.0f;
-
-    if (!SDL_GetMouseState(&x, &y))
+// Finds the active finger and scales its normalized touch coordinates directly to logical resolution (ignores camera/viewport offsets).
+bool InputManager::getFingerRawPosition(Uint64 fingerId, float& outX, float& outY) const {
+    auto it = activeTouchMap.find(fingerId);
+    if (it == activeTouchMap.end())
     {
-        outX = x;
-        outY = y;
-        return true;
+        return false;
     }
 
-    outX = x;
-    outY = y;
+    outX = toLogicalX(it->second.x);
+    outY = toLogicalY(it->second.y);
     return true;
 }
 
-bool InputManager::hasActiveTouches() const
-{
-    return !activeTouchMap.empty();
-}
-
-int InputManager::getActiveTouchCount() const
-{
-    return static_cast<int>(activeTouchMap.size());
-}
-
-bool InputManager::isFingerActive(Uint64 fingerId) const
-{
-    return activeTouchMap.find(fingerId) != activeTouchMap.end();
-}
-
+// Finds the active finger and converts its normalized touch coordinates into active viewport/camera screen space.
 bool InputManager::getFingerPosition(Uint64 fingerId, float& outX, float& outY) const
 {
     auto it = activeTouchMap.find(fingerId);
@@ -192,16 +133,47 @@ bool InputManager::getFingerPosition(Uint64 fingerId, float& outX, float& outY) 
     return true;
 }
 
-bool InputManager::getFingerRawPosition(Uint64 fingerId, float &outX, float &outY) const {
-    auto it = activeTouchMap.find(fingerId);
-    if (it == activeTouchMap.end())
-    {
-        return false;
-    }
+// Transforms raw normalized touch input into viewport screen space using window dimensions and camera offsets.
+Vector2D InputManager::rawToScreenPosition(float x, float y) const
+{
+    SDL_Renderer* renderer = RendererContext::getInstance()->getRenderer();
+    if (!renderer) return Vector2D(x, y);
 
-    outX = toLogicalX(it->second.x);
-    outY = toLogicalY(it->second.y);
+    SDL_Window* window = SDL_GetRenderWindow(renderer);
+    int w, h;
+    SDL_GetWindowSizeInPixels(window, &w, &h);
+
+    float winX = x * w;
+    float winY = y * h;
+
+    float lx = 0.0f, ly = 0.0f;
+    SDL_RenderCoordinatesFromWindow(renderer, winX, winY, &lx, &ly);
+
+    uiToGame(lx, ly, lx, ly);
+    return Vector2D(lx, ly);
+}
+
+bool InputManager::isKeyDown(const SDL_Scancode& key) const
+{
+    bool isKeyDown = this->activeKeySet.contains(key);
+    return isKeyDown;
+}
+
+bool InputManager::isMouseButtonDown(Uint8 button) const
+{
+    SDL_MouseButtonFlags mouseState = SDL_GetMouseState(nullptr, nullptr);
+    return (mouseState & SDL_BUTTON_MASK(button)) != 0;
+}
+
+bool InputManager::getMousePosition(float& outX, float& outY) const
+{
+    SDL_GetMouseState(&outX, &outY);
     return true;
+}
+
+bool InputManager::hasActiveTouches() const
+{
+    return !activeTouchMap.empty();
 }
 
 bool InputManager::isAnyFingerInRect(SDL_FRect fRect, Uint64& fingerId) const
@@ -211,8 +183,6 @@ bool InputManager::isAnyFingerInRect(SDL_FRect fRect, Uint64& fingerId) const
         Vector2D windowPos = rawToScreenPosition(touch.x, touch.y);
         SDL_FPoint point = {windowPos.x, windowPos.y};
         fingerId = touch.fingerID;
-        //SDL_Log("Checked finger: %lu at: (%.2f, %.2f) against rect at: (%.2f, %.2f)",
-        //        fingerId, windowPos.x, windowPos.y, fRect.x, fRect.y);
         if (SDL_PointInRectFloat(&point, &fRect))
             return true;
     }
@@ -249,23 +219,4 @@ float InputManager::toLogicalY(float normalizedY) const
         return normalizedY;
     }
     return normalizedY * logicalY;
-}
-
-Vector2D InputManager::rawToScreenPosition(float x, float y) const
-{
-    SDL_Renderer* renderer = RendererContext::getInstance()->getRenderer();
-    if (!renderer) return Vector2D(x, y);
-
-    SDL_Window* window = SDL_GetRenderWindow(renderer);
-    int w, h;
-    SDL_GetWindowSizeInPixels(window, &w, &h);
-
-    float winX = x * w;
-    float winY = y * h;
-
-    float lx = 0.0f, ly = 0.0f;
-    SDL_RenderCoordinatesFromWindow(renderer, winX, winY, &lx, &ly);
-
-    uiToGame(lx, ly, lx, ly);
-    return Vector2D(lx, ly);
 }

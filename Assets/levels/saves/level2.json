@@ -1,0 +1,178 @@
+{
+  "genre": "platformer",
+  "objects": [
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "background_3",
+      "pivot": [
+        0.0,
+        0.0
+      ],
+      "position": [
+        -131.9713134765625,
+        -74.11785888671875
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "texture": "Square",
+      "type": "background"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Statue_Carabao",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        -363.29217529296875,
+        -84.4945068359375
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.25,
+        0.25
+      ],
+      "texture": "Statue_Carabao",
+      "type": "statue"
+    },
+    {
+      "children": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": false,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": false,
+          "name": "Q_Mark",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            100.0,
+            200.0
+          ],
+          "rotation": -30.0,
+          "scale": [
+            0.20000000298023224,
+            0.20000000298023224
+          ],
+          "texture": "Q_Mark",
+          "type": "sprite"
+        }
+      ],
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "player_2",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        1037.267822265625,
+        513.432861328125
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.6000000238418579,
+        0.6000000238418579
+      ],
+      "texture": "player_idle",
+      "type": "player"
+    },
+    {
+      "enabled": true,
+      "isScreenObject": false,
+      "name": "platform_1",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "size": [
+        100.0,
+        20.0
+      ],
+      "type": "platform"
+    },
+    {
+      "enabled": true,
+      "isScreenObject": false,
+      "name": "platform_2",
+      "position": [
+        199.8280029296875,
+        3.117000102996826
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "size": [
+        100.0,
+        20.0
+      ],
+      "type": "platform"
+    },
+    {
+      "enabled": true,
+      "isScreenObject": false,
+      "name": "platform_3",
+      "position": [
+        99.72899627685547,
+        0.9409999847412109
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "size": [
+        100.0,
+        20.0
+      ],
+      "type": "platform"
+    }
+  ],
+  "tilemap": "maps/platformer_level1.tmj",
+  "version": 1
+}

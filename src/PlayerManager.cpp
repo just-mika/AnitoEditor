@@ -5,6 +5,8 @@
 
 void PlayerManager::perform()
 {
+    if (!pController) return;
+
     bool pressingSpace = InputManager::getInstance()->isKeyDown(SDL_SCANCODE_F);
     bool pressingA = InputManager::getInstance()->isKeyDown(SDL_SCANCODE_A);
     bool pressingD = InputManager::getInstance()->isKeyDown(SDL_SCANCODE_D);
@@ -31,6 +33,7 @@ void PlayerManager::initialize()
     EmptyObject* pManagerObject = new EmptyObject("Player Manager");
     P_SHARED_INSTANCE = new PlayerManager();
     pManagerObject->attachComponent(P_SHARED_INSTANCE);
+    pManagerObject->setIsSystemObject(true);
     GameObjectManager::getInstance()->addObject(pManagerObject);
 }
 

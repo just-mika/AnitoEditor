@@ -9,7 +9,7 @@ private:
 protected:
     EditorToolbarScreen();
     ~EditorToolbarScreen();
-    void DrawUI() override;
+    void draw() override;
 
     friend class UIManager;
 };

@@ -138,22 +138,34 @@ void SpriteRenderer::drawWidget()
     Camera* pCam = CameraManager::getInstance()->getCurrentCamera();
     AGameObject* owner = this->getOwner();
 
+    // Faint white outline around every sprite
     SDL_SetRenderDrawBlendMode(this->pRenderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 127);
     SDL_RenderRect(pRenderer, &mDestRect);
 
-    // Unity-style selection outline: same cyan/teal used to highlight the
-    // selected row in HierarchyScreen, so selection reads consistently
-    // between the scene view and the hierarchy list.
-    if (owner == Editor::EditorModule::getInstance()->getSelectedObject())
+    // Highlight if this object or any of its ancestors is selected,
+    // so selecting a parent (even an empty one) outlines everything under it
+    AGameObject* selected = Editor::EditorModule::getInstance()->getSelectedObject();
+    bool bHighlight = false;
+    for (AGameObject* p = owner; p != nullptr; p = p->getParent())
+    {
+        if (p == selected)
+        {
+            bHighlight = true;
+            break;
+        }
+    }
+
+    // Unity-style selection outline: same cyan/teal as the selected row
+    // in HierarchyScreen, so selection reads consistently in both places
+    if (bHighlight)
     {
         SDL_SetRenderDrawColor(pRenderer, 0, 230, 204, 255);
 
         const int nThickness = 2;
-        SDL_FRect highlightRect = mDestRect;
         for (int i = 0; i < nThickness; i++)
         {
-            SDL_FRect r = highlightRect;
+            SDL_FRect r = mDestRect;
             r.x -= i;
             r.y -= i;
             r.w += i * 2.0f;
@@ -162,7 +174,12 @@ void SpriteRenderer::drawWidget()
         }
     }
 
-    Vector2D pos = pCam->worldToScreenPoint(owner->getPos());
+    // Pivot marker: screen objects are already in screen space,
+    // world objects need the camera conversion
+    Vector2D pos = owner->getPos();
+    if (!owner->getIsScreenObject())
+        pos = pCam->worldToScreenPoint(pos);
+
     SDL_FRect pivotRect = { pos.x - 4, pos.y - 4, 8, 8 };
     SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
     SDL_RenderFillRect(pRenderer, &pivotRect);

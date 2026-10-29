@@ -42,6 +42,8 @@ public:
 
     bool checkWinCon();
 
+    void reset();
+
     /* * * * * * * * * * * * * * * * * * * * *
      *       SINGLETON-RELATED CONTENT       *
      * * * * * * * * * * * * * * * * * * * * */

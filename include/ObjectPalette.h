@@ -8,6 +8,7 @@ private:
 	AGameObject* selectedObject;
 	Vector2D mousePos;
 	bool wasCollapsed = false;
+	std::vector<std::string> tilemapFiles;
 
 public:
 	void setSelectedObject(AGameObject* selectedObject);
@@ -17,10 +18,10 @@ public:
 protected:
     ObjectPalette();
 	~ObjectPalette();
-	void DrawUI() override;
+	void draw() override;
 
 	friend class UIManager;
 
 private:
-	void spawnObject(const std::string& typeKey, bool isScreenObject);
+	void spawnObject(const std::string& typeKey, bool isScreenObject, const std::string& variant = "");
 };
