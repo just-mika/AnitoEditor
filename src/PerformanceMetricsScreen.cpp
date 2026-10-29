@@ -11,7 +11,7 @@ PerformanceMetricsScreen::~PerformanceMetricsScreen()
 
 }
 
-void PerformanceMetricsScreen::DrawUI()
+void PerformanceMetricsScreen::draw()
 {
 
     //ImGui::Begin("Performance Metrics");

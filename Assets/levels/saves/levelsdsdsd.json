@@ -1,0 +1,2469 @@
+{
+  "genre": "platformer",
+  "objects": [
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Trees_BG_0",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        2450.0,
+        1520.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "texture": "Trees_BG",
+      "type": "sprite"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Trees_BG_1",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        6450.0,
+        1520.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "texture": "Trees_BG",
+      "type": "sprite"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Trees_BG_2",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        10450.0,
+        1520.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "texture": "Trees_BG",
+      "type": "sprite"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": false,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Tiles_Below_This",
+      "pivot": [
+        0.0,
+        0.0
+      ],
+      "position": [
+        0.0,
+        0.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "texture": "Square",
+      "type": "background"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Exit_Gate",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        10000.0,
+        1130.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "texture": "Gate",
+      "type": "gate"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Statue_Carabao",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        10380.0,
+        1100.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "texture": "Statue_Carabao",
+      "type": "statue"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Gem_Cyan",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        1280.0,
+        1170.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.25,
+        0.25
+      ],
+      "texture": "Gem_Cyan",
+      "type": "gem"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Gem_Green",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        4860.0,
+        1170.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.25,
+        0.25
+      ],
+      "texture": "Gem_Green",
+      "type": "gem"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Gem_Orange",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        4860.0,
+        410.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.25,
+        0.25
+      ],
+      "texture": "Gem_Orange",
+      "type": "gem"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Gem_Purple",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        6200.0,
+        410.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.25,
+        0.25
+      ],
+      "texture": "Gem_Purple",
+      "type": "gem"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Gem_Red",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        9060.0,
+        600.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.25,
+        0.25
+      ],
+      "texture": "Gem_Red",
+      "type": "gem"
+    },
+    {
+      "children": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": false,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": false,
+          "name": "Q_Mark",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            100.0,
+            200.0
+          ],
+          "rotation": -30.0,
+          "scale": [
+            0.20000000298023224,
+            0.20000000298023224
+          ],
+          "texture": "Q_Mark",
+          "type": "sprite"
+        }
+      ],
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Player",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        1050.0,
+        450.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.6000000238418579,
+        0.6000000238418579
+      ],
+      "texture": "player_idle",
+      "type": "player"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": true,
+      "name": "Pause_Button",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        100.0,
+        100.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.07999999821186066,
+        0.07999999821186066
+      ],
+      "texture": "Pause_Button",
+      "type": "gui_button"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": true,
+      "name": "Story_Button",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        1640.0,
+        100.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.07999999821186066,
+        0.07999999821186066
+      ],
+      "texture": "Story_Button",
+      "type": "gui_button"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": true,
+      "name": "Items_Button",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        1820.0,
+        100.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.07999999821186066,
+        0.07999999821186066
+      ],
+      "texture": "Items_Button",
+      "type": "gui_button"
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "color": [
+                165,
+                42,
+                42,
+                255
+              ],
+              "enabled": true,
+              "fontSize": 120,
+              "isScreenObject": true,
+              "name": "PauseText",
+              "position": [
+                550.0,
+                200.0
+              ],
+              "rotation": -15.0,
+              "scale": [
+                0.20000000298023224,
+                0.20000000298023224
+              ],
+              "text": "Paused",
+              "type": "text"
+            },
+            {
+              "children": [
+                {
+                  "color": [
+                    255,
+                    255,
+                    255,
+                    255
+                  ],
+                  "enabled": true,
+                  "fontSize": 45,
+                  "isScreenObject": true,
+                  "name": "ResumeText",
+                  "position": [
+                    0.0,
+                    0.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    6.666666507720947,
+                    6.666666507720947
+                  ],
+                  "text": "Resume",
+                  "type": "text"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "ResumeButton",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                500.0,
+                350.0
+              ],
+              "rotation": -17.5,
+              "scale": [
+                0.030000001192092896,
+                0.030000001192092896
+              ],
+              "texture": "BrownButton",
+              "type": "gui_button"
+            },
+            {
+              "children": [
+                {
+                  "color": [
+                    255,
+                    255,
+                    255,
+                    255
+                  ],
+                  "enabled": true,
+                  "fontSize": 45,
+                  "isScreenObject": true,
+                  "name": "QuitText",
+                  "position": [
+                    0.0,
+                    0.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    6.666666507720947,
+                    6.666666507720947
+                  ],
+                  "text": "Quit Stage",
+                  "type": "text"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "QuitButton",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                500.0,
+                550.0
+              ],
+              "rotation": -17.0,
+              "scale": [
+                0.030000001192092896,
+                0.030000001192092896
+              ],
+              "texture": "BrownButton",
+              "type": "gui_button"
+            }
+          ],
+          "color": [
+            250,
+            227,
+            150,
+            127
+          ],
+          "enabled": false,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "TransparentBG",
+          "pivot": [
+            0.0,
+            0.0
+          ],
+          "position": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            5.0,
+            5.0
+          ],
+          "texture": "Square",
+          "type": "background"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": false,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "PauseAnim",
+          "pivot": [
+            0.0,
+            0.0
+          ],
+          "position": [
+            250.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.8999999761581421,
+            0.8999999761581421
+          ],
+          "texture": "Pause",
+          "type": "animated_sprite"
+        }
+      ],
+      "enabled": true,
+      "isScreenObject": true,
+      "name": "PauseScreen",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "type": "pause_screen"
+    },
+    {
+      "children": [
+        {
+          "color": [
+            250,
+            227,
+            150,
+            127
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "TransparentBG",
+          "pivot": [
+            0.0,
+            0.0
+          ],
+          "position": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            5.0,
+            5.0
+          ],
+          "texture": "Square",
+          "type": "background"
+        },
+        {
+          "children": [
+            {
+              "color": [
+                0,
+                0,
+                0,
+                255
+              ],
+              "enabled": true,
+              "fontSize": 45,
+              "isScreenObject": true,
+              "name": "Message",
+              "position": [
+                0.0,
+                -200.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.20000000298023224,
+                0.800000011920929
+              ],
+              "text": "",
+              "type": "text"
+            }
+          ],
+          "color": [
+            255,
+            255,
+            255,
+            0
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "ParentBG",
+          "pivot": [
+            0.0,
+            0.0
+          ],
+          "position": [
+            0.0,
+            200.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            5.0,
+            1.25
+          ],
+          "texture": "Square",
+          "type": "background"
+        },
+        {
+          "color": [
+            0,
+            0,
+            0,
+            255
+          ],
+          "enabled": true,
+          "fontSize": 90,
+          "isScreenObject": true,
+          "name": "TitleText",
+          "position": [
+            1000.0,
+            100.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "text": "",
+          "type": "text"
+        },
+        {
+          "color": [
+            0,
+            0,
+            0,
+            255
+          ],
+          "enabled": true,
+          "fontSize": 90,
+          "isScreenObject": true,
+          "name": "LineBreak",
+          "position": [
+            1000.0,
+            150.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "text": "----------------------------------------",
+          "type": "text"
+        },
+        {
+          "children": [
+            {
+              "color": [
+                0,
+                0,
+                0,
+                255
+              ],
+              "enabled": true,
+              "fontSize": 90,
+              "isScreenObject": true,
+              "name": "Decline_Text",
+              "position": [
+                0.0,
+                0.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                5.0,
+                5.0
+              ],
+              "text": "Close",
+              "type": "text"
+            }
+          ],
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "CloseButton",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            1000.0,
+            950.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.15000000596046448,
+            0.15000000596046448
+          ],
+          "texture": "Close_Button",
+          "type": "gui_button"
+        }
+      ],
+      "enabled": false,
+      "isScreenObject": true,
+      "name": "Platformer1StoryWindow",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "type": "story_window"
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "color": [
+                    0,
+                    0,
+                    0,
+                    255
+                  ],
+                  "enabled": true,
+                  "fontSize": 40,
+                  "isScreenObject": true,
+                  "name": "ExitText",
+                  "position": [
+                    0.0,
+                    0.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    8.0,
+                    8.0
+                  ],
+                  "text": "Return to Hub",
+                  "type": "text"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "Button_Exit",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                1500.0,
+                800.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.02500000037252903,
+                0.02500000037252903
+              ],
+              "texture": "Exit",
+              "type": "gui_button"
+            },
+            {
+              "children": [
+                {
+                  "color": [
+                    255,
+                    255,
+                    255,
+                    255
+                  ],
+                  "enabled": true,
+                  "fontSize": 120,
+                  "isScreenObject": true,
+                  "name": "ClearText",
+                  "position": [
+                    0.0,
+                    0.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    2.6666667461395264,
+                    2.6666667461395264
+                  ],
+                  "text": "Cleared",
+                  "type": "text"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "pTextHolder",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                1500.0,
+                450.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.07500000298023224,
+                0.07500000298023224
+              ],
+              "texture": "Tablet",
+              "type": "sprite"
+            }
+          ],
+          "color": [
+            255,
+            255,
+            255,
+            0
+          ],
+          "enabled": false,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "TransparentBG",
+          "pivot": [
+            0.0,
+            0.0
+          ],
+          "position": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            5.0,
+            5.0
+          ],
+          "texture": "Square",
+          "type": "background"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": false,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "EndAnim",
+          "pivot": [
+            0.0,
+            0.0
+          ],
+          "position": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.8999999761581421,
+            0.8999999761581421
+          ],
+          "texture": "End_Level",
+          "type": "animated_sprite"
+        }
+      ],
+      "enabled": true,
+      "isScreenObject": true,
+      "name": "LevelEndScreen",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "type": "level_end_gui"
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "InventoryBG",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                2000.0,
+                550.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.07999999821186066,
+                0.25
+              ],
+              "texture": "Tablet",
+              "type": "sprite"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "ReturnButton",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                100.0,
+                100.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.015000000596046448,
+                0.015000000596046448
+              ],
+              "texture": "Return",
+              "type": "gui_button"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "Gem_Cyan",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                1825.0,
+                225.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.07000000029802322,
+                0.07000000029802322
+              ],
+              "texture": "Gem_Cyan",
+              "type": "gui_button"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "Gem_Green",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                1825.0,
+                375.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.07000000029802322,
+                0.07000000029802322
+              ],
+              "texture": "Gem_Green",
+              "type": "gui_button"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "Gem_Orange",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                1825.0,
+                525.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.07000000029802322,
+                0.07000000029802322
+              ],
+              "texture": "Gem_Orange",
+              "type": "gui_button"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "Gem_Purple",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                1825.0,
+                675.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.07000000029802322,
+                0.07000000029802322
+              ],
+              "texture": "Gem_Purple",
+              "type": "gui_button"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "Gem_Red",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                1825.0,
+                825.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.07000000029802322,
+                0.07000000029802322
+              ],
+              "texture": "Gem_Red",
+              "type": "gui_button"
+            }
+          ],
+          "color": [
+            250,
+            227,
+            150,
+            127
+          ],
+          "enabled": false,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "TransparentBG",
+          "pivot": [
+            0.0,
+            0.0
+          ],
+          "position": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            5.0,
+            5.0
+          ],
+          "texture": "Square",
+          "type": "background"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": false,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "InventoryAnim",
+          "pivot": [
+            0.0,
+            0.0
+          ],
+          "position": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "texture": "Inventory",
+          "type": "animated_sprite"
+        },
+        {
+          "children": [
+            {
+              "color": [
+                0,
+                0,
+                0,
+                255
+              ],
+              "enabled": true,
+              "fontSize": 90,
+              "isScreenObject": true,
+              "name": "Title",
+              "position": [
+                50.0,
+                -300.0
+              ],
+              "rotation": -14.0,
+              "scale": [
+                1.1111111640930176,
+                1.1111111640930176
+              ],
+              "text": "No Gem",
+              "type": "text"
+            },
+            {
+              "color": [
+                0,
+                0,
+                0,
+                255
+              ],
+              "enabled": true,
+              "fontSize": 45,
+              "isScreenObject": true,
+              "name": "Text",
+              "position": [
+                0.0,
+                -100.0
+              ],
+              "rotation": -14.0,
+              "scale": [
+                1.1111111640930176,
+                1.1111111640930176
+              ],
+              "text": "Please Select a Gem",
+              "type": "text"
+            }
+          ],
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": false,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "InfoGem",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            1000.0,
+            550.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.8999999761581421,
+            0.8999999761581421
+          ],
+          "texture": "Gem_Colorless_Inventory",
+          "type": "sprite"
+        }
+      ],
+      "enabled": true,
+      "isScreenObject": true,
+      "name": "Platformer1InventoryGUI",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "type": "inventory_gui"
+    },
+    {
+      "children": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInputBG",
+          "pivot": [
+            0.0,
+            0.0
+          ],
+          "position": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.9599999785423279,
+            0.8999999761581421
+          ],
+          "texture": "typing_screen",
+          "type": "background"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "TopSprite",
+          "pivot": [
+            0.5,
+            0.0
+          ],
+          "position": [
+            960.0,
+            20.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            0.8999999761581421
+          ],
+          "texture": "typing_top",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "TabletSprite",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            960.0,
+            610.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.949999988079071,
+            0.8500000238418579
+          ],
+          "texture": "typing_tablet",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            90,
+            45,
+            20,
+            200
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "CirclesBG",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            500.0,
+            525.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.8999999761581421,
+            0.6499999761581421
+          ],
+          "texture": "Square",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            90,
+            45,
+            20,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Square1",
+          "pivot": [
+            1.0,
+            0.5
+          ],
+          "position": [
+            1540.0,
+            390.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.399999976158142,
+            0.15000000596046448
+          ],
+          "texture": "Square",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            127
+          ],
+          "enabled": true,
+          "fontSize": 40,
+          "isScreenObject": true,
+          "name": "GemInput_SquareText1",
+          "position": [
+            850.0,
+            385.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "text": "Somebody...",
+          "type": "text"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Undo1",
+          "pivot": [
+            1.0,
+            0.5
+          ],
+          "position": [
+            1640.0,
+            390.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.03500000014901161,
+            0.03500000014901161
+          ],
+          "texture": "Return",
+          "type": "gui_button"
+        },
+        {
+          "color": [
+            60,
+            0,
+            8,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "CircleSprite1",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            350.0,
+            430.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.4000000059604645,
+            0.4000000059604645
+          ],
+          "texture": "Circle",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            90,
+            45,
+            20,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Square2",
+          "pivot": [
+            1.0,
+            0.5
+          ],
+          "position": [
+            1540.0,
+            490.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.399999976158142,
+            0.15000000596046448
+          ],
+          "texture": "Square",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            127
+          ],
+          "enabled": true,
+          "fontSize": 40,
+          "isScreenObject": true,
+          "name": "GemInput_SquareText2",
+          "position": [
+            850.0,
+            485.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "text": "Wanted...",
+          "type": "text"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Undo2",
+          "pivot": [
+            1.0,
+            0.5
+          ],
+          "position": [
+            1640.0,
+            490.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.03500000014901161,
+            0.03500000014901161
+          ],
+          "texture": "Return",
+          "type": "gui_button"
+        },
+        {
+          "color": [
+            60,
+            0,
+            8,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "CircleSprite2",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            650.0,
+            430.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.4000000059604645,
+            0.4000000059604645
+          ],
+          "texture": "Circle",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            90,
+            45,
+            20,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Square3",
+          "pivot": [
+            1.0,
+            0.5
+          ],
+          "position": [
+            1540.0,
+            590.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.399999976158142,
+            0.15000000596046448
+          ],
+          "texture": "Square",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            127
+          ],
+          "enabled": true,
+          "fontSize": 40,
+          "isScreenObject": true,
+          "name": "GemInput_SquareText3",
+          "position": [
+            850.0,
+            585.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "text": "But...",
+          "type": "text"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Undo3",
+          "pivot": [
+            1.0,
+            0.5
+          ],
+          "position": [
+            1640.0,
+            590.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.03500000014901161,
+            0.03500000014901161
+          ],
+          "texture": "Return",
+          "type": "gui_button"
+        },
+        {
+          "color": [
+            60,
+            0,
+            8,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "CircleSprite3",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            500.0,
+            525.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.4000000059604645,
+            0.4000000059604645
+          ],
+          "texture": "Circle",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            90,
+            45,
+            20,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Square4",
+          "pivot": [
+            1.0,
+            0.5
+          ],
+          "position": [
+            1540.0,
+            690.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.399999976158142,
+            0.15000000596046448
+          ],
+          "texture": "Square",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            127
+          ],
+          "enabled": true,
+          "fontSize": 40,
+          "isScreenObject": true,
+          "name": "GemInput_SquareText4",
+          "position": [
+            850.0,
+            685.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "text": "So...",
+          "type": "text"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Undo4",
+          "pivot": [
+            1.0,
+            0.5
+          ],
+          "position": [
+            1640.0,
+            690.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.03500000014901161,
+            0.03500000014901161
+          ],
+          "texture": "Return",
+          "type": "gui_button"
+        },
+        {
+          "color": [
+            60,
+            0,
+            8,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "CircleSprite4",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            350.0,
+            620.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.4000000059604645,
+            0.4000000059604645
+          ],
+          "texture": "Circle",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            90,
+            45,
+            20,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Square5",
+          "pivot": [
+            1.0,
+            0.5
+          ],
+          "position": [
+            1540.0,
+            790.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.399999976158142,
+            0.15000000596046448
+          ],
+          "texture": "Square",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            127
+          ],
+          "enabled": true,
+          "fontSize": 40,
+          "isScreenObject": true,
+          "name": "GemInput_SquareText5",
+          "position": [
+            850.0,
+            785.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "text": "Then...",
+          "type": "text"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Undo5",
+          "pivot": [
+            1.0,
+            0.5
+          ],
+          "position": [
+            1640.0,
+            790.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.03500000014901161,
+            0.03500000014901161
+          ],
+          "texture": "Return",
+          "type": "gui_button"
+        },
+        {
+          "color": [
+            60,
+            0,
+            8,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "CircleSprite5",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            650.0,
+            620.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.4000000059604645,
+            0.4000000059604645
+          ],
+          "texture": "Circle",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "Gem_Red",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            350.0,
+            440.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ],
+          "texture": "Gem_Red",
+          "type": "gem_input_token"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "Gem_Orange",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            650.0,
+            440.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ],
+          "texture": "Gem_Orange",
+          "type": "gem_input_token"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "Gem_Purple",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            500.0,
+            535.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ],
+          "texture": "Gem_Purple",
+          "type": "gem_input_token"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "Gem_Green",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            350.0,
+            630.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ],
+          "texture": "Gem_Green",
+          "type": "gem_input_token"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "Gem_Cyan",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            650.0,
+            630.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.30000001192092896,
+            0.30000001192092896
+          ],
+          "texture": "Gem_Cyan",
+          "type": "gem_input_token"
+        },
+        {
+          "color": [
+            0,
+            0,
+            0,
+            255
+          ],
+          "enabled": true,
+          "fontSize": 80,
+          "isScreenObject": true,
+          "name": "TitleText",
+          "position": [
+            960.0,
+            115.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "text": "Map SWBST",
+          "type": "text"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Return",
+          "pivot": [
+            0.0,
+            0.0
+          ],
+          "position": [
+            50.0,
+            50.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.07000000029802322,
+            0.07000000029802322
+          ],
+          "texture": "Return",
+          "type": "gui_button"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Recall",
+          "pivot": [
+            1.0,
+            0.0
+          ],
+          "position": [
+            1800.0,
+            130.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.11999999731779099,
+            0.11999999731779099
+          ],
+          "texture": "Tablet",
+          "type": "gui_button"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Score",
+          "pivot": [
+            1.0,
+            1.0
+          ],
+          "position": [
+            1620.0,
+            1070.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.12999999523162842,
+            0.12999999523162842
+          ],
+          "texture": "Tablet",
+          "type": "gui_button"
+        },
+        {
+          "children": [
+            {
+              "color": [
+                0,
+                0,
+                0,
+                255
+              ],
+              "enabled": true,
+              "fontSize": 70,
+              "isScreenObject": true,
+              "name": "SubmitText",
+              "position": [
+                0.0,
+                -75.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                2.0,
+                1.3333333730697632
+              ],
+              "text": "Submit",
+              "type": "text"
+            }
+          ],
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "GemInput_Submit",
+          "pivot": [
+            0.5,
+            1.0
+          ],
+          "position": [
+            960.0,
+            1076.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.5,
+            0.75
+          ],
+          "texture": "tablet_bottom",
+          "type": "gui_button"
+        },
+        {
+          "children": [
+            {
+              "color": [
+                255,
+                225,
+                170,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "GemInput_PreviewWindow",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                510.0,
+                590.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ],
+              "texture": "Square",
+              "type": "sprite"
+            },
+            {
+              "color": [
+                0,
+                0,
+                0,
+                255
+              ],
+              "enabled": true,
+              "fontSize": 60,
+              "isScreenObject": true,
+              "name": "GemInput_PreviewText",
+              "position": [
+                510.0,
+                540.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ],
+              "text": "Preview \n Text",
+              "type": "text"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "GemInput_ClosePreview",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                510.0,
+                790.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.10000000149011612,
+                0.10000000149011612
+              ],
+              "texture": "Close_Button",
+              "type": "gui_button"
+            },
+            {
+              "color": [
+                180,
+                20,
+                20,
+                255
+              ],
+              "enabled": true,
+              "fontSize": 50,
+              "isScreenObject": true,
+              "name": "GemInput_ClosePreviewText",
+              "position": [
+                510.0,
+                785.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ],
+              "text": "Close",
+              "type": "text"
+            }
+          ],
+          "enabled": false,
+          "isScreenObject": true,
+          "name": "GemInputPreview",
+          "position": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "type": "gem_input_preview"
+        }
+      ],
+      "enabled": false,
+      "isScreenObject": true,
+      "name": "GemInputScreen",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "type": "gem_input_screen"
+    }
+  ],
+  "tilemap": "maps/platformer_level1.tmj",
+  "version": 1
+}

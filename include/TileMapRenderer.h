@@ -26,6 +26,7 @@ public:
 	void setTileSize(float fTileWidth, float fTileHeight);
 	void setOffset(Vector2D offset);
 
+	void setGridSize(Uint64 nColumns, Uint64 nRows);
 	Vector2D getCellSize();
 	Vector2D getTilePosition(Uint64 c, Uint64 r, bool clamp = false);
 };

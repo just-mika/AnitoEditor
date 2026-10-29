@@ -76,20 +76,34 @@ void PlayerController::perform()
 
 void PlayerController::onCollisionEnter(ACollider* pCollider)
 {
-	if (AInteractable* pCollectable = dynamic_cast<AInteractable*>(pCollider))
-	{
-		std::cout << "collectable detected." << std::endl;
-		this->pQMark->setEnabled(true);
+    if (AInteractable* pCollectable = dynamic_cast<AInteractable*>(pCollider))
+    {
+        std::cout << "collectable detected." << std::endl;
+        if (this->pQMark) this->pQMark->setEnabled(true);
         this->pInput->setInteracted(false);
+
         AGameObject* pBtn = GameObjectManager::getInstance()->findObjectByName("InteractBtn");
-        pBtn->setEnabled(true);
-        InteractButtonController* pCtrl = (InteractButtonController*)pBtn->findComponentByName("InteractButtonController");
-        if (pCtrl) pCtrl->setJustEnabled(true); 
-	}
-	else if (pCollider)
-	{
-		std::cout << pCollider->getOwner()->getName() << std::endl;
-	}
+        if (pBtn)
+        {
+            pBtn->setEnabled(true);
+            InteractButtonController* pCtrl = (InteractButtonController*)pBtn->findComponentByName("InteractButtonController");
+            if (pCtrl) pCtrl->setJustEnabled(true);
+        }
+    }
+    else if (pCollider)
+    {
+        std::cout << pCollider->getOwner()->getName() << std::endl;
+    }
+}
+
+void PlayerController::onCollisionExit(ACollider* pCollider)
+{
+    if (AInteractable* pCollectable = dynamic_cast<AInteractable*>(pCollider))
+    {
+        if (this->pQMark) this->pQMark->setEnabled(false);
+        AGameObject* pBtn = GameObjectManager::getInstance()->findObjectByName("InteractBtn");
+        if (pBtn) pBtn->setEnabled(false);
+    }
 }
 
 void PlayerController::onCollisionContinue(ACollider* pCollider)
@@ -102,16 +116,6 @@ void PlayerController::onCollisionContinue(ACollider* pCollider)
             this->pInput->setInteracted(false); 
         }
     }
-}
-
-void PlayerController::onCollisionExit(ACollider * pCollider)
-{
-	if (AInteractable* pCollectable = dynamic_cast<AInteractable*>(pCollider))
-	{
-		this->pQMark->setEnabled(false);
-		GameObjectManager::getInstance()->findObjectByName("InteractBtn")->setEnabled(false);
-
-	}
 }
 
 void PlayerController::Move(float direction)

@@ -10,7 +10,5 @@ private:
 public:
 	TileMap(std::string strName);
 	
-	void initialize() override;
-
-};
+	void initialize() override;};
 

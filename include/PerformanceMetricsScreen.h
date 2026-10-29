@@ -16,6 +16,6 @@ protected:
 	PerformanceMetricsScreen();
 	~PerformanceMetricsScreen();
 
-	void DrawUI() override;
+	void draw() override;
 };
 

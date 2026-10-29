@@ -4,8 +4,11 @@
 #include "TokenController.h"
 #include "GemInputToken.h"
 
-PuzzleToken::PuzzleToken(std::string strName, Vector2D position, Vector2D scale) : AGameObject(strName)
+PuzzleToken::PuzzleToken(std::string strName, Vector2D position, Vector2D scale,
+	std::string strTexture) : AGameObject(strName)
 {
+	this->strTexture = strTexture;
+
 	this->nSlot = -1;
 	this->bDropped = false;
 	this->fVecTranslate = position;
@@ -14,7 +17,7 @@ PuzzleToken::PuzzleToken(std::string strName, Vector2D position, Vector2D scale)
 
 void PuzzleToken::initialize()
 {
-	SpriteRenderer* pRenderer = new SpriteRenderer(strName);
+	SpriteRenderer* pRenderer = new SpriteRenderer(this->strTexture);
 	ButtonInput* pInput = new ButtonInput(pRenderer);
 	TokenController* pController = new TokenController(pInput);
 

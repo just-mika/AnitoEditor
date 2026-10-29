@@ -45,11 +45,13 @@ static const std::vector<ObjectTypeInfo> S_REGISTERED_TYPES = {
 
     // --- Gameplay Entities ---
     { "player",           "Player",           ObjectCategory::Gameplay, false,{ Dependency::Physics } },
-	{ "gem",              "Gem",              ObjectCategory::Gameplay, false,{ Dependency::Physics, Dependency::GemDataAsset } },
-	{ "statue",           "Statue",           ObjectCategory::Gameplay, false,{ Dependency::Physics } },
+    { "gem",          "Gem",          ObjectCategory::Gameplay, false,{ Dependency::Physics, Dependency::GemDataAsset }, 
+    	{ "Gem_Cyan", "Gem_Green", "Gem_Orange", "Gem_Purple", "Gem_Red" } },
+	{ "statue",       "Statue",       ObjectCategory::Gameplay, false,{ Dependency::Physics },{ "Statue_Carabao" } },
 	{ "gate",             "Gate",             ObjectCategory::Gameplay, false,{ Dependency::Physics } },
 	{ "platform",         "Platform",         ObjectCategory::Gameplay, false,{ Dependency::Physics } },
-    { "puzzle_token",      "Puzzle Token",      ObjectCategory::Gameplay,  false },
+	{ "puzzle_token", "Puzzle Token", ObjectCategory::Gameplay, false,{} },   // delete the variants list
+
 
     // --- UI & Narrative Composites ---
     { "story_window",      "Story Window",      ObjectCategory::UI,        true  },
@@ -146,7 +148,7 @@ AGameObject* ObjectFactory::createObject(const std::string& typeKey, const std::
         newObj = new Platform(uniqueName);
     }
     else if (typeKey == "puzzle_token") {
-        newObj = new PuzzleToken(textureName("Token_Horns"));
+        newObj = new PuzzleToken(uniqueName);
     }
 
     // 3. UI & Narrative Composites
@@ -185,10 +187,6 @@ AGameObject* ObjectFactory::createObject(const std::string& typeKey, const std::
     }
 
     if (newObj != nullptr) {
-        // NOTE: do NOT call initialize() here. GameObjectManager::addObject() already
-        // initializes the object, so calling it here would attach every component/child twice.
-
-        // Screen vs world space. Uses the real flag the renderers/colliders read (bIsScreenObject).
         newObj->setIsScreenObject(isScreenObjectType(typeKey));
     }
 

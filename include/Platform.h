@@ -13,6 +13,8 @@ public:
 
 	void initialize() override;
 
+	Vector2D getSize() const { return fVecSize; }
+	void setSize(const Vector2D& s) { fVecSize = s; }
 
 	// Inherited via ACollisionListener
 	void onCollisionEnter(ACollider* pCollider) override;

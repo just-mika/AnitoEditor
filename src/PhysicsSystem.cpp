@@ -131,6 +131,13 @@ int PhysicsSystem::findTrackedCollider(ACollider* pCollider) {
     return nIndex;
 }
 
+void PhysicsSystem::reset()
+{
+    this->vecTrackedCollider.clear();
+    this->vecUntrackedCollider.clear();
+    this->vecRigidBody.clear();
+}
+
 /* * * * * * * * * * * * * * * * * * * * *
  *       SINGLETON-RELATED CONTENT       *
  * * * * * * * * * * * * * * * * * * * * */
@@ -147,6 +154,7 @@ void PhysicsSystem::initialize() {
     EmptyObject* pPhysManagerHolder = new EmptyObject("Physics Manager Holder");
     P_SHARED_INSTANCE = new PhysicsSystem("PhysicsSystem");
     pPhysManagerHolder->attachComponent(P_SHARED_INSTANCE);
+    pPhysManagerHolder->setIsSystemObject(true);
     GameObjectManager::getInstance()->addObject(pPhysManagerHolder);
 }
 

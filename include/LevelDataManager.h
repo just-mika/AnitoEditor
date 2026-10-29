@@ -2,9 +2,11 @@
 #include <string>
 #include <vector>
 #include "json.hpp"
+#include "LoadedScene.h"
 #include "SpriteRenderer.h"
 #include "Vector2D.h"
 
+class TileMap;
 using json = nlohmann::json;
 
 class LevelDataManager
@@ -18,19 +20,47 @@ public:
     bool loadLevel(const std::string& fileName);
     json serializeScene() const;
     bool buildFromJson(const json& level);
+    void newLevel(const std::string& genre);
 
     const std::string& getCurrentFile() const { return currentFile; }
     bool hasCurrentFile() const { return !currentFile.empty(); }
-    void stepFile(int delta);
 
+    void enterScene(LoadedScene* scene);
+    void leaveScene(LoadedScene* scene);
+    LoadedScene* getActiveScene() const { return activeScene; }
+    bool hasActiveScene() const { return activeScene != nullptr; }
+    bool canCreate(const std::string& genre) const;
+
+    void loadTilemap(const std::string& mapPath);
+
+    void beginPlay();
+    void endPlay();
+
+    void importTilemap(const std::string& mapPath);
+    const std::string& getTilemapPath() const { return tilemapPath; }
 private:
+    TileMap* pTileMap = nullptr;
+    std::string tilemapPath;
+
+    json playSnapshot;
+    bool restorePending = false;
+    void restoreSnapshot();
+
+    std::string pendingTilemap;
 
     static constexpr const char* kOrg = "AnitoEditor";
     static constexpr const char* kApp = "BabaylanTales";
     static constexpr const char* kBundledDir = "Assets/levels/";
     std::string pendingLoad;
     std::string currentFile;
+    LoadedScene* activeScene = nullptr;
+    std::string nextFile;                                // file to open after a genre switch
+    std::string currentFileGenre;
+    static SceneTag sceneTagFor(const std::string& genre);
     
+    bool loadingTemplate = false;
+    std::string templateGenre;
+    void newBlankLevel(const std::string& genre);
 
     static std::string writableDir();
     static bool isSafeFileName(const std::string& name);
@@ -55,6 +85,8 @@ public:
     static void destroy();
 
     static LevelDataManager* getInstance();
+
+
 
 private:
     static LevelDataManager* P_SHARED_INSTANCE;

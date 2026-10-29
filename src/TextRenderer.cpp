@@ -1,5 +1,7 @@
 #include "TextRenderer.h"
 
+#include "EditorModule.h"
+
 TextRenderer::TextRenderer():ARenderer("TextRenderer")
 {
 	this->strFontType = "lazy";
@@ -148,7 +150,21 @@ void TextRenderer::perform()
 }
 void TextRenderer::drawWidget()
 {
+    if (this->getOwner() != Editor::EditorModule::getInstance()->getSelectedObject())
+        return;
 
+    SDL_SetRenderDrawColor(pRenderer, 0, 230, 204, 255);
+    for (int i = 0; i < 2; i++)
+    {
+        SDL_FRect r = mDestRect;
+        r.x -= i;
+        r.y -= i;
+
+        r.w += i * 2.0f;
+        r.h += i * 2.0f;
+
+        SDL_RenderRect(pRenderer, &r);
+    }
 }
 
 void TextRenderer::loadFromText(std::string fontType, int nFontSize, std::string strText, SDL_Color textColor)

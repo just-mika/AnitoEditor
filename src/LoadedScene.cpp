@@ -1,25 +1,28 @@
+// LoadedScene.cpp  (replaces the old contents; onLoadResources/onUnloadResources move to the subclasses)
 #include "LoadedScene.h"
-#include "TextureManager.h"
 #include "CameraManager.h"
 #include "LevelDataManager.h"
+#include "EditorMode.h"
+#if EDITOR_MODE
+#include "EditorModule.h"
+#endif
 
-LoadedScene::LoadedScene() : AScene(SceneTag::LOADED_SCENE) {}
+LoadedScene::LoadedScene(SceneTag tag) : AScene(tag) {}
 LoadedScene::~LoadedScene() {}
-void LoadedScene::onLoadResources()
-{
-	TextureManager::getInstance()->load("Square.png", "Square");
-}
 
 void LoadedScene::onLoadObjects()
 {
     CameraManager::getInstance()->getCurrentCamera()->setPos(Vector2D(0.0f));
-
-    LevelDataManager* ldm = LevelDataManager::getInstance();
-    if (ldm->hasCurrentFile()) ldm->requestLoad(ldm->getCurrentFile());   // re-enter the open file
-    else                       ldm->stepFile(+1);                          // otherwise the first file
+    setUpSubsystems();                                   // managers first
+    LevelDataManager::getInstance()->enterScene(this);   // opens the pending / open file, if any
 }
 
-void LoadedScene::onUnloadResources()
+void LoadedScene::onUnloadObjects()
 {
-	TextureManager::getInstance()->unload("Square");
+#if EDITOR_MODE
+    Editor::EditorModule::getInstance()->setSelectedObject(nullptr);   // objects are about to die
+#endif
+    if (LevelDataManager* ldm = LevelDataManager::getInstance())
+        ldm->leaveScene(this);
+    AScene::onUnloadObjects();                           // deletes objects, managers included
 }

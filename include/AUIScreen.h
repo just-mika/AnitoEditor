@@ -12,7 +12,7 @@ protected:
 	~AUIScreen();
 
 	std::string GetName();
-	virtual void DrawUI() = 0;
+	virtual void draw() = 0;
 
 	std::string name;
 	bool enabled = true;

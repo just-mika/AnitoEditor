@@ -73,6 +73,20 @@ void AGameObject::update(float fDeltaTime)
     }
 }
 
+void AGameObject::drawWidgets()
+{
+    if (!this->bEnabled) return;
+
+    for (AComponent* pComponent : this->vecComponent)
+    {
+        if (pComponent->getEnabled())
+            pComponent->drawWidget();
+    }
+
+    for (AGameObject* pChild : this->vecChildren)
+        pChild->drawWidgets();
+}
+
 void AGameObject::draw(SDL_Renderer* pRenderer)
 {
 
@@ -89,11 +103,7 @@ void AGameObject::draw(SDL_Renderer* pRenderer)
 
     if (showWidgets)
     {
-        for (AComponent* pComponent : vecComponent)
-        {
-            if (pComponent->getOwner()->getEnabled() && pComponent->getEnabled())
-                pComponent->drawWidget();
-        }
+        this->drawWidgets();
     }
 }
 

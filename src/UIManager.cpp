@@ -103,7 +103,7 @@ void UIManager::drawAllUI(SDL_Renderer* renderer)
 	for (int i = 0; i < this->uiList.size(); i++)
 	{
 		if (this->uiList[i]->enabled)
-			this->uiList[i]->DrawUI();
+			this->uiList[i]->draw();
 	}
 
 	ImGui::Render();

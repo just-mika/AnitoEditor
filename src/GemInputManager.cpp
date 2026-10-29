@@ -59,9 +59,9 @@ void GemInputManager::perform()
             this->resetText(i);
         }
     }
-    if (pSubmit->getClicked())
+    if (pSubmit && pSubmit->getClicked())
     {
-        if (this->checkWinCon())
+        if (this->checkWinCon() && this->pGate)
         {
             std::cout << "Win" << std::endl;
             this->pGate->gateOpen();
@@ -173,7 +173,8 @@ GemInputManager* GemInputManager::P_SHARED_INSTANCE = NULL;
 GemInputManager::GemInputManager() : AComponent("GemInputManager", ComponentType::SCRIPT)
 {
 	this->pDataAsset = (CollectableGemDataAsset*)DataAssetManager::getInstance()->getDataAsset("CollectableGemDataAsset");
-
+    this->pSubmit = nullptr;
+    this->pGate = nullptr;
 }
 
 void GemInputManager::initialize()
@@ -181,6 +182,7 @@ void GemInputManager::initialize()
     EmptyObject* pManagerObject = new EmptyObject("GemInputManager");
     P_SHARED_INSTANCE = new GemInputManager();
     pManagerObject->attachComponent(P_SHARED_INSTANCE);
+    pManagerObject->setIsSystemObject(true);
     GameObjectManager::getInstance()->addObject(pManagerObject);
 }
 
@@ -192,4 +194,12 @@ void GemInputManager::destroy()
 GemInputManager* GemInputManager::getInstance()
 {
     return P_SHARED_INSTANCE;
+}
+
+void GemInputManager::reset()
+{
+    vecToken.clear(); vecTextBox.clear(); vecText.clear(); vecTextPlaceholder.clear();
+    vecUndo.clear(); vecTextAssigned.clear(); vecWinCon.clear(); vecPosition.clear();
+    pSubmit = nullptr;
+    pGate = nullptr;
 }
