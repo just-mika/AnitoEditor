@@ -34,7 +34,7 @@ public:
     void onAttach() override;
     float getTextHeight();
     void setCropEnabled (bool bbCropEnabled);
-
+    SDL_FRect getRect() const;
 public:
     void setPivot(Vector2D pivot);
     float getScrollOffset();

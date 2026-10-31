@@ -14,9 +14,18 @@
 #include "imgui_internal.h"
 #include <cmath>
 
+#include "ACollider.h"
 #include "LevelDataManager.h"
 #include "Settings.h"
 #include "TextRenderer.h"
+
+//gizmo size in screen pixels (stays the same at any zoom)
+static const float GIZMO_SCALE = 1.75f;   //change this to resize the whole gizmo
+static const float GIZMO_LENGTH = 80.0f * GIZMO_SCALE;
+static const float GIZMO_SHAFT = 3.0f * GIZMO_SCALE;
+static const float GIZMO_HEAD = 12.0f * GIZMO_SCALE;
+static const float GIZMO_FREE = 16.0f * GIZMO_SCALE;
+static const float GIZMO_GRAB = 14.0f * GIZMO_SCALE;
 
 bool showWidgets = false;
 
@@ -63,6 +72,9 @@ void Editor::EditorModule::togglePlayMode(){
         LevelDataManager::getInstance()->beginPlay();
     else 
     	LevelDataManager::getInstance()->endPlay();
+
+    if (Camera* c = CameraManager::getInstance()->getCurrentCamera())
+        c->setCanvasInWorld(!this->bIsPlaying);
 }
 
 // Takes mouse input, converts window coordinates to logical coordinates
@@ -128,27 +140,25 @@ bool Editor::EditorModule::isPointerOverUI(const Vector2D& logicalPos) const
 //cancels editor interaction
 void Editor::EditorModule::cancelInteraction()
 {
-    this->dTicks = 0.0;
+    this->eGizmoPart = GizmoPart::None;
     this->eState = InteractionState::Idle;
 }
 
 //helper to find the topmost hitted object recursively
-AGameObject* Editor::EditorModule::hitTestObject(AGameObject* obj, const Vector2D& pos)
+AGameObject* Editor::EditorModule::hitTestObject(AGameObject* obj, const Vector2D& pos, bool bGroupPass)
 {
     const auto& children = obj->getChildren();
 
     for (auto child = children.rbegin(); child != children.rend(); ++child)
     {
-        //recursive case: check if the hit object has children
-        AGameObject* hit = hitTestObject(*child, pos);
+        AGameObject* hit = hitTestObject(*child, pos, bGroupPass);
         if (hit)
             return hit;
     }
-    
-    //base case: obj has no children
-    if (contains(obj, pos))
+
+    if (contains(obj, pos, bGroupPass))
         return obj;
-	return nullptr;
+    return nullptr;
 }
 
 //processes editor input from keyboard or mouse
@@ -213,27 +223,35 @@ void Editor::EditorModule::processEditorInput(const SDL_Event* eEvent)
 
             if (eEvent->button.button == SDL_BUTTON_LEFT)
             {
-                this->eState = InteractionState::Holding;
-
                 AGameObject* hit = nullptr;
                 const auto& roots = GameObjectManager::getInstance()->getAllObjects();
 
+                //the selected object's gizmo comes first, so it can be grabbed over other objects
+                GizmoPart part = this->hitTestGizmo(this->mousePos);
+                if (part != GizmoPart::None)
+                {
+                    AGameObject* selected = this->getSelectedObject();
+                    this->eGizmoPart = part;
+                    this->eState = InteractionState::Dragging;   //no hold delay: grabbing the gizmo is deliberate
+
+                    if (selected->getIsScreenObject())
+                        this->offsetPos = this->getMouseCanvasPos() - selected->getPos();
+                    else
+                        this->offsetPos = this->getMouseWorldPos() - selected->getPos();
+                    break;
+                }
+
+                //first pass: things you can actually see; second pass: empty parents' group boxes
                 for (auto root = roots.rbegin(); root != roots.rend() && !hit; ++root)
-                    hit = hitTestObject(*root, this->mousePos);
+                    hit = hitTestObject(*root, this->mousePos, false);
+
+                for (auto root = roots.rbegin(); root != roots.rend() && !hit; ++root)
+                    hit = hitTestObject(*root, this->mousePos, true);
 
                 this->setSelectedObject(hit);
 
-                if (hit)
-                {
-                    if (hit->getIsScreenObject())
-                        this->offsetPos = this->mousePos - hit->getPos();
-                    else
-                        this->offsetPos = this->getMouseWorldPos() - hit->getPos();
-                }
-				else
-                {
+                if (!hit)
                     this->eState = InteractionState::PanningCam; // drag on empty space = pan
-                }
             }
             else if (eEvent->button.button == SDL_BUTTON_RIGHT ||
                      eEvent->button.button == SDL_BUTTON_MIDDLE)
@@ -258,22 +276,24 @@ void Editor::EditorModule::updateObjectDragging(float fDeltaTime)
     AGameObject* selected = this->getSelectedObject();
     if (!selected) return;
 
-    if (this->eState == InteractionState::Holding)
-    {
-        this->dTicks += fDeltaTime;
-        if (this->dTicks >= D_MAX_DRAG_TICKS) //wait for max threshold before dragging
-        {
-            this->dTicks = 0.0;
-            this->eState = InteractionState::Dragging;
-        }
-    }
 
     if (this->eState == InteractionState::Dragging) //drag object
     {
+        //where the free drag would put the object
+        Vector2D target;
         if (selected->getIsScreenObject())
-            selected->setPos(this->mousePos - this->offsetPos);
+            target = this->getMouseCanvasPos() - this->offsetPos;
         else
-            selected->setPos(this->getMouseWorldPos() - this->offsetPos);
+            target = this->getMouseWorldPos() - this->offsetPos;
+
+        //an arrow keeps the other coordinate where it is
+        Vector2D current = selected->getPos();
+        if (this->eGizmoPart == GizmoPart::X)
+            target.y = current.y;
+        else if (this->eGizmoPart == GizmoPart::Y)
+            target.x = current.x;
+
+        selected->setPos(target);
     }
 }
 
@@ -363,59 +383,118 @@ SDL_FRect Editor::EditorModule::getHandleRect(AGameObject* pObject, SDL_FRect* p
     return handle;
 }
 
-//draws editor (called in render loop)
-void Editor::EditorModule::draw(SDL_Renderer* pRenderer)
+// Screen-space box around an object and everything under it (sprites only).
+// Returns false if nothing in the group is visible.
+bool Editor::EditorModule::getGroupBounds(AGameObject* pObject, SDL_FRect& outBounds) const
 {
-    AGameObject* selected = this->getSelectedObject();
+    std::vector<AGameObject*> vecGroup = pObject->getChildrenRecursively();
+    vecGroup.push_back(pObject);
 
-    std::vector<AGameObject*> vecObject = GameObjectManager::getInstance()->getAllObjects();
-    
-	//draw object selections
-	for (auto parent : vecObject)
+    bool bHasBounds = false;
+    for (AGameObject* pObj : vecGroup)
     {
-        std::vector<AGameObject*> vecObjectTree = parent->getChildrenRecursively();
-        vecObjectTree.push_back(parent);
-        for (auto obj : vecObjectTree)
+        if (!pObj->isGloballyEnabled())
+            continue;
+
+        SpriteRenderer* pSprite = (SpriteRenderer*)pObj->findComponentByName("SpriteRenderer");
+        if (!pSprite || !pSprite->getTexture())
+            continue;
+
+        SDL_FRect r = pSprite->getRect();
+        if (!bHasBounds)
         {
-            if (!obj->isGloballyEnabled() || !hasVisibleSprite(obj)) 
-                continue; //skip disabled objects
-
-            SDL_FRect bounds{};
-            SDL_FRect handle = this->getHandleRect(obj, &bounds);
-
-            // Outline around children
-            if (bounds.w > 0 && bounds.h > 0)
-            {
-                //render outline
-                SDL_SetRenderDrawBlendMode(pRenderer, SDL_BLENDMODE_BLEND);
-                SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 127);
-                SDL_RenderRect(pRenderer, &bounds);
-
-                if (obj == selected) //change color of outline for selected parent
-                {
-                    SDL_SetRenderDrawColor(pRenderer, 0, 230, 204, 255);
-                    for (int i = 0; i < 2; i++)
-                    {
-                        SDL_FRect b = bounds;
-                        b.x -= i;
-                        b.y -= i;
-                        b.w += i * 2.0f;
-                        b.h += i * 2.0f;
-                        SDL_RenderRect(pRenderer, &b);
-                    }
-                }
-            }
-
-            // Handle & widget is cyan when selected, normal colors otherwise
-            if (obj == selected)
-                SDL_SetTextureColorMod(this->pWidget, 0, 230, 204);
-            else
-                SDL_SetTextureColorMod(this->pWidget, 255, 255, 255);
-
-            SDL_RenderTexture(pRenderer, this->pWidget, NULL, &handle);
+            outBounds = r;
+            bHasBounds = true;
+        }
+        else
+        {
+            SDL_GetRectUnionFloat(&outBounds, &r, &outBounds);
         }
     }
+    return bHasBounds;
+}
+
+//draws the editor overlay on top of the game (called in the render loop)
+void Editor::EditorModule::draw(SDL_Renderer* pRenderer)
+{
+    Camera* pCam = CameraManager::getInstance()->getCurrentCamera();
+    AGameObject* selected = this->getSelectedObject();
+
+    SDL_SetRenderDrawBlendMode(pRenderer, SDL_BLENDMODE_BLEND);
+
+    //outline of the screen area (where screen objects live)
+    SDL_FRect canvas = pCam->canvasToScreenRect({ 0, 0, gameWidth, gameHeight });
+    SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 90);
+    SDL_RenderRect(pRenderer, &canvas);
+
+    if (!selected)
+        return;
+
+    //white outline around the selected object's group
+    AGameObject* pGroup = selected->getParent() ? selected->getParent() : selected;
+    SDL_FRect groupBounds;
+    if (this->getGroupBounds(pGroup, groupBounds))
+    {
+        SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 127);
+        SDL_RenderRect(pRenderer, &groupBounds);
+    }
+
+    //a selected empty parent has no sprite to highlight itself,
+    //so draw the cyan selection box around its children instead
+    SDL_FRect ownRect;
+    SDL_FRect bounds;
+    if (!this->getClickRect(selected, ownRect) && this->getGroupBounds(selected, bounds))
+    {
+        SDL_SetRenderDrawColor(pRenderer, 0, 230, 204, 255);
+        for (int i = 0; i < 2; i++)
+        {
+            SDL_FRect b = bounds;
+            b.x -= i;
+            b.y -= i;
+            b.w += i * 2.0f;
+            b.h += i * 2.0f;
+            SDL_RenderRect(pRenderer, &b);
+        }
+    }
+
+    this->drawGizmo(pRenderer);
     // MetricsManager::getInstance()->drawGUI();
+}
+
+// The screen rect you click to select an object: its sprite, its text, or its collider box.
+// Returns false if the object draws nothing of its own (e.g. an empty parent).
+bool Editor::EditorModule::getClickRect(AGameObject* pObject, SDL_FRect& outRect) const
+{
+    SpriteRenderer* pSprite = (SpriteRenderer*)pObject->findComponentByName("SpriteRenderer");
+    if (pSprite && pSprite->getTexture())
+    {
+        outRect = pSprite->getRect();
+        return true;
+    }
+
+    TextRenderer* pText = (TextRenderer*)pObject->findComponentByName("TextRenderer");
+    if (pText)
+    {
+        outRect = pText->getRect();
+        return true;
+    }
+
+    //invisible objects with a collider (e.g. Platform): click their collider box
+    for (AComponent* pComp : pObject->getAllComponents())
+    {
+        if (ACollider* pCollider = dynamic_cast<ACollider*>(pComp))
+        {
+            Camera* pCam = CameraManager::getInstance()->getCurrentCamera();
+            SDL_FRect bounds = pCollider->getGlobalBounds();
+            if (pObject->getIsScreenObject())
+                outRect = pCam->canvasToScreenRect(bounds);
+            else
+                outRect = pCam->worldToScreenRect(bounds);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void Editor::EditorModule::setSelectedObject(AGameObject* selectedObject)
@@ -429,17 +508,24 @@ AGameObject* Editor::EditorModule::getSelectedObject()
 }
 
 // checks if the mouse position is currently inside the object's rectangle area 
-bool Editor::EditorModule::contains(AGameObject* pObject, Vector2D mousePos)
+// Is the mouse over this object?
+// First pass: the object's own sprite, text or collider.
+// Group pass: only empty parents, using the box around their children.
+bool Editor::EditorModule::contains(AGameObject* pObject, Vector2D mousePos, bool bGroupPass)
 {
-    if (!this->pWidget) //no widget
-        return false;
-    //not enabled
-    if (!pObject->isGloballyEnabled() || !hasVisibleSprite(pObject)) 
+    if (!pObject->isGloballyEnabled() || pObject->isSystemObject())
         return false;
 
-    SDL_FPoint p = { mousePos.x, mousePos.y }; //mouse current position as SDL Point
-    SDL_FRect handle = this->getHandleRect(pObject); //get rectangle area
-    return SDL_PointInRectFloat(&p, &handle);
+    SDL_FPoint p = { mousePos.x, mousePos.y };
+    SDL_FRect rect;
+
+    if (!bGroupPass)
+        return this->getClickRect(pObject, rect) && SDL_PointInRectFloat(&p, &rect);
+
+    //group pass: only objects that draw nothing themselves
+    if (this->getClickRect(pObject, rect))
+        return false;
+    return this->getGroupBounds(pObject, rect) && SDL_PointInRectFloat(&p, &rect);
 }
 
 //gets the mouse position mapped inside the game world space
@@ -449,6 +535,116 @@ Vector2D Editor::EditorModule::getMouseWorldPos() const
     Vector2D mouseWorldPos = cam->screenToWorldPoint(this->mousePos);
 
     return mouseWorldPos;
+}
+
+Vector2D Editor::EditorModule::getMouseCanvasPos()
+{
+    Camera* cam = CameraManager::getInstance()->getCurrentCamera();
+    return cam->worldToCanvasPoint(this->getMouseWorldPos());
+}
+
+// The selected object's pivot in screen space. False if nothing is selected.
+bool Editor::EditorModule::getSelectedPivotScreen(Vector2D& outPos) const
+{
+    AGameObject* selected = this->selectedObject;
+    if (!selected)
+        return false;
+
+    Camera* pCam = CameraManager::getInstance()->getCurrentCamera();
+    if (selected->getIsScreenObject())
+        outPos = pCam->canvasToScreenPoint(selected->getPos());
+    else
+        outPos = pCam->worldToScreenPoint(selected->getPos());
+    return true;
+}
+
+// Where each part of the gizmo is on screen, for a gizmo at origin
+Editor::GizmoShape Editor::EditorModule::getGizmoShape(const Vector2D& origin) const
+{
+    GizmoShape g;
+    g.origin = origin;
+
+    //red arrow: from the pivot to the right
+    g.xArea = { origin.x, origin.y - GIZMO_GRAB * 0.5f, GIZMO_LENGTH, GIZMO_GRAB };
+
+    //green arrow: from the pivot upward (screen y goes down, so "up" is minus)
+    g.yArea = { origin.x - GIZMO_GRAB * 0.5f, origin.y - GIZMO_LENGTH, GIZMO_GRAB, GIZMO_LENGTH };
+
+    //free-move square, just up and right of the pivot, between the arrows
+    g.freeArea = { origin.x, origin.y - GIZMO_FREE, GIZMO_FREE, GIZMO_FREE };
+
+    return g;
+}
+
+// fills a triangle (used for the arrowheads)
+static void fillTriangle(SDL_Renderer* pRenderer, SDL_FPoint a, SDL_FPoint b, SDL_FPoint c, SDL_FColor color)
+{
+    SDL_Vertex v[3];
+    v[0] = { a, color,{ 0, 0 } };
+    v[1] = { b, color,{ 0, 0 } };
+    v[2] = { c, color,{ 0, 0 } };
+    SDL_RenderGeometry(pRenderer, nullptr, v, 3, nullptr, 0);
+}
+
+// Draws the move gizmo on the selected object
+void Editor::EditorModule::drawGizmo(SDL_Renderer* pRenderer)
+{
+    Vector2D origin;
+    if (!this->getSelectedPivotScreen(origin))
+        return;
+
+    GizmoShape g = this->getGizmoShape(origin);
+    float tipX = origin.x + GIZMO_LENGTH;   //end of the red arrow
+    float tipY = origin.y - GIZMO_LENGTH;   //end of the green arrow
+
+    SDL_FColor red = { 0.90f, 0.25f, 0.25f, 1.0f };
+    SDL_FColor green = { 0.35f, 0.85f, 0.35f, 1.0f };
+
+    //the part being dragged turns yellow
+    SDL_FColor active = { 1.0f, 0.9f, 0.3f, 1.0f };
+    if (this->eGizmoPart == GizmoPart::X) red = active;
+    if (this->eGizmoPart == GizmoPart::Y) green = active;
+
+    //red X arrow: shaft, then head
+    SDL_FRect xShaft = { origin.x, origin.y - GIZMO_SHAFT * 0.5f, GIZMO_LENGTH - GIZMO_HEAD, GIZMO_SHAFT };
+    SDL_SetRenderDrawColorFloat(pRenderer, red.r, red.g, red.b, red.a);
+    SDL_RenderFillRect(pRenderer, &xShaft);
+    fillTriangle(pRenderer,
+        { tipX, origin.y },
+        { tipX - GIZMO_HEAD, origin.y - GIZMO_HEAD * 0.5f },
+        { tipX - GIZMO_HEAD, origin.y + GIZMO_HEAD * 0.5f }, red);
+
+    //green Y arrow: shaft, then head
+    SDL_FRect yShaft = { origin.x - GIZMO_SHAFT * 0.5f, tipY + GIZMO_HEAD, GIZMO_SHAFT, GIZMO_LENGTH - GIZMO_HEAD };
+    SDL_SetRenderDrawColorFloat(pRenderer, green.r, green.g, green.b, green.a);
+    SDL_RenderFillRect(pRenderer, &yShaft);
+    fillTriangle(pRenderer,
+        { origin.x, tipY },
+        { origin.x - GIZMO_HEAD * 0.5f, tipY + GIZMO_HEAD },
+        { origin.x + GIZMO_HEAD * 0.5f, tipY + GIZMO_HEAD }, green);
+
+    //free-move square: semi-transparent fill with an outline
+    SDL_SetRenderDrawColor(pRenderer, 255, 220, 80, 90);
+    SDL_RenderFillRect(pRenderer, &g.freeArea);
+    SDL_SetRenderDrawColor(pRenderer, 255, 220, 80, 255);
+    SDL_RenderRect(pRenderer, &g.freeArea);
+}
+
+// Which part of the selected object's gizmo is under the mouse (None if no selection or no hit)
+Editor::GizmoPart Editor::EditorModule::hitTestGizmo(const Vector2D& mouse) const
+{
+    Vector2D origin;
+    if (!this->getSelectedPivotScreen(origin))
+        return GizmoPart::None;
+
+    GizmoShape g = this->getGizmoShape(origin);
+    SDL_FPoint p = { mouse.x, mouse.y };
+
+    //the square overlaps the start of both arrows, so it's checked first
+    if (SDL_PointInRectFloat(&p, &g.freeArea)) return GizmoPart::Free;
+    if (SDL_PointInRectFloat(&p, &g.xArea))    return GizmoPart::X;
+    if (SDL_PointInRectFloat(&p, &g.yArea))    return GizmoPart::Y;
+    return GizmoPart::None;
 }
 
 /* * * * * * * * * * * * * * * * * * * * *
@@ -462,6 +658,9 @@ Editor::EditorModule::EditorModule()
 
     AudioManager::getInstance()->setVolume(AudioGroupTag::MUSIC, 0.0f);
     showWidgets = !this->bIsPlaying;
+
+    if (Camera* c = CameraManager::getInstance()->getCurrentCamera())
+        c->setCanvasInWorld(!this->bIsPlaying);
 }
 
 Editor::EditorModule* Editor::EditorModule::P_SHARED_INSTANCE = NULL;

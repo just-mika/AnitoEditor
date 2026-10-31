@@ -88,6 +88,39 @@ SDL_FRect Camera::worldToScreenRect(const SDL_FRect& worldRect) const
 	return screenRect;
 }
 
+// The canvas (screen-object space) sits in the world where the default camera
+// (position 0, zoom 1) shows it: so these are the default camera's conversions.
+Vector2D Camera::canvasToWorldPoint(const Vector2D& p) const
+{
+	Vector2D off = getWindowOffset();
+	return Vector2D(p.x - getHalfWidth() - off.x,
+		getHalfHeight() + off.y - p.y);   //canvas y counts down, world y counts up
+}
+
+Vector2D Camera::worldToCanvasPoint(const Vector2D& w) const
+{
+	Vector2D off = getWindowOffset();
+	return Vector2D(w.x + getHalfWidth() + off.x,
+		getHalfHeight() + off.y - w.y);
+}
+
+// Where a screen object's rect is drawn. Unchanged in play mode.
+SDL_FRect Camera::canvasToScreenRect(const SDL_FRect& r) const
+{
+	if (!bCanvasInWorld) return r;
+
+	//canvas rect: (x, y) is the top-left. world rect: (x, y) is the bottom-left.
+	Vector2D bottomLeft = canvasToWorldPoint(Vector2D(r.x, r.y + r.h));
+	SDL_FRect worldRect = { bottomLeft.x, bottomLeft.y, r.w, r.h };
+	return worldToScreenRect(worldRect);
+}
+
+Vector2D Camera::canvasToScreenPoint(const Vector2D& p) const
+{
+	if (!bCanvasInWorld) return p;
+	return worldToScreenPoint(canvasToWorldPoint(p));
+}
+
 Vector2D Camera::getWindowSize() const
 {
 	return this->windowSize;
@@ -156,4 +189,14 @@ void Camera::setRot(float rotation)
 void Camera::setScale(Vector2D scale)
 {
 	this->scale = scale;
+}
+
+void Camera::setCanvasInWorld(bool b)
+{
+	this->bCanvasInWorld = b;
+}
+
+bool Camera::isCanvasInWorld() const
+{
+	return bCanvasInWorld;
 }

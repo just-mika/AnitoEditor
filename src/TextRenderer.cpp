@@ -83,9 +83,10 @@ void TextRenderer::perform()
   
         
         if (!owner->getIsScreenObject())
-        {
             mDestRect = pCam->worldToScreenRect(mDestRect);
-        }
+        else
+            mDestRect = pCam->canvasToScreenRect(mDestRect);
+
         if (pParent && pSpriteRenderer && this->bCropEnabled)
         {
             SDL_FRect parentRect = pSpriteRenderer->getRect();
@@ -135,10 +136,18 @@ void TextRenderer::perform()
             {
                 pSrcRect = &srcRect;
             }
-            if (this->flipX && this->flipY) SDL_RenderTextureRotated(pRenderer, pTexture, pSrcRect, &mDestRect, this->dAngle - 180.0f, NULL, SDL_FLIP_NONE);
-            else if (this->flipX) SDL_RenderTextureRotated(pRenderer, pTexture, pSrcRect, &mDestRect, this->dAngle, NULL, SDL_FLIP_HORIZONTAL);
-            else if (this->flipY) SDL_RenderTextureRotated(pRenderer, pTexture, pSrcRect, &mDestRect, this->dAngle, NULL, SDL_FLIP_VERTICAL);
-            else SDL_RenderTextureRotated(pRenderer, pTexture, pSrcRect, &mDestRect, this->dAngle, NULL, SDL_FLIP_NONE);
+
+            SDL_FPoint center;
+            center.x = mDestRect.w * this->pivot.x;
+            if (owner->getIsScreenObject())
+                center.y = mDestRect.h * this->pivot.y;
+            else
+                center.y = mDestRect.h * (1.0f - this->pivot.y);
+
+            if (this->flipX && this->flipY) SDL_RenderTextureRotated(pRenderer, pTexture, pSrcRect, &mDestRect, this->dAngle - 180.0f, &center, SDL_FLIP_NONE);
+            else if (this->flipX) SDL_RenderTextureRotated(pRenderer, pTexture, pSrcRect, &mDestRect, this->dAngle, &center, SDL_FLIP_HORIZONTAL);
+            else if (this->flipY) SDL_RenderTextureRotated(pRenderer, pTexture, pSrcRect, &mDestRect, this->dAngle, &center, SDL_FLIP_VERTICAL);
+            else SDL_RenderTextureRotated(pRenderer, pTexture, pSrcRect, &mDestRect, this->dAngle, &center, SDL_FLIP_NONE);
         }
 
         // additional log
@@ -282,4 +291,9 @@ void TextRenderer::setColor(SDL_Color color)
 {
     ARenderer::setColor(color);
     this->loadFromText(this->strFontType, this->nFontSize, this->strText, color);
+}
+
+SDL_FRect TextRenderer::getRect() const
+{
+    return mDestRect;
 }

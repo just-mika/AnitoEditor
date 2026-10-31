@@ -10,6 +10,7 @@ private:
 	Vector2D scale;
 	Vector2D windowSize;
     Vector2D windowScale;
+	bool bCanvasInWorld = false;
 
 public:
 	Camera();
@@ -38,5 +39,13 @@ public:
 	void setPos(Vector2D position);
 	void setRot(float rotation);
 	void setScale(Vector2D scale);
+
+	void setCanvasInWorld(bool b);
+	bool isCanvasInWorld() const;
+
+	Vector2D canvasToWorldPoint(const Vector2D& canvasPoint) const;
+	Vector2D worldToCanvasPoint(const Vector2D& worldPoint) const;
+	SDL_FRect canvasToScreenRect(const SDL_FRect& canvasRect) const;
+	Vector2D canvasToScreenPoint(const Vector2D& canvasPoint) const;
 };
 

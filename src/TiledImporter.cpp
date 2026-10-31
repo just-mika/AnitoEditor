@@ -136,7 +136,8 @@ bool importTiledMap(const std::string& mapPath, TileMap* pTileMap)
 		std::vector<std::vector<bool>> solid(width, std::vector<bool>(height, false));
 
 		//For each tile layer, it places each tile in its cell,
-		//flipping the rows, and then merges the solid tiles into as few big colliders as possible.”
+		//flipping the rows, and then merges the solid tiles into as 
+		//few big colliders as possible.
 		for (int i = 0; i < (int)data.size(); i++)
 		{
 			int gid = (int)(data[i].get<Uint32>() & 0x1FFFFFFF);   //strip Tiled's flip flags
@@ -173,6 +174,7 @@ bool importTiledMap(const std::string& mapPath, TileMap* pTileMap)
 					continue;
 
 				int c1 = c;
+				//grow as far right as possible
 				while (c1 + 1 < width && solid[c1 + 1][r] && !used[c1 + 1][r])
 					c1++;
 
