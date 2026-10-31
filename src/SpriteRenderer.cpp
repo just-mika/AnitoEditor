@@ -118,6 +118,18 @@ void SpriteRenderer::perform() {
             mDestRect = pCam->worldToScreenRect(mDestRect);
             this->dAngle += pCam->getRot();
         }
+        else
+        {
+            mDestRect = pCam->canvasToScreenRect(mDestRect);
+        }
+
+        SDL_FPoint center;
+        center.x = mDestRect.w * this->pivot.x;
+
+        if (owner->getIsScreenObject())
+            center.y = mDestRect.h * this->pivot.y;
+        else
+            center.y = mDestRect.h * (1.0f - this->pivot.y);
 
         if (pCam->isInView(mDestRect))
         {
@@ -128,7 +140,8 @@ void SpriteRenderer::perform() {
                 &mDestRect,
                 this->dAngle,
                 this->flipX,
-                this->flipY
+                this->flipY,
+                &center
             );
         }
 }
@@ -137,15 +150,12 @@ void SpriteRenderer::drawWidget()
 {
     Camera* pCam = CameraManager::getInstance()->getCurrentCamera();
     AGameObject* owner = this->getOwner();
+    AGameObject* selected = Editor::EditorModule::getInstance()->getSelectedObject();
 
-    // Faint white outline around every sprite
     SDL_SetRenderDrawBlendMode(this->pRenderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 127);
-    SDL_RenderRect(pRenderer, &mDestRect);
 
     // Highlight if this object or any of its ancestors is selected,
     // so selecting a parent (even an empty one) outlines everything under it
-    AGameObject* selected = Editor::EditorModule::getInstance()->getSelectedObject();
     bool bHighlight = false;
     for (AGameObject* p = owner; p != nullptr; p = p->getParent())
     {
@@ -156,8 +166,7 @@ void SpriteRenderer::drawWidget()
         }
     }
 
-    // Unity-style selection outline: same cyan/teal as the selected row
-    // in HierarchyScreen, so selection reads consistently in both places
+    // cyan selection outline, same color as the selected row in HierarchyScreen
     if (bHighlight)
     {
         SDL_SetRenderDrawColor(pRenderer, 0, 230, 204, 255);
@@ -174,15 +183,19 @@ void SpriteRenderer::drawWidget()
         }
     }
 
-    // Pivot marker: screen objects are already in screen space,
-    // world objects need the camera conversion
-    Vector2D pos = owner->getPos();
-    if (!owner->getIsScreenObject())
-        pos = pCam->worldToScreenPoint(pos);
+    //pivot marker, only on the selected object (it's where the move gizmo will sit)
+    if (owner == selected)
+    {
+        Vector2D pos = owner->getPos();
+        if (!owner->getIsScreenObject())
+            pos = pCam->worldToScreenPoint(pos);
+        else
+            pos = pCam->canvasToScreenPoint(pos);
 
-    SDL_FRect pivotRect = { pos.x - 4, pos.y - 4, 8, 8 };
-    SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
-    SDL_RenderFillRect(pRenderer, &pivotRect);
+        SDL_FRect pivotRect = { pos.x - 4, pos.y - 4, 8, 8 };
+        SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
+        SDL_RenderFillRect(pRenderer, &pivotRect);
+    }
 }
 
 void SpriteRenderer::setTexture(SDL_Texture* pTexture)

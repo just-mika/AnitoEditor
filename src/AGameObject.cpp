@@ -5,6 +5,8 @@
 #include "Settings.h"
 #include <iostream>
 
+#include "MathUtils.h"
+
 AGameObject::AGameObject(std::string strName)
 {
     this->strName = strName;
@@ -317,7 +319,17 @@ void AGameObject::setParent(AGameObject* pParent)
 
 void AGameObject::setPos(Vector2D fVecTranslate)
 {
-    if (this->pParent) this->fVecTranslate = fVecTranslate - this->pParent->getPos();
+    if (this->pParent) {
+        Vector2D unRot;
+        float angle = MathUtils::toRadians(this->pParent->getRot());
+        if (this->bIsScreenObject)
+            angle = -angle;
+
+        unRot.x = fVecTranslate.x * cos(angle) + fVecTranslate.y * sin(angle);
+        unRot.y = - fVecTranslate.x * sin(angle) + fVecTranslate.y * cos(angle);
+
+        this->fVecTranslate = unRot - this->pParent->getPos();
+    }
     else this->fVecTranslate = fVecTranslate;
 }
 
@@ -350,9 +362,17 @@ void AGameObject::setLocalRot(float fRot)
 
 Vector2D AGameObject::getPos()
 {
-    if (this->pParent)
-        return this->pParent->getPos() + this->fVecTranslate;
+    if (this->pParent) {
+        Vector2D rot;
+        float angle = MathUtils::toRadians(this->pParent->getRot());
+        if (this->bIsScreenObject)
+            angle = -angle;
 
+        rot.x = this->fVecTranslate.x * cos(angle) - this->fVecTranslate.y * sin(angle);
+        rot.y = this->fVecTranslate.x * sin(angle) + this->fVecTranslate.y * cos(angle);
+
+    	return this->pParent->getPos() + rot;
+    }
     return this->fVecTranslate;
 }
 

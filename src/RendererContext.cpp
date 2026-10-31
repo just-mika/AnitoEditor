@@ -11,7 +11,8 @@ void RendererContext::draw(
     SDL_FRect* dstRect,
     float rotation,
     bool flipX,
-    bool flipY)
+    bool flipY,
+    const SDL_FPoint* center)
 {
     // O(1): All operations are per-sprite math and rendering.
     // Real runtime cost dominated by GPU draw call.
@@ -22,10 +23,10 @@ void RendererContext::draw(
         SDL_SetTextureColorMod(pTexture, color.r, color.g, color.b);
         SDL_SetTextureAlphaMod(pTexture, color.a);
 
-        if (flipX && flipY) SDL_RenderTextureRotated(pRenderer, pTexture, srcRect, dstRect, rotation - 180.0f, NULL, SDL_FLIP_NONE);
-        else if (flipX) SDL_RenderTextureRotated(pRenderer, pTexture, srcRect, dstRect, rotation, NULL, SDL_FLIP_HORIZONTAL);
-        else if (flipY) SDL_RenderTextureRotated(pRenderer, pTexture, srcRect, dstRect, rotation, NULL, SDL_FLIP_VERTICAL);
-        else SDL_RenderTextureRotated(pRenderer, pTexture, srcRect, dstRect, rotation, NULL, SDL_FLIP_NONE);
+        if (flipX && flipY) SDL_RenderTextureRotated(pRenderer, pTexture, srcRect, dstRect, rotation - 180.0f, center, SDL_FLIP_NONE);
+        else if (flipX) SDL_RenderTextureRotated(pRenderer, pTexture, srcRect, dstRect, rotation, center, SDL_FLIP_HORIZONTAL);
+        else if (flipY) SDL_RenderTextureRotated(pRenderer, pTexture, srcRect, dstRect, rotation, center, SDL_FLIP_VERTICAL);
+        else SDL_RenderTextureRotated(pRenderer, pTexture, srcRect, dstRect, rotation, center, SDL_FLIP_NONE);
     }
 
     // additional log

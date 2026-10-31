@@ -24,9 +24,10 @@ public:
         SDL_Color color,
         SDL_FRect* srcRect,
         SDL_FRect* dstRect,
-		float rotation = 0.0f,
+        float rotation = 0.0f,
         bool flipX = false,
-		bool flipY = false
+        bool flipY = false,
+        const SDL_FPoint* center = nullptr
 	);
 
     SDL_Renderer* getRenderer();

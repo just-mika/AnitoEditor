@@ -217,7 +217,7 @@ bool LevelDataManager::loadLevel(const std::string& fileName)
 	if (activeScene)
 		genre = level.value("genre", activeScene->getGenre());
 	else
-		genre = std::string();
+		genre = level.value("genre", std::string());
 
 	if (genre.empty())
 	{
@@ -555,12 +555,9 @@ void LevelDataManager::clearScene()
 		if (!o->isSystemObject() && ObjectFactory::typeKeyOf(o))
 			gom->deleteObject(o);
 
-	if (pTileMap)
-	{
-		gom->deleteObject(pTileMap);
-		pTileMap = nullptr;
-		tilemapPath.clear();
-	}
+	if (AGameObject* pTiles = gom->findObjectByName("__Tiles"))
+		gom->deleteObject(pTiles);
+	tilemapPath.clear();
 	gom->cleanUpDeletedObjects();
 }
 
@@ -642,15 +639,14 @@ void LevelDataManager::loadTilemap(const std::string& mapPath)
 {
 	GameObjectManager* gom = GameObjectManager::getInstance();
 
-	if (pTileMap)
+	if (AGameObject* pOld = gom->findObjectByName("__Tiles"))
 	{
-		gom->deleteObject(pTileMap);
+		gom->deleteObject(pOld);
 		gom->cleanUpDeletedObjects();
-		pTileMap = nullptr;
-		tilemapPath.clear();
 	}
+	tilemapPath.clear();
 
-	TileMap* pTiles = new TileMap("Tiles");
+	TileMap* pTiles = new TileMap("__Tiles");
 	gom->addObject(pTiles); //attach TileMapRenderer
 	if (!importTiledMap(mapPath, pTiles))
 	{
