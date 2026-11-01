@@ -320,15 +320,26 @@ void AGameObject::setParent(AGameObject* pParent)
 void AGameObject::setPos(Vector2D fVecTranslate)
 {
     if (this->pParent) {
+        //reverse getPos(): subtract parent's position
+        Vector2D offset = fVecTranslate - this->pParent->getPos();
+
+        //unrotate
         Vector2D unRot;
         float angle = MathUtils::toRadians(this->pParent->getRot());
         if (this->bIsScreenObject)
             angle = -angle;
 
-        unRot.x = fVecTranslate.x * cos(angle) + fVecTranslate.y * sin(angle);
-        unRot.y = - fVecTranslate.x * sin(angle) + fVecTranslate.y * cos(angle);
+        unRot.x = offset.x * cos(angle) + offset.y * sin(angle);
+        unRot.y = -offset.x * sin(angle) + offset.y * cos(angle);
 
-        this->fVecTranslate = unRot - this->pParent->getPos();
+        //unscale
+        Vector2D parentScale = this->pParent->getScale();
+        if (parentScale.x != 0.0f)
+            unRot.x /= parentScale.x;
+        if (parentScale.y != 0.0f)
+            unRot.y /= parentScale.y;
+
+        this->fVecTranslate = unRot;
     }
     else this->fVecTranslate = fVecTranslate;
 }
@@ -363,14 +374,21 @@ void AGameObject::setLocalRot(float fRot)
 Vector2D AGameObject::getPos()
 {
     if (this->pParent) {
+        //scale offsete by parents scale
+        Vector2D parentScale = this->pParent->getScale();
+        Vector2D local = Vector2D(this->fVecTranslate.x * parentScale.x,
+            this->fVecTranslate.y * parentScale.y);
+
+        //then rotate it by the parent's rotation
         Vector2D rot;
         float angle = MathUtils::toRadians(this->pParent->getRot());
         if (this->bIsScreenObject)
             angle = -angle;
 
-        rot.x = this->fVecTranslate.x * cos(angle) - this->fVecTranslate.y * sin(angle);
-        rot.y = this->fVecTranslate.x * sin(angle) + this->fVecTranslate.y * cos(angle);
+        rot.x = local.x * cos(angle) - local.y * sin(angle);
+        rot.y = local.x * sin(angle) + local.y * cos(angle);
 
+        //add parent's position
     	return this->pParent->getPos() + rot;
     }
     return this->fVecTranslate;
