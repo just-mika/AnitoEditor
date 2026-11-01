@@ -12,7 +12,7 @@ namespace Editor
 {
 
     //parts of the move gizmo you can grab
-    enum class GizmoPart { None, X, Y, Free };
+    enum class GizmoPart { None, X, Y, Free, Rotate };
 
     //screen-space shape of the move gizmo, shared by drawing and hit testing
     struct GizmoShape
@@ -21,6 +21,7 @@ namespace Editor
         SDL_FRect xArea;      //grab area of the red arrow (shaft + head)
         SDL_FRect yArea;      //grab area of the green arrow
         SDL_FRect freeArea;   //the square where the arrows meet
+        float ringRadius;     //roration ring around the pivot
     };
 
     class EditorModule
@@ -48,6 +49,9 @@ namespace Editor
         AGameObject* selectedObject = nullptr;
         GizmoPart eGizmoPart = GizmoPart::None;
 
+        float fRotateStartRot = 0.0f; //obj's rotation when ring is grabbed
+        float fRotateStartAngle = 0.0f;  //screen angle from the pivot to the mouse at that moment
+        float getMouseAngleFromPivot() const;
     public:
         void processEditorInput(const SDL_Event* eEvent);
         void updateObjectDragging(float fDeltaTime);

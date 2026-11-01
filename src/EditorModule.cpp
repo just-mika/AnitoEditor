@@ -26,6 +26,8 @@ static const float GIZMO_SHAFT = 3.0f * GIZMO_SCALE;
 static const float GIZMO_HEAD = 12.0f * GIZMO_SCALE;
 static const float GIZMO_FREE = 16.0f * GIZMO_SCALE;
 static const float GIZMO_GRAB = 14.0f * GIZMO_SCALE;
+static const float GIZMO_RING = GIZMO_LENGTH + 30.0f * GIZMO_SCALE;
+static const float GIZMO_RING_GRAB = 10.0f * GIZMO_SCALE;
 
 bool showWidgets = false;
 
@@ -279,6 +281,22 @@ void Editor::EditorModule::updateObjectDragging(float fDeltaTime)
 
     if (this->eState == InteractionState::Dragging) //drag object
     {
+        //rotation ring: turn by how far the mouse has gone around the pivot 
+        if (this->eGizmoPart == GizmoPart::Rotate)
+        {
+            float delta = this->getMouseAngleFromPivot() - this->fRotateStartAngle;
+
+            //screen angles grow clockwise (y points down), but positive rotation is
+            //counter-clockwise (sprites are drawn with -rotation), so subtract
+            float rot = this->fRotateStartRot - delta;
+
+            //hold shift to snap to 15 degree steps
+            if (SDL_GetModState() & SDL_KMOD_SHIFT)
+                rot = SDL_roundf(rot / 15.0f) * 15.0f;
+
+            selected->setRot(rot);
+            return;
+        }
         //where the free drag would put the object
         Vector2D target;
         if (selected->getIsScreenObject())
@@ -572,6 +590,9 @@ Editor::GizmoShape Editor::EditorModule::getGizmoShape(const Vector2D& origin) c
 
     //free-move square, just up and right of the pivot, between the arrows
     g.freeArea = { origin.x, origin.y - GIZMO_FREE, GIZMO_FREE, GIZMO_FREE };
+    
+    //rotation ring, outside the arrows so that they never overlap
+    g.ringRadius = GIZMO_RING;
 
     return g;
 }
@@ -586,6 +607,25 @@ static void fillTriangle(SDL_Renderer* pRenderer, SDL_FPoint a, SDL_FPoint b, SD
     SDL_RenderGeometry(pRenderer, nullptr, v, 3, nullptr, 0);
 }
 
+// draws a circle outline as a polygon with many short sides
+static void drawCircle(SDL_Renderer* pRenderer, Vector2D center, float radius, int nThickness)
+{
+    const int nSegments = 64;
+    SDL_FPoint points[nSegments + 1];
+
+    for (int t = 0; t < nThickness; t++)
+    {
+        float r = radius + t - nThickness * 0.5f;
+        for (int i = 0; i <= nSegments; i++)
+        {
+            float a = (2.0f * SDL_PI_F * i) / nSegments;
+            points[i] = { center.x + r * SDL_cosf(a), center.y + r * SDL_sinf(a) };
+        }
+
+        SDL_RenderLines(pRenderer, points, nSegments + 1);
+    }
+}
+
 // Draws the move gizmo on the selected object
 void Editor::EditorModule::drawGizmo(SDL_Renderer* pRenderer)
 {
@@ -594,6 +634,14 @@ void Editor::EditorModule::drawGizmo(SDL_Renderer* pRenderer)
         return;
 
     GizmoShape g = this->getGizmoShape(origin);
+
+    //rotation ring: blue, yellow while its being dragged
+    if (this->eGizmoPart == GizmoPart::Rotate)
+        SDL_SetRenderDrawColor(pRenderer, 255, 230, 76, 255);
+    else
+        SDL_SetRenderDrawColor(pRenderer, 80, 140, 255, 200);
+    drawCircle(pRenderer, g.origin, g.ringRadius, 3);
+
     float tipX = origin.x + GIZMO_LENGTH;   //end of the red arrow
     float tipY = origin.y - GIZMO_LENGTH;   //end of the green arrow
 
@@ -641,10 +689,33 @@ Editor::GizmoPart Editor::EditorModule::hitTestGizmo(const Vector2D& mouse) cons
     SDL_FPoint p = { mouse.x, mouse.y };
 
     //the square overlaps the start of both arrows, so it's checked first
-    if (SDL_PointInRectFloat(&p, &g.freeArea)) return GizmoPart::Free;
-    if (SDL_PointInRectFloat(&p, &g.xArea))    return GizmoPart::X;
-    if (SDL_PointInRectFloat(&p, &g.yArea))    return GizmoPart::Y;
+    if (SDL_PointInRectFloat(&p, &g.freeArea)) 
+        return GizmoPart::Free;
+    if (SDL_PointInRectFloat(&p, &g.xArea))    
+        return GizmoPart::X;
+    if (SDL_PointInRectFloat(&p, &g.yArea))    
+        return GizmoPart::Y;
+   
+    //ring last: anywhere close to the ring's line, all the way around
+    float dx = mouse.x - origin.x;
+    float dy = mouse.y - origin.y;
+    float dist = SDL_sqrtf(dx * dx + dy * dy);
+    if (SDL_fabsf(dist - g.ringRadius) <= GIZMO_RING_GRAB)
+        return GizmoPart::Rotate;
+
     return GizmoPart::None;
+}
+
+// angle (in degrees) from the selected object's pivot to the mouse, measured on screen
+float Editor::EditorModule::getMouseAngleFromPivot() const
+{
+    Vector2D origin;
+    if (!this->getSelectedPivotScreen(origin))
+        return 0.0f;
+
+    float dx = this->mousePos.x - origin.x;
+    float dy = this->mousePos.y - origin.y;
+    return SDL_atan2f(dy, dx) * (180.0f / SDL_PI_F);
 }
 
 /* * * * * * * * * * * * * * * * * * * * *
