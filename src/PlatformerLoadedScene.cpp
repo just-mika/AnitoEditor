@@ -151,13 +151,6 @@ void PlatformerLoadedScene::resetSubsystems()
             da->setGemPickedUp(g, false);
 }
 
-void PlatformerLoadedScene::attachToggle(const char* name, EventKey key)
-{
-    AGameObject* b = GameObjectManager::getInstance()->findObjectByName(name);
-    if (b && !b->findComponentByName("GUIToggle"))
-        b->attachComponent(new GUIToggle(key));
-}
-
 void PlatformerLoadedScene::rewire()
 {
     GameObjectManager* gom = GameObjectManager::getInstance();
@@ -179,9 +172,4 @@ void PlatformerLoadedScene::rewire()
                 haveGate = true;
             }
     }
-
-    // components can't be saved in JSON, so re-attach them by name
-    attachToggle("Pause_Button", EventKey::PAUSE_SCREEN);
-    attachToggle("Story_Button", EventKey::STORY_SCREEN);
-    attachToggle("Items_Button", EventKey::INVENTORY_SCREEN);
 }

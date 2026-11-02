@@ -12,6 +12,7 @@
 #include "CameraManager.h"
 #include "EditorModule.h"
 #include "ObjectFactory.h"
+#include "PhysicsSystem.h"
 #include "PuzzleToken.h"
 #include "Sprite.h"
 
@@ -54,24 +55,6 @@ void ObjectPalette::spawnObject(const std::string& typeKey, bool isScreenObject,
     // Register to scene
     GameObjectManager* gom = GameObjectManager::getInstance();
 
-    if (typeKey == "puzzle_token")
-    {
-        // start-slot blank: its own object, named after the token
-        Sprite* blank = new Sprite(newObj->getName() + "_Blank", "Token_Blank",
-            newObj->getPos(), Vector2D(0.45f));
-        gom->addObject(blank);
-
-        // sit with the other blanks, just before the first existing token (behind the tokens)
-        std::vector<AGameObject*>& roots = gom->getAllObjects();
-        for (size_t i = 0; i < roots.size(); i++)
-        {
-            if (dynamic_cast<PuzzleToken*>(roots[i]))
-            {
-                gom->moveObject(blank, nullptr, (int)i);
-                break;
-            }
-        }
-    }
     gom->addObject(newObj);
     // 4. Update editor selection so InspectorScreen opens immediately
     this->selectedObject = newObj;
@@ -150,36 +133,18 @@ void ObjectPalette::draw()
 
                 if (item.typeKey == "gem_input_token")
                     continue;
-                const std::vector<std::string> missing = ObjectFactory::getMissingDependencies(item.typeKey);
-                const bool blocked = !missing.empty();
-
-
-
-                //build the "Needs: ..." tooltip once, shared by this type's button(s)
-                std::string tip;
-                if (blocked)
-                {
-                    tip = "Needs: ";
-                    for (size_t k = 0; k < missing.size(); ++k)
-                        tip += (k ? ", " : "") + missing[k];
-                }
+            	
+            	//objects whose subsystems this level type doesn't have aren't offered at all
+                if (!ObjectFactory::getMissingDependencies(item.typeKey).empty())
+                    continue;
 
                 if (item.variants.empty())
                 {
                     ImGui::PushID(i);
                     if (shown % columns != 0) ImGui::SameLine();
 
-                    if (blocked) ImGui::BeginDisabled();
                     if (ImGui::Button(item.displayName.c_str(), button_size))
                         spawnObject(item.typeKey, item.isScreenObject, "");
-                    if (blocked) ImGui::EndDisabled();
-
-                    if (blocked && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                    {
-                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-                        ImGui::SetTooltip("%s", tip.c_str());
-                        ImGui::PopStyleColor();
-                    }
 
                     ImGui::PopID();
                     ++shown;
@@ -194,17 +159,8 @@ void ObjectPalette::draw()
                         ImGui::PushID((i * 100) + (int)(&v - &item.variants[0]));
                         if (shown % columns != 0) ImGui::SameLine();
 
-                        if (blocked) ImGui::BeginDisabled();
                         if (ImGui::Button(v.c_str(), button_size))
                             spawnObject(item.typeKey, item.isScreenObject, v);
-                        if (blocked) ImGui::EndDisabled();
-
-                        if (blocked && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                        {
-                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-                            ImGui::SetTooltip("%s", tip.c_str());
-                            ImGui::PopStyleColor();
-                        }
 
                         ImGui::PopID();
                         ++shown;
@@ -212,14 +168,18 @@ void ObjectPalette::draw()
                 }
             }
 
-            // last tile in the grid: import a Tiled map
-            if (shown % columns != 0) ImGui::SameLine();
-            if (ImGui::Button("Tilemap", button_size))
+            // last tile in the grid: import a Tiled map.
+			// only for level types with physics, since the tiles' colliders need it
+            if (PhysicsSystem::getInstance())
             {
-                tilemapFiles.clear();
-                SDL_EnumerateDirectory("Assets/maps", enumerateTilemapFile, &tilemapFiles);
-                std::sort(tilemapFiles.begin(), tilemapFiles.end());
-                ImGui::OpenPopup("Load Tilemap");
+                if (shown % columns != 0) ImGui::SameLine();
+                if (ImGui::Button("Tilemap", button_size))
+                {
+                    tilemapFiles.clear();
+                    SDL_EnumerateDirectory("Assets/maps", enumerateTilemapFile, &tilemapFiles);
+                    std::sort(tilemapFiles.begin(), tilemapFiles.end());
+                    ImGui::OpenPopup("Load Tilemap");
+                }
             }
         }
 

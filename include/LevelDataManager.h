@@ -38,6 +38,17 @@ public:
 
     void importTilemap(const std::string& mapPath);
     const std::string& getTilemapPath() const { return tilemapPath; }
+    void newBlankLevel(const std::string& genre);
+
+	//undo/redo
+    void recordEdit();
+    void resetHistory();
+    void requestUndo();
+    void requestRedo();
+    bool canUndo() const;
+    bool canRedo() const;
+
+    AGameObject* duplicateObject(AGameObject* pObject);
 private:
     TileMap* pTileMap = nullptr;
     std::string tilemapPath;
@@ -60,7 +71,12 @@ private:
     
     bool loadingTemplate = false;
     std::string templateGenre;
-    void newBlankLevel(const std::string& genre);
+
+    std::vector<json> undoStack;
+    std::vector<json> redoStack;
+    json lastState;
+    int nPendingHistory = 0;
+    static constexpr size_t kMaxHistory = 50;
 
     static std::string writableDir();
     static bool isSafeFileName(const std::string& name);

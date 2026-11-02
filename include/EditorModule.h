@@ -12,7 +12,7 @@ namespace Editor
 {
 
     //parts of the move gizmo you can grab
-    enum class GizmoPart { None, X, Y, Free };
+    enum class GizmoPart { None, X, Y, Free, Rotate, Scale, ScaleX, ScaleY };
 
     //screen-space shape of the move gizmo, shared by drawing and hit testing
     struct GizmoShape
@@ -21,6 +21,7 @@ namespace Editor
         SDL_FRect xArea;      //grab area of the red arrow (shaft + head)
         SDL_FRect yArea;      //grab area of the green arrow
         SDL_FRect freeArea;   //the square where the arrows meet
+        float ringRadius;     //roration ring around the pivot
     };
 
     class EditorModule
@@ -48,6 +49,12 @@ namespace Editor
         AGameObject* selectedObject = nullptr;
         GizmoPart eGizmoPart = GizmoPart::None;
 
+        float fRotateStartRot = 0.0f; //obj's rotation when ring is grabbed
+        float fRotateStartAngle = 0.0f;  //screen angle from the pivot to the mouse at that moment
+
+        Vector2D vScaleStart; //object's scale when a corner was grabbed
+        Vector2D vScaleStartOffset; //mouse offset from the pivot (on screen) at that moment
+        
     public:
         void processEditorInput(const SDL_Event* eEvent);
         void updateObjectDragging(float fDeltaTime);
@@ -57,6 +64,7 @@ namespace Editor
 
         void setSelectedObject(AGameObject* selectedObject);
         AGameObject* getSelectedObject();
+        bool isInteracting() const;
 
     private:
         Vector2D getMouseCanvasPos();
@@ -78,6 +86,12 @@ namespace Editor
         GizmoShape getGizmoShape(const Vector2D& origin) const;
         void drawGizmo(SDL_Renderer* pRenderer);
         GizmoPart hitTestGizmo(const Vector2D& mouse) const;
+        float getMouseAngleFromPivot() const;
+        bool getSelectionRect(SDL_FRect& outRect) const;
+        void getScaleHandles(const SDL_FRect& rect, SDL_FRect outHandles[4]) const;
+        Vector2D getMouseOffsetFromPivot() const;
+        void getEdgeHandles(const SDL_FRect& rect, SDL_FRect outHandles[4]) const;
+
         /* * * * * * * * * * * * * * * * * * * * *
          *       SINGLETON-RELATED CONTENT       *
          * * * * * * * * * * * * * * * * * * * * */

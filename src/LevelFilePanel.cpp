@@ -126,24 +126,27 @@ void LevelFilePanel::drawLoadPopup()
     {
         ImGui::TextUnformatted("No saved files for this level yet.");
     }
-    else if (ImGui::BeginChild("##filelist", ImVec2(0, 320.0f), ImGuiChildFlags_Borders))
+    else
     {
-        for (const std::string& f : files)
+        if (ImGui::BeginChild("##filelist", ImVec2(0, 320.0f), ImGuiChildFlags_Borders))
         {
-            // Canonical file gets a tag so it is easy to tell apart from drafts.
-			const bool isOpen = (f == LevelDataManager::getInstance()->getCurrentFile());
-            const std::string label = isOpen ? f + "   (open)" : f;
-
-            if (ImGui::Selectable(label.c_str(), false, 0, ImVec2(0, 48.0f)))
+            for (const std::string& f : files)
             {
-                LevelDataManager::getInstance()->requestLoad(f);   // applied by applyPending()
-                setStatus("Loading " + f);
-                ImGui::CloseCurrentPopup();
-                break;   // files list is unchanged, but we just closed the popup
+                // Canonical file gets a tag so it is easy to tell apart from drafts.
+                const bool isOpen = (f == LevelDataManager::getInstance()->getCurrentFile());
+                const std::string label = isOpen ? f + "   (open)" : f;
+
+                if (ImGui::Selectable(label.c_str(), false, 0, ImVec2(0, 48.0f)))
+                {
+                    LevelDataManager::getInstance()->requestLoad(f);   // applied by applyPending()
+                    setStatus("Loading " + f);
+                    ImGui::CloseCurrentPopup();
+                    break;   // files list is unchanged, but we just closed the popup
+                }
             }
         }
+        ImGui::EndChild();
     }
-    ImGui::EndChild();
 
     ImGui::EndPopup();
 }

@@ -235,7 +235,7 @@ void HierarchyScreen::draw()
 
             //draw all gameobjects
             for(AGameObject* root: GameObjectManager::getInstance()->getAllObjects()){
-                if(root->getParent() != nullptr) 
+                if(root->getParent() != nullptr || root->isSystemObject()) 
                 	continue;
                 this->drawObjectNode(root);
             }

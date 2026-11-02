@@ -26,6 +26,9 @@ static const float GIZMO_SHAFT = 3.0f * GIZMO_SCALE;
 static const float GIZMO_HEAD = 12.0f * GIZMO_SCALE;
 static const float GIZMO_FREE = 16.0f * GIZMO_SCALE;
 static const float GIZMO_GRAB = 14.0f * GIZMO_SCALE;
+static const float GIZMO_RING = GIZMO_LENGTH + 1.0f * GIZMO_SCALE;
+static const float GIZMO_RING_GRAB = 10.0f * GIZMO_SCALE;
+static const float GIZMO_CORNER = 10.0f * GIZMO_SCALE;
 
 bool showWidgets = false;
 
@@ -182,6 +185,27 @@ void Editor::EditorModule::processEditorInput(const SDL_Event* eEvent)
         case SDL_EVENT_KEY_DOWN: //for zooming camera via +, -, and = keys
         {
             if (io.WantTextInput) break;
+        		
+        	// undo / redo
+            if (eEvent->key.mod & SDL_KMOD_CTRL)
+            {
+                LevelDataManager* ldm = LevelDataManager::getInstance();
+                bool bShift = (eEvent->key.mod & SDL_KMOD_SHIFT != 0);
+
+                if (eEvent->key.key == SDLK_Z && !bShift)
+                {
+                    ldm->requestUndo();
+                    break;
+                }
+
+                if (eEvent->key.key == SDLK_Y || (eEvent->key.key == SDLK_Z && bShift))
+                {
+                    ldm->requestRedo();
+                    break;
+                }
+                
+            }
+
             float fFactor = 0.0f;
 
     		//zoom in
@@ -232,6 +256,19 @@ void Editor::EditorModule::processEditorInput(const SDL_Event* eEvent)
                 {
                     AGameObject* selected = this->getSelectedObject();
                     this->eGizmoPart = part;
+
+                    if (part == GizmoPart::Rotate)
+                    {
+                        this->fRotateStartRot = selected->getRot();
+                        this->fRotateStartAngle = this->getMouseAngleFromPivot();
+                    }
+
+                    if (part == GizmoPart::Scale || part == GizmoPart::ScaleX || part == GizmoPart::ScaleY)
+                    {
+                        this->vScaleStart = selected->getScale();
+                        this->vScaleStartOffset = this->getMouseOffsetFromPivot();
+                    }
+
                     this->eState = InteractionState::Dragging;   //no hold delay: grabbing the gizmo is deliberate
 
                     if (selected->getIsScreenObject())
@@ -279,6 +316,73 @@ void Editor::EditorModule::updateObjectDragging(float fDeltaTime)
 
     if (this->eState == InteractionState::Dragging) //drag object
     {
+        //rotation ring: turn by how far the mouse has gone around the pivot 
+        if (this->eGizmoPart == GizmoPart::Rotate)
+        {
+            float delta = this->getMouseAngleFromPivot() - this->fRotateStartAngle;
+
+            //screen angles grow clockwise (y points down), but positive rotation is
+            //counter-clockwise (sprites are drawn with -rotation), so subtract
+            float rot = this->fRotateStartRot - delta;
+
+            //hold shift to snap to 15 degree steps
+            if (SDL_GetModState() & SDL_KMOD_SHIFT)
+                rot = SDL_roundf(rot / 15.0f) * 15.0f;
+
+            selected->setRot(rot);
+            return;
+        }
+
+        //scale corners: grow or shrink by how far mouse is from the pivot
+        //compared to where the corner was grabbed (x and y separately)
+        if (this->eGizmoPart == GizmoPart::Scale || this->eGizmoPart == GizmoPart::ScaleX
+            || this->eGizmoPart == GizmoPart::ScaleY)
+        {
+            Vector2D offset = this->getMouseOffsetFromPivot();
+
+            //a corner that started in line with the pivot can't be measured on that axis
+            //(dividing by ~0), so that axis keep its scale
+            float ratioX, ratioY;
+
+            if (SDL_fabsf(this->vScaleStartOffset.x) > 1.0f)
+                ratioX = offset.x / this->vScaleStartOffset.x;
+            else
+                ratioX = 1.0f;
+
+            if (SDL_fabsf(this->vScaleStartOffset.y) > 1.0f)
+                ratioY = offset.y / this->vScaleStartOffset.y;
+            else
+                ratioY = 1.0f;
+
+
+            //hold Shift to keep the proportions; both axes use same ratio
+            if (SDL_GetModState() & SDL_KMOD_SHIFT)
+            {
+                float ratio = SDL_max(ratioX, ratioY);
+                ratioX = ratio;
+                ratioY = ratio;
+            }
+
+            //edge squares only scale their own axis
+            if (this->eGizmoPart == GizmoPart::ScaleX)
+                ratioY = 1.0f;
+            if (this->eGizmoPart == GizmoPart::ScaleY)
+                ratioX = 1.0f;
+
+            //dragging past the pivot would flip the sprite inside out, so stop at a small minimum
+            const float MIN_RATIO = 0.01f;
+            ratioX = SDL_max(ratioX, MIN_RATIO);
+            ratioY = SDL_max(ratioY, MIN_RATIO);
+
+            //round to 2 decimals so the Inspector shows clean values like 0.75
+            Vector2D scale;
+            scale.x = SDL_roundf(this->vScaleStart.x * ratioX * 100.0f) / 100.0f;
+            scale.y = SDL_roundf(this->vScaleStart.y * ratioY * 100.0f) / 100.0f;
+
+            selected->setScale(scale);
+            return;
+        }
+
         //where the free drag would put the object
         Vector2D target;
         if (selected->getIsScreenObject())
@@ -292,6 +396,15 @@ void Editor::EditorModule::updateObjectDragging(float fDeltaTime)
             target.y = current.y;
         else if (this->eGizmoPart == GizmoPart::Y)
             target.x = current.x;
+
+        //snap: whole units always, bigger steps while holding Shift
+        float step;
+        if (SDL_GetModState() & SDL_KMOD_SHIFT)
+            step = 50.0f;
+    	else step = 1.0f;
+
+        target.x = SDL_roundf(target.x / step) * step;
+        target.y = SDL_roundf(target.y / step) * step;
 
         selected->setPos(target);
     }
@@ -572,6 +685,9 @@ Editor::GizmoShape Editor::EditorModule::getGizmoShape(const Vector2D& origin) c
 
     //free-move square, just up and right of the pivot, between the arrows
     g.freeArea = { origin.x, origin.y - GIZMO_FREE, GIZMO_FREE, GIZMO_FREE };
+    
+    //rotation ring, outside the arrows so that they never overlap
+    g.ringRadius = GIZMO_RING;
 
     return g;
 }
@@ -586,6 +702,25 @@ static void fillTriangle(SDL_Renderer* pRenderer, SDL_FPoint a, SDL_FPoint b, SD
     SDL_RenderGeometry(pRenderer, nullptr, v, 3, nullptr, 0);
 }
 
+// draws a circle outline as a polygon with many short sides
+static void drawCircle(SDL_Renderer* pRenderer, Vector2D center, float radius, int nThickness)
+{
+    const int nSegments = 64;
+    SDL_FPoint points[nSegments + 1];
+
+    for (int t = 0; t < nThickness; t++)
+    {
+        float r = radius + t - nThickness * 0.5f;
+        for (int i = 0; i <= nSegments; i++)
+        {
+            float a = (2.0f * SDL_PI_F * i) / nSegments;
+            points[i] = { center.x + r * SDL_cosf(a), center.y + r * SDL_sinf(a) };
+        }
+
+        SDL_RenderLines(pRenderer, points, nSegments + 1);
+    }
+}
+
 // Draws the move gizmo on the selected object
 void Editor::EditorModule::drawGizmo(SDL_Renderer* pRenderer)
 {
@@ -594,6 +729,14 @@ void Editor::EditorModule::drawGizmo(SDL_Renderer* pRenderer)
         return;
 
     GizmoShape g = this->getGizmoShape(origin);
+
+    //rotation ring: blue, yellow while its being dragged
+    if (this->eGizmoPart == GizmoPart::Rotate)
+        SDL_SetRenderDrawColor(pRenderer, 255, 230, 76, 255);
+    else
+        SDL_SetRenderDrawColor(pRenderer, 80, 140, 255, 200);
+    drawCircle(pRenderer, g.origin, g.ringRadius, 3);
+
     float tipX = origin.x + GIZMO_LENGTH;   //end of the red arrow
     float tipY = origin.y - GIZMO_LENGTH;   //end of the green arrow
 
@@ -623,6 +766,42 @@ void Editor::EditorModule::drawGizmo(SDL_Renderer* pRenderer)
         { origin.x - GIZMO_HEAD * 0.5f, tipY + GIZMO_HEAD },
         { origin.x + GIZMO_HEAD * 0.5f, tipY + GIZMO_HEAD }, green);
 
+    //scale squares on the corners of the selection box: white with a cyan outline,
+    //yellow while being dragged
+    SDL_FRect selRect;
+    if (this->getSelectionRect(selRect))
+    {
+        SDL_FRect handles[4];
+        this->getScaleHandles(selRect, handles);
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (this->eGizmoPart == GizmoPart::Scale)
+                SDL_SetRenderDrawColor(pRenderer, 255, 230, 76, 255);
+            else
+                SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
+            SDL_RenderFillRect(pRenderer, &handles[i]);
+            
+            SDL_SetRenderDrawColor(pRenderer, 0, 230, 204, 255);
+            SDL_RenderRect(pRenderer, &handles[i]);
+        }
+
+        SDL_FRect edges[4];
+        this->getEdgeHandles(selRect, edges);
+        for (int i = 0; i < 4; i++)
+        {
+            if ((i < 2 && this->eGizmoPart == GizmoPart::ScaleX) ||
+                (i >= 2 && this->eGizmoPart == GizmoPart::ScaleY))
+                SDL_SetRenderDrawColor(pRenderer, 255, 230, 76, 255);
+            else
+                SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
+            SDL_RenderFillRect(pRenderer, &edges[i]);
+
+            SDL_SetRenderDrawColor(pRenderer, 0, 230, 204, 255);
+            SDL_RenderRect(pRenderer, &edges[i]);
+        }
+    }
+
     //free-move square: semi-transparent fill with an outline
     SDL_SetRenderDrawColor(pRenderer, 255, 220, 80, 90);
     SDL_RenderFillRect(pRenderer, &g.freeArea);
@@ -640,11 +819,117 @@ Editor::GizmoPart Editor::EditorModule::hitTestGizmo(const Vector2D& mouse) cons
     GizmoShape g = this->getGizmoShape(origin);
     SDL_FPoint p = { mouse.x, mouse.y };
 
+    //scale corners first
+    SDL_FRect selRect;
+    if (this->getSelectionRect(selRect))
+    {
+        SDL_FRect handles[4];
+        this->getScaleHandles(selRect, handles);
+        for (int i = 0; i < 4; i++)
+        {
+            if (SDL_PointInRectFloat(&p, &handles[i]))
+                return GizmoPart::Scale;
+        }
+
+        SDL_FRect edges[4];
+        this->getEdgeHandles(selRect, edges);
+        for (int i = 0; i < 4; i++) 
+        {
+            if (SDL_PointInRectFloat(&p, &edges[i]))
+            {
+                if (i < 2)
+                    return GizmoPart::ScaleX;
+                else
+                    return GizmoPart::ScaleY;
+            }
+        }
+    }
+
     //the square overlaps the start of both arrows, so it's checked first
-    if (SDL_PointInRectFloat(&p, &g.freeArea)) return GizmoPart::Free;
-    if (SDL_PointInRectFloat(&p, &g.xArea))    return GizmoPart::X;
-    if (SDL_PointInRectFloat(&p, &g.yArea))    return GizmoPart::Y;
+    if (SDL_PointInRectFloat(&p, &g.freeArea)) 
+        return GizmoPart::Free;
+    if (SDL_PointInRectFloat(&p, &g.xArea))    
+        return GizmoPart::X;
+    if (SDL_PointInRectFloat(&p, &g.yArea))    
+        return GizmoPart::Y;
+   
+    //ring last: anywhere close to the ring's line, all the way around
+    float dx = mouse.x - origin.x;
+    float dy = mouse.y - origin.y;
+    float dist = SDL_sqrtf(dx * dx + dy * dy);
+    if (SDL_fabsf(dist - g.ringRadius) <= GIZMO_RING_GRAB)
+        return GizmoPart::Rotate;
+
     return GizmoPart::None;
+}
+
+// angle (in degrees) from the selected object's pivot to the mouse, measured on screen
+float Editor::EditorModule::getMouseAngleFromPivot() const
+{
+    Vector2D origin;
+    if (!this->getSelectedPivotScreen(origin))
+        return 0.0f;
+
+    float dx = this->mousePos.x - origin.x;
+    float dy = this->mousePos.y - origin.y;
+    return SDL_atan2f(dy, dx) * (180.0f / SDL_PI_F);
+}
+
+// the box around the selected object on screen: its own sprite/text/collider rect,
+// or the box around its children if it's an empty parent. False if nothing is selected or visible.
+bool Editor::EditorModule::getSelectionRect(SDL_FRect& outRect) const
+{
+    AGameObject* selected = this->selectedObject;
+    if (!selected)
+        return false;
+
+    if (this->getClickRect(selected, outRect))
+        return true;
+    return this->getGroupBounds(selected, outRect);
+}
+
+//The four scale squares, centered on the corners of rect:
+// 0 = top-left, 1 = top-right, 2 = bottom-right, 3 = bottom-left
+void Editor::EditorModule::getScaleHandles(const SDL_FRect& rect, SDL_FRect outHandles[4]) const
+{
+    float half = GIZMO_CORNER * 0.5f;
+    float left = rect.x;
+    float right = rect.x + rect.w;
+    float top = rect.y;
+    float bottom = rect.y + rect.h;
+
+    outHandles[0] = { left - half, top - half, GIZMO_CORNER, GIZMO_CORNER };
+    outHandles[1] = { right - half, top - half, GIZMO_CORNER, GIZMO_CORNER };
+    outHandles[2] = { right - half, bottom - half, GIZMO_CORNER, GIZMO_CORNER };
+    outHandles[3] = { left - half, bottom - half, GIZMO_CORNER, GIZMO_CORNER };
+}
+
+Vector2D Editor::EditorModule::getMouseOffsetFromPivot() const
+{
+    Vector2D origin;
+    if (!this->getSelectedPivotScreen(origin))
+        return Vector2D(0.0f, 0.0f);
+
+    return this->mousePos - origin;
+}
+
+//the four single-axis squares, centered on the middle of each edge of rect;
+// 0 = left, 1 = right (scale X), 2 = top, 3 = bottom (scale Y)
+void Editor::EditorModule::getEdgeHandles(const SDL_FRect& rect, SDL_FRect outHandles[4]) const
+{
+    float half = GIZMO_CORNER * 0.5f;
+    float midX = rect.x + rect.w * 0.5f;
+    float midY = rect.y + rect.h * 0.5f;
+
+    outHandles[0] = { rect.x - half, midY - half, GIZMO_CORNER, GIZMO_CORNER };
+    outHandles[1] = { rect.x + rect.w - half, midY - half, GIZMO_CORNER, GIZMO_CORNER };
+    outHandles[2] = { midX - half, rect.y - half, GIZMO_CORNER, GIZMO_CORNER };
+    outHandles[3] = { midX - half, rect.y + rect.h - half, GIZMO_CORNER, GIZMO_CORNER };
+}
+
+bool Editor::EditorModule::isInteracting() const
+{
+    return this->eState != InteractionState::Idle;
 }
 
 /* * * * * * * * * * * * * * * * * * * * *

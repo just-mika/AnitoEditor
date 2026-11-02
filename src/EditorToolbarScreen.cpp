@@ -146,11 +146,21 @@ void EditorToolbarScreen::draw()
                 editor->setSelectedObject(nullptr);
                 ldm->newLevel("puzzle");
             }
+            if (ImGui::Selectable("Empty puzzle level"))
+            {
+                editor->setSelectedObject(nullptr);
+                ldm->newBlankLevel("puzzle");
+            }
 
             if (ImGui::Selectable("Platformer level"))
             {
                 editor->setSelectedObject(nullptr);
                 ldm->newLevel("platformer");
+            }
+            if (ImGui::Selectable("Empty platformer level"))
+            {
+                editor->setSelectedObject(nullptr);
+                ldm->newBlankLevel("platformer");
             }
 
             ImGui::EndPopup();

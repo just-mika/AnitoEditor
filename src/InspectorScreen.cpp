@@ -21,6 +21,9 @@
 #include <algorithm>
 #include <cstring>
 #include <cstdio>
+
+#include "LevelDataManager.h"
+#include "MetricsManager.h"
 #include "Settings.h"
 
 
@@ -208,17 +211,40 @@ void InspectorScreen::showParent()
     if (current)
     {
         ImGui::SameLine();
-        if (ImGui::SmallButton("Unparent"))
-            GameObjectManager::getInstance()->reparentObject(selectedObject, nullptr);
+        if (ImGui::SmallButton("Unparent")) {
+            GameObjectManager::getInstance()->reparentObject(selectedObject, selectedObject->getParent()->getParent());
+        }
     }
 }
 
 void InspectorScreen::showDelete()
 {
+    if (selectedObject->isSystemObject())
+        return;
+
+    //gems and statue are unique and named after their texture, so they cant be copied
+    const char* key = ObjectFactory::typeKeyOf(selectedObject);
+    bool bCanDuplicate = true;
+    for (const auto& info : ObjectFactory::getRegisteredTypes())
+        if (key && info.typeKey == key && !info.variants.empty())
+            bCanDuplicate = false;
+
+    float half = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x) * 0.5f;
+
+    ImGui::BeginDisabled(!bCanDuplicate);
+    if (ImGui::Button("Duplicate", ImVec2(half, 0.0f)))
+    {
+        if (AGameObject* pCopy = LevelDataManager::getInstance()->duplicateObject(selectedObject))
+            Editor::EditorModule::getInstance()->setSelectedObject(pCopy);
+    }
+    ImGui::EndDisabled();
+
+    ImGui::SameLine();
+
     ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.70f, 0.18f, 0.18f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.55f, 0.12f, 0.12f, 1.0f));
-    bool clicked = ImGui::Button("Delete Object", ImVec2(-1.0f, 0.0f));
+    bool clicked = ImGui::Button("Delete", ImVec2(-1.0f, 0.0f));
     ImGui::PopStyleColor(3);
     if (clicked) ImGui::OpenPopup("Delete Object?");
 
@@ -370,15 +396,67 @@ void InspectorScreen::showTypeSpecific()
     {
         ImGui::TextWrapped("Platform size is the collider size under the BoxCollider component below.");
     }
+    else if (k == "gui_button")
+    {
+        GUIToggle* t = (GUIToggle*)selectedObject->findComponentByName("GUIToggle");
+        const char* current = "Nothing";
+
+        if (t && GUIToggle::nameOf(t->getKey()))
+            current = GUIToggle::nameOf(t->getKey());
+
+
+        if (ImGui::BeginCombo("On click", current))
+        {
+            if (ImGui::Selectable("Nothing", t == nullptr) && t)
+            {
+                selectedObject->detachComponent(t);
+                delete t; //detachComponent only removes it from the list
+                t = nullptr;
+            }
+
+            for (int i = 0; i < GUIToggle::OPTION_COUNT; i++)
+            {
+                const GUIToggle::ClickOption& opt = GUIToggle::OPTIONS[i];
+                bool bSelected = (t && t->getKey() == opt.key);
+                if (ImGui::Selectable(opt.name, bSelected))
+                {
+                    if (t)
+                        t->setKey(opt.key);
+                    else
+                        selectedObject->attachComponent(new GUIToggle(opt.key));
+                }
+            }
+
+            ImGui::EndCombo();
+        }
+    }
 }
 
 void InspectorScreen::showComponents()
 {
-    // Object-level flags
+    //screen obj: editable on root objects w/o children
     bool screenObj = selectedObject->getIsScreenObject();
-    ImGui::BeginDisabled();   // changing this mid-edit would break positions, so read-only
-    ImGui::Checkbox("Screen Object", &screenObj);
+    bool bCanSwitch = !selectedObject->getParent() && selectedObject->getChildren().empty();
+
+    ImGui::BeginDisabled(!bCanSwitch);
+    if (ImGui::Checkbox("Screen Object", &screenObj))
+    {
+        //keep it where it is on screen: convert its position to the other space
+        Camera* pCam = CameraManager::getInstance()->getCurrentCamera();
+        Vector2D pos = selectedObject->getPos();
+
+        if (screenObj)
+            pos = pCam->worldToCanvasPoint(pos); //world -> screen space
+        else
+            pos = pCam->canvasToWorldPoint(pos); //screen space -> world
+
+        selectedObject->setIsScreenObject(screenObj);
+        selectedObject->setPos(pos);
+    }
     ImGui::EndDisabled();
+
+    if (!bCanSwitch && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+        ImGui::SetTooltip("Only objects without a parent or children can switch");
 
     // Components
     int idx = 0;

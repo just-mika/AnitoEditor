@@ -18,8 +18,10 @@ using json = nlohmann::json;
 static void addTileCollider(TileMap* pTileMap, int& nColliders,
 	float centerX, float centerY, float sizeX, float sizeY)
 {
+	Vector2D scale = pTileMap->getScale();
+
 	Platform* pPlatform = new Platform("Tile_Collider_" + std::to_string(nColliders),
-		Vector2D(centerX, centerY), Vector2D(sizeX, sizeY), 0.f);
+		Vector2D(centerX / scale.x, centerY / scale.y), Vector2D(sizeX, sizeY), 0.f);
 	pTileMap->attachChild(pPlatform);
 	nColliders++;
 }
