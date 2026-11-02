@@ -185,6 +185,27 @@ void Editor::EditorModule::processEditorInput(const SDL_Event* eEvent)
         case SDL_EVENT_KEY_DOWN: //for zooming camera via +, -, and = keys
         {
             if (io.WantTextInput) break;
+        		
+        	// undo / redo
+            if (eEvent->key.mod & SDL_KMOD_CTRL)
+            {
+                LevelDataManager* ldm = LevelDataManager::getInstance();
+                bool bShift = (eEvent->key.mod & SDL_KMOD_SHIFT != 0);
+
+                if (eEvent->key.key == SDLK_Z && !bShift)
+                {
+                    ldm->requestUndo();
+                    break;
+                }
+
+                if (eEvent->key.key == SDLK_Y || (eEvent->key.key == SDLK_Z && bShift))
+                {
+                    ldm->requestRedo();
+                    break;
+                }
+                
+            }
+
             float fFactor = 0.0f;
 
     		//zoom in
@@ -904,6 +925,11 @@ void Editor::EditorModule::getEdgeHandles(const SDL_FRect& rect, SDL_FRect outHa
     outHandles[1] = { rect.x + rect.w - half, midY - half, GIZMO_CORNER, GIZMO_CORNER };
     outHandles[2] = { midX - half, rect.y - half, GIZMO_CORNER, GIZMO_CORNER };
     outHandles[3] = { midX - half, rect.y + rect.h - half, GIZMO_CORNER, GIZMO_CORNER };
+}
+
+bool Editor::EditorModule::isInteracting() const
+{
+    return this->eState != InteractionState::Idle;
 }
 
 /* * * * * * * * * * * * * * * * * * * * *

@@ -64,6 +64,7 @@ namespace Editor
 
         void setSelectedObject(AGameObject* selectedObject);
         AGameObject* getSelectedObject();
+        bool isInteracting() const;
 
     private:
         Vector2D getMouseCanvasPos();

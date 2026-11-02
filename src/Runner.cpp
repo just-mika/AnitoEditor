@@ -255,6 +255,9 @@ void Runner::run()
 			// Runner::update() is skipped in edit mode, so flush editor deletions here.
 			GameObjectManager::getInstance()->cleanUpDeletedObjects();
 		}
+
+		if (!Editor::EditorModule::getInstance()->isInteracting() && !ImGui::IsAnyItemActive())
+			LevelDataManager::getInstance()->recordEdit();
 #else
 		this->update(fDeltaTime);
 #endif

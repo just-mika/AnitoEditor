@@ -17,6 +17,7 @@
 #include <unordered_set>
 #include <algorithm>
 
+#include "GUIToggle.h"
 #include "Platform.h"
 #include "PuzzleToken.h"
 #include "Sprite.h"
@@ -163,6 +164,11 @@ json LevelDataManager::serializeObject(AGameObject* o)
 	if (Platform* p = dynamic_cast<Platform*>(o))
 		j["size"] = vecToJson(p->getSize());
 
+	//a button's click action
+	if (GUIToggle* t = (GUIToggle*)o->findComponentByName("GUIToggle"))
+		if (const char* onClick = GUIToggle::nameOf(t->getKey()))
+			j["onClick"] = onClick;
+
 	//serialize 
 	if (PuzzleToken* t = dynamic_cast<PuzzleToken*>(o))
 	{
@@ -259,6 +265,8 @@ bool LevelDataManager::loadLevel(const std::string& fileName)
 		currentFileGenre.clear();
 		loadingTemplate = false;
 	}
+
+	resetHistory();
 	return true;
 }
 
@@ -342,7 +350,9 @@ AGameObject* LevelDataManager::createFromJson(const json& j)
 	AGameObject* o = ObjectFactory::createObject(type, name); //create object via ObjectFactory
 
 	if (!o)
-		SDL_Log("[LevelData] unknown type '%s' (name '%s')", type.c_str(), name.c_str()); 
+		SDL_Log("[LevelData] unknown type '%s' (name '%s')", type.c_str(), name.c_str());
+	else if (j.contains("isScreenObject"))
+		o->setIsScreenObject(j["isScreenObject"].get<bool>());  //children then inherit their parent's flag in attachChild
 
 	return o; //return object
 }
@@ -403,6 +413,18 @@ void LevelDataManager::applyFields(AGameObject* o, const json& j)
 		if (j.contains("hint"))           t->setHint(j["hint"].get<std::string>());
 	}
 
+	if (j.contains("onClick"))
+	{
+		EventKey key;
+		if (GUIToggle::keyOf(j["onClick"].get<std::string>(), key))
+		{
+			if (GUIToggle* t = (GUIToggle*)o->findComponentByName("GUIToggle"))
+				t->setKey(key);
+			else
+				o->attachComponent(new GUIToggle(key));
+		}
+	}
+
 	if (j.contains("enabled") && j["enabled"].get<bool>() != o->getEnabled())
 		o->setEnabled(j["enabled"].get<bool>());
 }
@@ -444,6 +466,56 @@ void LevelDataManager::applyChildren(AGameObject* parent, const json& j)
 //applies pending object creations, deletions, and rewires
 void LevelDataManager::applyPending()
 {
+	if (nPendingHistory != 0 && activeScene)
+	{
+		json target;
+		if (nPendingHistory < 0)
+		{
+			redoStack.push_back(lastState);
+			target = undoStack.back();
+			undoStack.pop_back();
+		}
+		else
+		{
+			undoStack.push_back(lastState);
+			target = redoStack.back();
+			redoStack.pop_back();
+		}
+		nPendingHistory = 0;
+
+#if EDITOR_MODE
+		AGameObject* sel = Editor::EditorModule::getInstance()->getSelectedObject();
+		std::string selName;
+
+		if (sel)
+			selName = sel->getName();
+		else
+			selName = "";
+#endif
+
+		clearScene();
+		activeScene->resetSubsystems();
+		buildFromJson(target);
+		activeScene->rewire();
+		lastState = target;
+
+#if EDITOR_MODE
+		if (!selName.empty())
+		{
+			for (AGameObject* root : GameObjectManager::getInstance()->getAllObjects())
+			{
+				std::vector<AGameObject*> tree = root->getChildrenRecursively();
+				tree.push_back(root);
+				for (AGameObject* o : tree)
+				{
+					if (o->getName() == selName)
+						Editor::EditorModule::getInstance()->setSelectedObject(o);
+				}
+			}
+		}
+#endif
+	}
+
 	if (restorePending)
 	{
 		restorePending = false;
@@ -462,6 +534,7 @@ void LevelDataManager::applyPending()
 		activeScene->resetSubsystems();
 		buildFromJson(level);
 		activeScene->rewire();
+		recordEdit();
 	}
 
 	if (pendingLoad.empty()) return;
@@ -510,6 +583,8 @@ void LevelDataManager::enterScene(LoadedScene* scene)
 		pendingLoad = currentFile;            // re-enter the open file
 	else
 		currentFile.clear();                 // the open file belongs to another genre
+	
+	resetHistory();
 }
 
 void LevelDataManager::leaveScene(LoadedScene* scene)
@@ -598,7 +673,10 @@ void LevelDataManager::newBlankLevel(const std::string& genre)
 	if (activeScene && activeScene->getGenre() == genre)
 	{
 		clearScene();
+		activeScene->resetSubsystems();
 		activeScene->rewire();
+
+		resetHistory();
 		return;
 	}
 
@@ -674,4 +752,122 @@ void LevelDataManager::loadTilemap(const std::string& mapPath)
 void LevelDataManager::importTilemap(const std::string& mapPath)
 {
 	pendingTilemap = mapPath;
+}
+
+//call after level is loaded, created or rebuild from scratch
+//current scene becomes starting point, with nothing to undo
+void LevelDataManager::resetHistory()
+{
+	undoStack.clear();
+	redoStack.clear();
+	
+	if (activeScene)
+		lastState = serializeScene();
+	else
+		lastState = json();
+}
+
+//call when edit is finished
+void LevelDataManager::recordEdit()
+{
+	if (!activeScene)
+		return;
+	json now = serializeScene();
+	if (now == lastState)
+		return; //nothing changes 
+
+	if (!lastState.is_null())
+	{
+		undoStack.push_back(std::move(lastState));
+		if (undoStack.size() > kMaxHistory)
+			undoStack.erase(undoStack.begin()); //forget oldest step
+	}
+
+	lastState = std::move(now);
+	redoStack.clear(); // new edit replaces whatever could be redone
+}
+
+void LevelDataManager::requestUndo()
+{
+	if (!undoStack.empty())
+		nPendingHistory = -1;
+}
+
+void LevelDataManager::requestRedo()
+{
+	if (!redoStack.empty())
+		nPendingHistory = 1;
+}
+
+
+bool LevelDataManager::canUndo() const
+{
+	return !undoStack.empty();
+}
+
+
+bool LevelDataManager::canRedo() const
+{
+	return !redoStack.empty();
+}
+
+//true if any object in scene (roots and children) already has this name
+static bool nameExists(const std::string& name)
+{
+	for (AGameObject* root : GameObjectManager::getInstance()->getAllObjects())
+	{
+		if (root->getName() == name)
+			return true;
+		for (AGameObject* o : root->getChildrenRecursively())
+			if (o->getName() == name)
+				return true;
+	}
+	return false;
+}
+
+AGameObject* LevelDataManager::duplicateObject(AGameObject* pObject)
+{
+	if (!pObject || pObject->isSystemObject())
+		return nullptr;
+
+	//save the object exactly like saving a level does
+	json j = serializeObject(pObject);
+	if (j.is_null())
+		return nullptr;
+
+	//give copy a unique name
+	std::string base = pObject->getName() + "_copy";
+	std::string name = base;
+	for (int n = 2; nameExists(name); n++)
+		name = base + std::to_string(n);
+	j["name"] = name;
+
+	//build it the same way loading does
+	AGameObject* pCopy = createFromJson(j);
+	if (!pCopy)
+		return nullptr;
+
+	if (j.contains("position")) pCopy->setLocalPos(jsonToVec(j["position"]));
+	if (j.contains("scale"))    pCopy->setLocalScale(jsonToVec(j["scale"]));
+	if (j.contains("rotation")) pCopy->setLocalRot(j["rotation"].get<float>());
+	if (Platform* p = dynamic_cast<Platform*>(pCopy))
+		if (j.contains("size")) p->setSize(jsonToVec(j["size"]));
+
+	//same parent as the original (initialize() runs here)
+	GameObjectManager* gom = GameObjectManager::getInstance();
+	AGameObject* pParent = pObject->getParent();
+	if (pParent)
+		pParent->attachChild(pCopy);
+	else
+		gom->addObject(pCopy);
+
+	applyFields(pCopy, j);
+	applyChildren(pCopy, j);
+
+	//place it right after the original, so it's drawn just above it
+	gom->moveObject(pCopy, pParent, gom->getSiblingIndex(pObject) + 1);
+
+	if (activeScene)
+		activeScene->rewire();   //connect it to the level's subsystems (e.g. a new puzzle token)
+	return pCopy;
 }

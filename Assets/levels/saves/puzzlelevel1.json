@@ -1,0 +1,484 @@
+{
+  "genre": "puzzle",
+  "objects": [
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": true,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "background_1",
+      "pivot": [
+        0.0,
+        0.0
+      ],
+      "position": [
+        -965.0,
+        -541.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        0.8999999761581421
+      ],
+      "texture": "BG",
+      "type": "background"
+    },
+    {
+      "children": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": false,
+          "name": "Dragon_Tail",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            750.0,
+            83.33332824707031
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "texture": "Dragon_Tail",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": false,
+          "name": "Dragon_Head",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            -600.0,
+            83.33332824707031
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "texture": "Dragon_Head",
+          "type": "sprite"
+        },
+        {
+          "children": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": false,
+              "name": "Dragon_Tile_1",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -702.955078125,
+                -136.55174255371094
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.949999988079071,
+                0.949999988079071
+              ],
+              "texture": "Dragon_Tile",
+              "type": "sprite"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": false,
+              "name": "Dragon_Tile_2",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -322.9550476074219,
+                -136.55174255371094
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.949999988079071,
+                0.949999988079071
+              ],
+              "texture": "Dragon_Tile",
+              "type": "sprite"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": false,
+              "name": "Dragon_Tile_3",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                57.044952392578125,
+                -136.55174255371094
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.949999988079071,
+                0.949999988079071
+              ],
+              "texture": "Dragon_Tile",
+              "type": "sprite"
+            }
+          ],
+          "enabled": true,
+          "isScreenObject": false,
+          "name": "Dragon_Tiles",
+          "position": [
+            488.2583923339844,
+            310.9195556640625
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.6666666269302368,
+            1.6666666269302368
+          ],
+          "type": "empty"
+        }
+      ],
+      "enabled": true,
+      "isScreenObject": false,
+      "name": "DragonContainer",
+      "position": [
+        0.0,
+        0.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        0.6000000238418579,
+        0.6000000238418579
+      ],
+      "type": "empty"
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": false,
+              "name": "Token_Blank_1",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -375.55157470703125,
+                -310.84796142578125
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.44999998807907104,
+                0.44999998807907104
+              ],
+              "texture": "Token_Blank",
+              "type": "sprite"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": false,
+              "name": "Token_Blank_2",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -95.55157470703125,
+                -310.84796142578125
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.44999998807907104,
+                0.44999998807907104
+              ],
+              "texture": "Token_Blank",
+              "type": "sprite"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": false,
+              "name": "Token_Blank_3",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                184.44842529296875,
+                -310.84796142578125
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.44999998807907104,
+                0.44999998807907104
+              ],
+              "texture": "Token_Blank",
+              "type": "sprite"
+            }
+          ],
+          "enabled": true,
+          "isScreenObject": false,
+          "name": "Blank",
+          "position": [
+            292.64105224609375,
+            163.16151428222656
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "type": "empty"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": false,
+          "name": "Token_Horns",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            -82.9105224609375,
+            -147.68646240234375
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.07999999821186066,
+            0.07999999821186066
+          ],
+          "texture": "Token_Horns",
+          "type": "puzzle_token"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": false,
+          "name": "Token_Claws",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            197.0894775390625,
+            -147.68646240234375
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.07999999821186066,
+            0.07999999821186066
+          ],
+          "texture": "Token_Claws",
+          "type": "puzzle_token"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": false,
+          "name": "Token_Eyes",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            477.0894775390625,
+            -147.68646240234375
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.07999999821186066,
+            0.07999999821186066
+          ],
+          "texture": "Token_Horns",
+          "type": "puzzle_token"
+        }
+      ],
+      "enabled": true,
+      "isScreenObject": false,
+      "name": "Tokens",
+      "position": [
+        -197.0894775390625,
+        -227.31353759765625
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "type": "empty"
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "enabled": false,
+      "flipX": false,
+      "flipY": false,
+      "isScreenObject": false,
+      "name": "Complete_Dragon",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "position": [
+        50.0,
+        75.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "texture": "Full_Dragon",
+      "type": "sprite"
+    },
+    {
+      "children": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": true,
+          "name": "Pause_Button",
+          "onClick": "Pause",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            -510.0,
+            -390.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            0.10000000149011612,
+            0.10000000149011612
+          ],
+          "texture": "Pause_Button",
+          "type": "gui_button"
+        }
+      ],
+      "enabled": true,
+      "isScreenObject": true,
+      "name": "UI",
+      "position": [
+        960.0,
+        540.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "type": "empty"
+    }
+  ],
+  "version": 1
+}

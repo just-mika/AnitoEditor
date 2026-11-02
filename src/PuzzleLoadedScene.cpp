@@ -84,14 +84,6 @@ void PuzzleLoadedScene::rewire()
     for (PuzzleToken* t : tokens) sgm->addToken(t);       // no hasTargetPos check here any more
     sgm->setCombination(combo);
 
-    if (AGameObject* b = gom->findObjectByName("Pause_Button"))
-        if (!b->findComponentByName("GUIToggle"))
-            b->attachComponent(new GUIToggle(EventKey::PAUSE_SCREEN));
-
-    if (AGameObject* b = gom->findObjectByName("Story_Button"))
-        if (!b->findComponentByName("GUIToggle"))
-            b->attachComponent(new GUIToggle(EventKey::STORY_SCREEN));
-
     if (PuzzleEnd* end = dynamic_cast<PuzzleEnd*>(gom->findObjectByName("EndScreen")))
         end->setDragons(gom->findObjectByName("DragonContainer"),
             gom->findObjectByName("Complete_Dragon"));
