@@ -21,6 +21,8 @@ class EventBroadcaster {
         void disableOtherListenerExcept(EventListener* pListenerExcluded);
         void enableListener(std::string strName);
         void enableAllListeners();
+        void removeListener(EventListener* pListener);   //safe to call from a destructor
+        bool isBlocking();   //true while a screen has disabled the other listeners
 
     private:
         int findListener(EventListener* pListener, std::vector<EventListener*> vecListener = {});

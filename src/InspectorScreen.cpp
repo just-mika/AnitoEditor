@@ -48,6 +48,15 @@ void InspectorScreen::draw()
     // rather than tracking our own independent copy.
     this->selectedObject = Editor::EditorModule::getInstance()->getSelectedObject();
 
+    // the selection changed while typing: apply the text to the object it was typed for,
+	// before syncBuffers() replaces the buffer with the new selection's text
+    if (this->pEditingText && this->pEditingText != this->selectedObject)
+    {
+        if (this->pEditingText->getMessage() != textBuf)
+            this->pEditingText->setMessage(textBuf);
+        this->pEditingText = nullptr;
+    }
+
     // Floating overlay: only exists while something is selected
     if (!this->selectedObject)
     {
@@ -190,17 +199,15 @@ void InspectorScreen::showTexture()
     SpriteRenderer* sr = (SpriteRenderer*)selectedObject->findComponentByName("SpriteRenderer");
     if (!sr) return;   // Text objects etc. have no texture
 
-    const std::string current = sr->getTextureKey();
-    if (ImGui::BeginCombo("Texture", current.c_str()))
-    {
-        for (const std::string& n : TextureManager::getInstance()->getTextureNames())
-        {
-            bool sel = (n == current);
-            if (ImGui::Selectable(n.c_str(), sel)) sr->setTextureKey(n);
-            if (sel) ImGui::SetItemDefaultFocus();
-        }
-        ImGui::EndCombo();
-    }
+    //show the file the texture came from (scene keys are an internal detail)
+    const std::string key = sr->getTextureKey();
+    std::string shown = TextureManager::getInstance()->getPathOfKey(key);
+    if (shown.empty()) shown = key;
+    ImGui::LabelText("Texture", "%s", shown.empty() ? "(none)" : shown.c_str());
+
+    if (ImGui::Button("Browse...", ImVec2(-FLT_MIN, 0)))
+        assetBrowser.open();
+    assetBrowser.draw();
 }
 
 // Read-only: reparenting is done by dragging in the Hierarchy. Unparent is a quick escape hatch.
@@ -211,9 +218,10 @@ void InspectorScreen::showParent()
     if (current)
     {
         ImGui::SameLine();
-        if (ImGui::SmallButton("Unparent")) {
-            GameObjectManager::getInstance()->reparentObject(selectedObject, selectedObject->getParent()->getParent());
-        }
+        ImGui::BeginDisabled(ObjectFactory::isInsideComposite(selectedObject));
+        if (ImGui::SmallButton("Unparent"))
+            GameObjectManager::getInstance()->reparentObject(selectedObject, current->getParent());
+        ImGui::EndDisabled();
     }
 }
 
@@ -222,12 +230,21 @@ void InspectorScreen::showDelete()
     if (selectedObject->isSystemObject())
         return;
 
+    if (ObjectFactory::isInsideComposite(selectedObject))
+    {
+        ImGui::TextDisabled("Part of a built-in screen: edit its properties above");
+        return;
+    }
+
     //gems and statue are unique and named after their texture, so they cant be copied
     const char* key = ObjectFactory::typeKeyOf(selectedObject);
     bool bCanDuplicate = true;
     for (const auto& info : ObjectFactory::getRegisteredTypes())
         if (key && info.typeKey == key && !info.variants.empty())
             bCanDuplicate = false;
+
+    if (ObjectFactory::isInsideComposite(selectedObject))
+        bCanDuplicate = false;
 
     float half = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x) * 0.5f;
 
@@ -329,14 +346,29 @@ void InspectorScreen::showTypeSpecific()
     if (k == "text")
     {
         Text* t = static_cast<Text*>(selectedObject);
-        ImGui::InputTextMultiline("Text", textBuf, sizeof(textBuf), ImVec2(0, 70));
+        ImGui::InputTextMultiline("Text", textBuf, sizeof(textBuf), ImVec2(-FLT_MIN, 200));
+        if (ImGui::IsItemActive())
+            this->pEditingText = t;   //remember who we're typing for
         // setMessage() rebuilds the font texture, so apply on click-away, not every keystroke
         if (ImGui::IsItemDeactivatedAfterEdit())
+        {
             t->setMessage(textBuf);
+            this->pEditingText = nullptr;
+        }
 
         ImGui::DragInt("Font Size", &fontSizeBuf, 1.0f, 4, 512);
         if (ImGui::IsItemDeactivatedAfterEdit())
             t->setFontSize(fontSizeBuf);
+
+        // the fonts in Assets/Fonts
+        static const char* kFonts[] = { "JainiPurva-Regular.ttf", "Maragsa.otf" };
+        if (ImGui::BeginCombo("Font", t->getFontName().c_str()))
+        {
+            for (const char* f : kFonts)
+                if (ImGui::Selectable(f, t->getFontName() == f))
+                    t->setFontName(f);
+            ImGui::EndCombo();
+        }
 
         SDL_Color c = t->getColor();
         float col[4] = { c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f };
@@ -362,18 +394,36 @@ void InspectorScreen::showTypeSpecific()
         ImGui::SameLine();
         if (ImGui::Button("Pause")) anim->pause();
         ImGui::SameLine();
-        if (ImGui::Button("Stop"))  anim->stop();
+        if (ImGui::Button("Stop"))
+        {
+            cur->stopAtEnd();
+            anim->perform();   //apply the frame to the sprite right away (not playing, so it doesn't advance)
+        }
     }
     else if (k == "puzzle_token")
     {
         PuzzleToken* t = static_cast<PuzzleToken*>(selectedObject);
 
-        bool has = t->hasTargetPos();
-        if (ImGui::Checkbox("Has target slot", &has))
-            t->setTargetPos(has ? t->getPos() : Vector2D(0.0f));   // see note below
-        if (has) {
-            float v[2] = { t->getTargetPos().x, t->getTargetPos().y };
-            if (ImGui::DragFloat2("Target slot", v)) t->setTargetPos(Vector2D(v[0], v[1]));
+        // the sprite this token must be placed on to count as correct
+        std::string current = t->getTargetName();
+        if (ImGui::BeginCombo("Target tile", current.empty() ? "(none)" : current.c_str()))
+        {
+            if (ImGui::Selectable("(none)", current.empty()))
+                t->setTargetName("");
+
+            for (AGameObject* root : GameObjectManager::getInstance()->getAllObjects())
+            {
+                std::vector<AGameObject*> tree = root->getChildrenRecursively();
+                tree.push_back(root);
+                for (AGameObject* o : tree)
+                {
+                    const char* key = ObjectFactory::typeKeyOf(o);
+                    if (!key || (std::string(key) != "sprite" && std::string(key) != "empty")) continue;
+                    if (ImGui::Selectable(o->getName().c_str(), o->getName() == current))
+                        t->setTargetName(o->getName());
+                }
+            }
+            ImGui::EndCombo();
         }
 
         char buf[1024];

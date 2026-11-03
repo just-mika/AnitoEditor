@@ -15,6 +15,27 @@
 #include <fstream>
 #include <cstdio>
 
+// paths are compared in lowercase, since Windows file names aren't case-sensitive
+// (a scene may load "bottom.png" while the file on disk is "bottom.PNG")
+std::string TextureManager::lowerPath(const std::string& path)
+{
+    std::string s = path;
+    for (char& c : s) c = (char)SDL_tolower(c);
+    return s;
+}
+
+std::string TextureManager::getPathOfKey(const std::string& key) const
+{
+    auto it = mapKeyToPath.find(key);
+    return it != mapKeyToPath.end() ? it->second : "";
+}
+
+std::string TextureManager::getKeyOfPath(const std::string& path) const
+{
+    auto it = mapPathToKey.find(lowerPath(path));
+    return it != mapPathToKey.end() ? it->second : "";
+}
+
 std::string fixAssetPathCase(const std::string& path, const std::vector<std::string>& manifest) {
     // Check if exact path exists in manifest
     for (const auto& entry : manifest) {
@@ -60,6 +81,11 @@ void TextureManager::load(std::string assetPath, std::string strName)
 
     this->mapTexture[strName].push_back(pTexture);
     this->vecTexture.push_back(pTexture);
+
+    //remember where this key came from (the first file, for keys loaded with several frames)
+    if (mapKeyToPath.find(strName) == mapKeyToPath.end())
+        mapKeyToPath[strName] = assetPath;
+    mapPathToKey[lowerPath(assetPath)] = strName;
 }
 
 // loadFromFolder: O(F) where F = number of files processed. Total wall-time
@@ -139,10 +165,17 @@ void TextureManager::loadFromFolder(std::string strPath, std::string strName)
         {
             for (int i = 0; i < 100; i++)
             {
-                std::string pathUpper = strPath + "/" + pattern + std::to_string(i) + ".PNG";
-                std::string pathLower = strPath + "/" + pattern + std::to_string(i) + ".png";
+                //try both "frame1" and zero-padded "frame01" names
+                std::string number = std::to_string(i);
+                std::string padded = (i < 10) ? "0" + number : number;
 
-                if (tryLoadFile(pathUpper, strName) || tryLoadFile(pathLower, strName))
+                std::string pathUpper = strPath + "/" + pattern + number + ".PNG";
+                std::string pathLower = strPath + "/" + pattern + number + ".png";
+                std::string pathPaddedUpper = strPath + "/" + pattern + padded + ".PNG";
+                std::string pathPaddedLower = strPath + "/" + pattern + padded + ".png";
+
+                if (tryLoadFile(pathUpper, strName) || tryLoadFile(pathLower, strName) ||
+                    (i < 10 && (tryLoadFile(pathPaddedUpper, strName) || tryLoadFile(pathPaddedLower, strName))))
                 {
                     loadedAny = true;
                 }
@@ -192,6 +225,12 @@ void TextureManager::loadFromFolder(std::string strPath, std::string strName)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
             "[TextureManager] Could not load any files from: %s", strPath.c_str());
+    }
+
+    if (loadedAny)
+    {
+        mapKeyToPath[strName] = strPath;
+        mapPathToKey[lowerPath(strPath)] = strName;
     }
 }
 
@@ -295,6 +334,13 @@ void TextureManager::loadFromText(std::string strName, std::string fontType, int
 // As V grows large, unload operations may become increasingly expensive.
 void TextureManager::unload(std::string strName)
 {
+    auto kp = mapKeyToPath.find(strName);
+    if (kp != mapKeyToPath.end())
+    {
+        mapPathToKey.erase(lowerPath(kp->second));
+        mapKeyToPath.erase(kp);
+    }
+
     // O(T): destroys all textures associated with name.
     // Erase + vector filtering also O(T) with small constants.
     // destroy each texture associated with this name

@@ -41,7 +41,7 @@ static const std::vector<ObjectTypeInfo> S_REGISTERED_TYPES = {
     { "sprite",            "Sprite",            ObjectCategory::Primitive, false },
     { "animated_sprite",   "Animated Sprite",   ObjectCategory::Primitive, false },
     { "text",              "Text",              ObjectCategory::Primitive, false },
-    { "background",        "Background",        ObjectCategory::Primitive, false },
+    { "background",        "Background",        ObjectCategory::Primitive, true },
 
     // --- Gameplay Entities ---
     { "player",           "Player",           ObjectCategory::Gameplay, false,{ Dependency::Physics } },
@@ -252,3 +252,22 @@ std::vector<std::string> ObjectFactory::getMissingDependencies(const std::string
                 if (const char* n = missingName(d)) missing.push_back(n);
     return missing;
 }
+
+// the screens whose children are built in code (their structure can't change in the editor)
+bool ObjectFactory::isComposite(AGameObject* pObject)
+{
+    const char* key = typeKeyOf(pObject);
+    if (!key) return false;
+    std::string k = key;
+    return k == "pause_screen" || k == "objective_intro" || k == "puzzle_end";
+}
+
+// true if any ancestor is a composite
+bool ObjectFactory::isInsideComposite(AGameObject* pObject)
+{
+    for (AGameObject* p = pObject->getParent(); p; p = p->getParent())
+        if (isComposite(p))
+            return true;
+    return false;
+}
+

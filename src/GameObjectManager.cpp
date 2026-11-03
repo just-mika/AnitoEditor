@@ -7,6 +7,8 @@
 #include <cassert>
 #include <iostream>
 
+#include "ObjectFactory.h"
+
 // ---------------------------------------------------------------------------
 // Per-frame lifecycle
 // ---------------------------------------------------------------------------
@@ -192,6 +194,11 @@ bool GameObjectManager::canMoveObject(AGameObject* pObject, AGameObject* pNewPar
 {
     if (!pObject) return false;
 
+    // a composite's children are built in code: they can't leave, and nothing can enter
+    if (ObjectFactory::isInsideComposite(pObject)) return false;
+    if (pNewParent && (ObjectFactory::isComposite(pNewParent) || ObjectFactory::isInsideComposite(pNewParent)))
+        return false;
+
     if (pNewParent)
     {
         // Can't drop an object into itself or into one of its own descendants.
@@ -264,6 +271,11 @@ void GameObjectManager::moveObject(AGameObject* pObject, AGameObject* pNewParent
 bool GameObjectManager::reparentObject(AGameObject* pObject, AGameObject* pNewParent)
 {
     if (!pObject || pObject == pNewParent || pObject->getParent() == pNewParent)
+        return false;
+
+    // same rule as canMoveObject (this path is used by the Inspector, not the Hierarchy)
+    if (ObjectFactory::isInsideComposite(pObject)) return false;
+    if (pNewParent && (ObjectFactory::isComposite(pNewParent) || ObjectFactory::isInsideComposite(pNewParent)))
         return false;
 
     if (pNewParent)

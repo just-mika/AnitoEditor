@@ -54,6 +54,7 @@ void TextRenderer::initialize()
         std::cerr << "[Dialogue Renderer ERROR] No Dialogue Texture to load: "<< std::endl;
     }
 }
+
 void TextRenderer::perform()
 {
     AGameObject* owner = this->getOwner();
@@ -92,35 +93,33 @@ void TextRenderer::perform()
             SDL_FRect parentRect = pSpriteRenderer->getRect();
             SDL_FRect croppedSrcRect;
 
-            if (SDL_GetRectIntersectionFloat(&parentRect, &mDestRect, &croppedSrcRect))
-            {
-                // offset in screen (dest) pixels between the cropped area and the original dest rect
-                float offsetX = croppedSrcRect.x - mDestRect.x;
-                float offsetY = croppedSrcRect.y - mDestRect.y;
+            // completely outside the window: draw nothing
+            if (!SDL_GetRectIntersectionFloat(&parentRect, &mDestRect, &croppedSrcRect))
+                return;
 
-                // Set destination to the cropped rectangle (this is in screen coords)
-                mDestRect = croppedSrcRect;
+            // how many screen pixels one texture pixel covers right now
+            // (includes object scale, parent scales, camera zoom and window scaling)
+            float pxPerTexX = (this->texSize.x != 0.0f) ? mDestRect.w / this->texSize.x : 1.0f;
+            float pxPerTexY = (this->texSize.y != 0.0f) ? mDestRect.h / this->texSize.y : 1.0f;
 
-                // Map dest (screen) pixels back to texture (source) pixels using the owner's scale.
-                // size = texSize * scale earlier, so 1 source-pixel = scale pixels on screen.
-                Vector2D scale = owner->getScale();
+            // offset in screen pixels between the visible part and the full text
+            float offsetX = croppedSrcRect.x - mDestRect.x;
+            float offsetY = croppedSrcRect.y - mDestRect.y;
 
-                // avoid division by zero
-                float invScaleX = (scale.x != 0.0f) ? (1.0f / scale.x) : 1.0f;
-                float invScaleY = (scale.y != 0.0f) ? (1.0f / scale.y) : 1.0f;
+            // draw only the visible part
+            mDestRect = croppedSrcRect;
 
-                // compute source rect in texture pixel coordinates
-                srcRect.x = offsetX * invScaleX;                         // how many texture pixels from left
-                srcRect.y = this->fScrollOffset + (offsetY * invScaleY); // add scroll offset (texture pixels)
-                srcRect.w = croppedSrcRect.w * invScaleX;                // width in texture pixels
-                srcRect.h = croppedSrcRect.h * invScaleY;                // height in texture pixels
+            // the matching part of the texture, in texture pixels
+            srcRect.x = offsetX / pxPerTexX;
+            srcRect.y = this->fScrollOffset + offsetY / pxPerTexY;
+            srcRect.w = croppedSrcRect.w / pxPerTexX;
+            srcRect.h = croppedSrcRect.h / pxPerTexY;
 
-                // clamp source rect to valid texture bounds just in case
-                if (srcRect.x < 0) srcRect.x = 0;
-                if (srcRect.y < 0) srcRect.y = 0;
-                if (srcRect.x + srcRect.w > texSize.x) srcRect.w = texSize.x - srcRect.x;
-                if (srcRect.y + srcRect.h > texSize.y) srcRect.h = texSize.y - srcRect.y;
-            }
+            // clamp source rect to valid texture bounds just in case
+            if (srcRect.x < 0) srcRect.x = 0;
+            if (srcRect.y < 0) srcRect.y = 0;
+            if (srcRect.x + srcRect.w > texSize.x) srcRect.w = texSize.x - srcRect.x;
+            if (srcRect.y + srcRect.h > texSize.y) srcRect.h = texSize.y - srcRect.y;
         }
     }
 

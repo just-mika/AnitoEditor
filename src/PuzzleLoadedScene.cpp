@@ -63,28 +63,50 @@ void PuzzleLoadedScene::rewire()
 {
     GameObjectManager* gom = GameObjectManager::getInstance();
 
-    // 1. collect every token in the scene
-    std::vector<PuzzleToken*> tokens;
-    for (AGameObject* o : gom->getAllObjects())
-        if (PuzzleToken* t = dynamic_cast<PuzzleToken*>(o)) tokens.push_back(t);
+    // every object, including children (getAllObjects only returns roots)
+    std::vector<AGameObject*> all;
+    for (AGameObject* root : gom->getAllObjects())
+    {
+        all.push_back(root);
+        std::vector<AGameObject*> tree = root->getChildrenRecursively();
+        all.insert(all.end(), tree.begin(), tree.end());
+    }
 
-    // 2. build the layout, skipping tokens that have no target slot
+    std::vector<PuzzleToken*> tokens;
+    AGameObject* pDragon = nullptr;
+    AGameObject* pComplete = nullptr;
+    for (AGameObject* o : all)
+    {
+        if (PuzzleToken* t = dynamic_cast<PuzzleToken*>(o)) tokens.push_back(t);
+        if (o->getName() == "DragonContainer") pDragon = o;
+        if (o->getName() == "Complete_Dragon") pComplete = o;
+    }
+
+    // start slots: where each token sits (on its blank)
+    // target slots: the world position of the tile each token points to
     std::vector<Vector2D> starts, targets;
     std::vector<std::string> combo;
-    for (PuzzleToken* t : tokens) {
-        starts.push_back(t->getPos());                    // every token owns a start slot
-        if (t->hasTargetPos()) {                          // only tokens with a dragon tile add a target
-            targets.push_back(t->getTargetPos());
-            combo.push_back(t->getName());
+    for (PuzzleToken* t : tokens)
+    {
+        starts.push_back(t->getPos());
+
+        for (AGameObject* o : all)
+        {
+            if (!t->getTargetName().empty() && o->getName() == t->getTargetName())
+            {
+                targets.push_back(o->getPos());
+                combo.push_back(t->getName());   //this token is the correct one for that slot
+                break;
+            }
         }
     }
 
     SequenceGameManager* sgm = SequenceGameManager::getInstance();
     sgm->configure(starts, targets);
-    for (PuzzleToken* t : tokens) sgm->addToken(t);       // no hasTargetPos check here any more
+    for (PuzzleToken* t : tokens) sgm->addToken(t);
     sgm->setCombination(combo);
 
-    if (PuzzleEnd* end = dynamic_cast<PuzzleEnd*>(gom->findObjectByName("EndScreen")))
-        end->setDragons(gom->findObjectByName("DragonContainer"),
-            gom->findObjectByName("Complete_Dragon"));
+    for (AGameObject* o : all)
+        if (PuzzleEnd* end = dynamic_cast<PuzzleEnd*>(o))
+            end->setDragons(pDragon, pComplete);
 }

@@ -32,7 +32,10 @@ public:
 
     static const char* typeKeyOf(AGameObject* obj);
     static std::vector<std::string> getMissingDependencies(const std::string& typeKey);
+    static bool isInsideComposite(AGameObject* obj);
+    static bool isComposite(AGameObject* pObject);   //a screen whose children are built in code
 private:
     static std::string generateUniqueName(const std::string& typeKey);
     static inline uint32_t s_idCounter = 0;
+    
 };

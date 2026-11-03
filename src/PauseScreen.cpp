@@ -1,4 +1,7 @@
 #include "PauseScreen.h"
+
+#include "EmptyObject.h"
+#include "Sprite.h"
 #include "SpriteAnimator.h"
 
 PauseScreen::PauseScreen(std::string strName): AGameObject(strName)
@@ -10,82 +13,100 @@ PauseScreen::PauseScreen(std::string strName): AGameObject(strName)
 PauseScreen::~PauseScreen()
 {
 	TextureManager::getInstance()->unload("BrownButton");
+	TextureManager::getInstance()->unload("PausePanel");
 }
+
 void PauseScreen::initialize()
 {
-	Background* pTransBack = new Background("TransparentBG", "Square", Vector2D(5.f));
+	TextureManager::getInstance()->load("GUI/button5.png", "BrownButton");
+	TextureManager::getInstance()->load("GUI/Panel.png", "PausePanel");
 
-	this->attachChild(pTransBack);
+	// Menu: everything that appears after the pause animation finishes
+	EmptyObject* pMenu = new EmptyObject("Menu");
+	this->attachChild(pMenu);
+	pMenu->setIsScreenObject(true);
+
+	Background* pTransBack = new Background("TransparentBG", "PausePanel", Vector2D(1.0f));
+	pMenu->attachChild(pTransBack);
+	pTransBack->setIsScreenObject(true);
+	pTransBack->setLocalPos(Vector2D(-1059, -543));
+	pTransBack->setLocalScale(Vector2D(0.39f, 0.36f));
 	SpriteRenderer* pTransBGR = (SpriteRenderer*)pTransBack->findComponentByName("SpriteRenderer");
-	pTransBGR->setColor({ 250, 227, 150, 127 });
+	pTransBGR->setPivot(Vector2D(0, 0));
+	pTransBGR->setColor({ 255, 255, 255, 179 });
 
-	Text* pPauseText = new Text("PauseText", "JainiPurva-Regular.ttf", 120, -15);
-	pTransBack->attachChild(pPauseText);
+	Sprite* pBanner = new Sprite("MenuBanner", "Square");
+	pMenu->attachChild(pBanner);
+	pBanner->setIsScreenObject(true);
+	pBanner->setLocalPos(Vector2D(-1010, 32));
+	pBanner->setLocalScale(Vector2D(1.0f, 3.33f));
+	pBanner->setLocalRot(20);
+	SpriteRenderer* pBannerR = (SpriteRenderer*)pBanner->findComponentByName("SpriteRenderer");
+	pBannerR->setColor({ 76, 0, 0, 255 });
+
+	Text* pPauseText = new Text("PauseText", "JainiPurva-Regular.ttf", 200);
+	pMenu->attachChild(pPauseText);
 	pPauseText->setIsScreenObject(true);
 	pPauseText->setMessage("Paused");
-	pPauseText->setPos(Vector2D(550, 200));
-	pPauseText->setScale(Vector2D(1, 1));
-	pPauseText->setColor(SDL_Color(165, 42, 42, 255));
+	pPauseText->setLocalPos(Vector2D(-496, -420));
+	pPauseText->setLocalScale(Vector2D(0.83f, 0.83f));
+	pPauseText->setLocalRot(20);
+	pPauseText->setColor(SDL_Color(142, 27, 27, 255));
 
-	TextureManager::getInstance()->load("GUI/button5.png", "BrownButton");
-	GUIButton* pResume = new GUIButton("ResumeButton", "BrownButton", false);
-	pTransBack->attachChild(pResume);
+	GUIButton* pResume = new GUIButton("ResumeButton", "BrownButton");
+	pMenu->attachChild(pResume);
 	pResume->setIsScreenObject(true);
-	GUIToggle* pToggle = new GUIToggle(EventKey::PAUSE_SCREEN);
-	pResume->attachComponent(pToggle);
-	pResume->setRot(-17.5);
-	pResume->setScale(Vector2D(.15, .15));
-	pResume->setPos(Vector2D(500, 350));
+	pResume->attachComponent(new GUIToggle(EventKey::PAUSE_SCREEN));
+	pResume->setLocalPos(Vector2D(-441, -240));
+	pResume->setLocalScale(Vector2D(0.18f, 0.15f));
+	pResume->setLocalRot(20);
 
-	Text* pResumeText = new Text("ResumeText", "JainiPurva-Regular.ttf", 45, -15);
+	// text scale = 1 / button scale, so the text isn't squashed by the button
+	Text* pResumeText = new Text("ResumeText", "JainiPurva-Regular.ttf", 60);
 	pResume->attachChild(pResumeText);
 	pResumeText->setIsScreenObject(true);
 	pResumeText->setMessage("Resume");
-	pResumeText->setRot(-17.5);
-	pResumeText->setPos(Vector2D(500, 350));
-	pResumeText->setScale(Vector2D(1, 1));
+	pResumeText->setLocalPos(Vector2D(-26.1f, -11.4f));
+	pResumeText->setLocalScale(Vector2D(1 / 0.18f, 1 / 0.15f));
 	pResumeText->setColor(SDL_Color(255, 255, 255, 255));
 
-
-	GUIButton* pQuit = new GUIButton("QuitButton", "BrownButton", false);
+	GUIButton* pQuit = new GUIButton("QuitButton", "BrownButton");
+	pMenu->attachChild(pQuit);
 	pQuit->setIsScreenObject(true);
-	SceneSwitcher* pSceneSwitcher = new SceneSwitcher(SceneTag::LOBBY_SCENE);
-	pQuit->attachComponent(pSceneSwitcher);
-	pTransBack->attachChild(pQuit);
-	pQuit->setRot(-17);
-	pQuit->setScale(Vector2D(.15, .15));
-	pQuit->setPos(Vector2D(500, 550));
+	pQuit->attachComponent(new SceneSwitcher(SceneTag::LOBBY_SCENE));
+	pQuit->setLocalPos(Vector2D(-388, -83));
+	pQuit->setLocalScale(Vector2D(0.18f, 0.15f));
+	pQuit->setLocalRot(20);
 
-	Text* pQuitText = new Text("QuitText", "JainiPurva-Regular.ttf", 45, -15);
+	Text* pQuitText = new Text("QuitText", "JainiPurva-Regular.ttf", 60);
 	pQuit->attachChild(pQuitText);
 	pQuitText->setIsScreenObject(true);
 	pQuitText->setMessage("Quit Stage");
-	pQuitText->setRot(-17);
-	pQuitText->setPos(Vector2D(500, 550));
-	pQuitText->setScale(Vector2D(1, 1));
+	pQuitText->setLocalPos(Vector2D(8.08f, -46.13f));
+	pQuitText->setLocalScale(Vector2D(1 / 0.18f, 1 / 0.15f));
 	pQuitText->setColor(SDL_Color(255, 255, 255, 255));
 
-
-	AnimatedSprite* pAnimSprite = new AnimatedSprite("PauseAnim", "Pause", Vector2D(250, 0.0f), Vector2D(0.9f), 0.0f, 12);
-	pAnimSprite->setIsScreenObject(true);
+	// the animation plays first, then shows the Menu (onAnimationFinished)
+	AnimatedSprite* pAnimSprite = new AnimatedSprite("PauseAnim", "Pause", Vector2D(0.0f), Vector2D(1.0f), 0.0f, 12);
 	this->attachChild(pAnimSprite);
+	pAnimSprite->setIsScreenObject(true);
+	pAnimSprite->setLocalPos(Vector2D(-946, -611));
+	pAnimSprite->setLocalScale(Vector2D(0.95f, 0.96f));
+	SpriteRenderer* pAnimR = (SpriteRenderer*)pAnimSprite->findComponentByName("SpriteRenderer");
+	pAnimR->setPivot(Vector2D(0, 0));
 	SpriteAnimator* pAnimator = (SpriteAnimator*)pAnimSprite->findComponentByName("SpriteAnimator");
-	SpriteRenderer* pSpriteRenderer = (SpriteRenderer*)pAnimSprite->findComponentByName("SpriteRenderer");
-	pSpriteRenderer->setPivot(Vector2D(0, 0));
- 	pAnimator->getCurrentAnimation()->setType(AnimationType::ONCE);
+	pAnimator->getCurrentAnimation()->setType(AnimationType::ONCE);
 	pAnimator->getCurrentAnimation()->setOnAnimFinished(OnAnimFinished::FUNC);
-
-	pTransBack->setEnabled(false);
-	pAnimSprite->setEnabled(false);
 	pAnimator->addListener(this);
-	EventBroadcaster::getInstance()->registerListener(this);
 
+	pMenu->setEnabled(false);
+	pAnimSprite->setEnabled(false);
+	EventBroadcaster::getInstance()->registerListener(this);
 }
 
 void PauseScreen::onEventTrigger(std::unordered_map<std::string, void*> mapParameter)
 {
-	//Play animation
-	Background* pTransBack = (Background*)this->findChildByName("TransparentBG");
+	AGameObject* pMenu = this->findChildByName("Menu");
 	AnimatedSprite* pAnimSprite = (AnimatedSprite*)this->findChildByName("PauseAnim");
 	SpriteAnimator* pAnimator = (SpriteAnimator*)pAnimSprite->findComponentByName("SpriteAnimator");
 
@@ -94,26 +115,23 @@ void PauseScreen::onEventTrigger(std::unordered_map<std::string, void*> mapParam
 	{
 		std::string senderType = *static_cast<std::string*>(mapParameter["Sender"]);
 		bFromToggle = (senderType == "ResumeButton");
-
 	}
-	if (!pTransBack->getEnabled())
+
+	if (!pMenu->getEnabled())
 	{
+		// opening: play the animation, the Menu appears when it finishes
 		pAnimSprite->setEnabled(true);
 		EventBroadcaster::getInstance()->disableOtherListenerExcept(this);
 		pAnimator->getCurrentAnimation()->stop();
 		pAnimator->getCurrentAnimation()->play();
-		
-	
 	}
-	else if (pTransBack->getEnabled() && bFromToggle)
+	else if (bFromToggle)
 	{
-
-		pTransBack->setEnabled(false);
+		// closing from the Resume button
+		pMenu->setEnabled(false);
 		pAnimSprite->setEnabled(false);
 		EventBroadcaster::getInstance()->enableAllListeners();
-
 	}
-
 }
 
 EventKey PauseScreen::getKey()
@@ -138,6 +156,5 @@ std::string PauseScreen::getListenerOwnerName()
 
 void PauseScreen::onAnimationFinished()
 {
-	Background* pTransBack = (Background*)this->findChildByName("TransparentBG");
-	pTransBack->setEnabled(true);
+	this->findChildByName("Menu")->setEnabled(true);
 }

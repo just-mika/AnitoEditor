@@ -41,6 +41,7 @@ public:
 	void step(float fDeltaTime);
 	bool finished() const;
 
+	void setFrames(std::vector<SDL_Texture*> vecFrames);
 	void setFrameRate(Uint8 nFrameRate);
 	void setType(AnimationType EType);
 	void setNextState(std::string strNextState);
@@ -55,5 +56,6 @@ public:
 	AnimationType getType() const;
 	OnAnimFinished getOnAnimFinished() const;
 	std::string getNextState() const;
+	void stopAtEnd();   //stop and show the last frame (e.g. a one-shot's resting pose)
 };
 

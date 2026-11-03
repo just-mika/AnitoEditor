@@ -48,7 +48,17 @@ public:
     bool canUndo() const;
     bool canRedo() const;
 
+    //turns a texture reference from a level file or the editor (a path, or an old-style key)
+	//into a loaded texture key. Loads the file on demand. Returns "" if it can't be found.
+    static std::string resolveTexture(const std::string& ref);
+
+    //puts a texture (path, folder or old key) on an object's sprite.
+//For animated sprites it also swaps the animation's frames.
+    static bool setObjectTexture(AGameObject* o, const std::string& ref);
+
     AGameObject* duplicateObject(AGameObject* pObject);
+
+    void rewireScene() { if (activeScene) activeScene->rewire(); }
 private:
     TileMap* pTileMap = nullptr;
     std::string tilemapPath;
@@ -62,6 +72,8 @@ private:
     static constexpr const char* kOrg = "AnitoEditor";
     static constexpr const char* kApp = "BabaylanTales";
     static constexpr const char* kBundledDir = "Assets/levels/";
+    std::vector<std::string> pathTextures;   //textures loaded by ensureTexture
+
     std::string pendingLoad;
     std::string currentFile;
     LoadedScene* activeScene = nullptr;

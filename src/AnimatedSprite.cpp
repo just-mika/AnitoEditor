@@ -22,6 +22,7 @@ void AnimatedSprite::initialize()
 {
     SpriteRenderer* pSpriteRenderer = new SpriteRenderer(this->strSpriteName);
     auto vecSprite = TextureManager::getInstance()->getTexture(this->strSpriteName);
+
     SpriteAnimator* pSpriteAnimator = new SpriteAnimator(pSpriteRenderer, vecSprite, this->nFrameRate);
 
     this->attachComponent(pSpriteRenderer);

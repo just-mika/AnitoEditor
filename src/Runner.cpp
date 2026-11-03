@@ -254,10 +254,11 @@ void Runner::run()
 			Editor::EditorModule::getInstance()->updateObjectDragging(fDeltaTime);
 			// Runner::update() is skipped in edit mode, so flush editor deletions here.
 			GameObjectManager::getInstance()->cleanUpDeletedObjects();
-		}
 
-		if (!Editor::EditorModule::getInstance()->isInteracting() && !ImGui::IsAnyItemActive())
-			LevelDataManager::getInstance()->recordEdit();
+			// only editor changes are undo steps (play mode changes are thrown away on Stop)
+			if (!Editor::EditorModule::getInstance()->isInteracting() && !ImGui::IsAnyItemActive())
+				LevelDataManager::getInstance()->recordEdit();
+		}
 #else
 		this->update(fDeltaTime);
 #endif

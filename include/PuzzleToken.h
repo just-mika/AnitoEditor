@@ -6,14 +6,14 @@ private:
 	int nSlot;
 	bool bDropped;
 
-	Vector2D fVecTarget;
+	std::string strTargetName;
 	bool bHasTarget = false;
 	std::string strHint;
 
 public:
 	bool hasTargetPos() const { return bHasTarget; }
-	Vector2D getTargetPos() const { return fVecTarget; }
-	void setTargetPos(const Vector2D& p) { fVecTarget = p; bHasTarget = true; }
+	const std::string& getTargetName() const { return strTargetName; }
+	void setTargetName(const std::string& name) { strTargetName = name; }
 	const std::string& getHint() const { return strHint; }
 	void setHint(const std::string& h) { strHint = h; }
 

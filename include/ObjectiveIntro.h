@@ -17,7 +17,10 @@ private:
 	EventKey EKey;
 	bool bListenerEnabled;
 public:
-	ObjectiveIntro(std::string strName, std::string strMessage = "Objective:");
+	ObjectiveIntro(std::string strName, std::string strMessage = 
+		"Objective:\n"
+		"Form the Bakunawa!\n\n"
+		"Relics to Sequence: 3");
 	~ObjectiveIntro();
 	void initialize() override;
 

@@ -14,60 +14,57 @@ ObjectiveIntro::~ObjectiveIntro()
 
 void ObjectiveIntro::initialize()
 {
-	Background* pTransBG = new Background("Transparent_BG", "Square", Vector2D(5.0f));
+	Background* pTransBG = new Background("Transparent_BG", "Square", Vector2D(1.0f));
 	this->attachChild(pTransBG);
+	pTransBG->setIsScreenObject(true);
+	pTransBG->setLocalPos(Vector2D(-1057, -564));
+	pTransBG->setLocalScale(Vector2D(3.95f, 2.18f));
 	SpriteRenderer* pTransBGR = (SpriteRenderer*)pTransBG->findComponentByName("SpriteRenderer");
+	pTransBGR->setPivot(Vector2D(0, 0));
 	pTransBGR->setColor({ 0, 0, 0, 127 });
 
-	Sprite* pTablet = new Sprite("Tablet", "Tablet", Vector2D(0.0f), Vector2D(0.9f));
-	pTransBG->attachChild(pTablet);
+	Sprite* pTablet = new Sprite("Tablet", "Tablet");
+	this->attachChild(pTablet);
 	pTablet->setIsScreenObject(true);
-	pTablet->setPos(Vector2D(1000, 450));
-	pTablet->setScale(Vector2D(1, 1));
+	pTablet->setLocalPos(Vector2D(-96, -75));
+	pTablet->setLocalScale(Vector2D(0.99f, 0.78f));
 
-	Text* pTabletText1 = new Text("Tablet_Text", "JainiPurva-Regular.ttf", 90, 0, false);
-	pTablet->attachChild(pTabletText1);
-	pTabletText1->setIsScreenObject(true);
-	pTabletText1->setMessage(this->strMessage);
-	pTabletText1->setScale(Vector2D(1, 1));
-	pTabletText1->setPos(Vector2D(600, 450));
-	TextRenderer* pTabletTextR1 = (TextRenderer*)pTabletText1->findComponentByName("TextRenderer");
-	pTabletTextR1->setPivot(Vector2D(0.0f, 0.5f));
+	// text scale.y = 1 / tablet scale.y, so the text isn't squashed
+	Text* pTabletText = new Text("Tablet_Text", "JainiPurva-Regular.ttf", 90);
+	pTablet->attachChild(pTabletText);
+	pTabletText->setIsScreenObject(true);
+	pTabletText->setMessage(this->strMessage);
+	pTabletText->setLocalPos(Vector2D(-496, 2.38f));
+	pTabletText->setLocalScale(Vector2D(1.0f, 1 / 0.84f));
+	pTabletText->setColor(SDL_Color(0, 0, 0, 255));
+	TextRenderer* pTabletTextR = (TextRenderer*)pTabletText->findComponentByName("TextRenderer");
+	pTabletTextR->setPivot(Vector2D(0.0f, 0.5f));   // left-aligned
 
-	AnimatedSprite* pIntro = new AnimatedSprite("Intro", "Intro", Vector2D(0, 0.0f), Vector2D(1), 0.0f, 12);
+	AnimatedSprite* pIntro = new AnimatedSprite("Intro", "Intro", Vector2D(0.0f), Vector2D(1.0f), 0.0f, 12);
+	this->attachChild(pIntro);
 	pIntro->setIsScreenObject(true);
-	pTransBG->attachChild(pIntro);
-	pIntro->setPos(Vector2D(200, 0.0f));
-	pIntro->setScale(Vector2D(Vector2D(1)));
-
-	SpriteRenderer* pIntroRenderer = (SpriteRenderer*)pIntro->findComponentByName("SpriteRenderer");
-	pIntroRenderer->setPivot(Vector2D(0, 0));
-
+	pIntro->setLocalPos(Vector2D(-909, -566));
+	pIntro->setLocalScale(Vector2D(0.92f, 0.92f));
+	SpriteRenderer* pIntroR = (SpriteRenderer*)pIntro->findComponentByName("SpriteRenderer");
+	pIntroR->setPivot(Vector2D(0, 0));
 	SpriteAnimator* pAnimator = (SpriteAnimator*)pIntro->findComponentByName("SpriteAnimator");
 	pAnimator->getCurrentAnimation()->setType(AnimationType::ONCE);
 
 	GUIButton* pClose = new GUIButton("Close", "Close_Button");
-	pClose->setIsScreenObject(true);
-
-	GUIToggle* pToggle = new GUIToggle(EventKey::OBJECTIVE_SCREEN);
-	pClose->attachComponent(pToggle);
 	this->attachChild(pClose);
-	pClose->setScale(Vector2D(.15, .15));
+	pClose->setIsScreenObject(true);
+	pClose->attachComponent(new GUIToggle(EventKey::OBJECTIVE_SCREEN));
+	pClose->setLocalPos(Vector2D(-96, 410));
+	pClose->setLocalScale(Vector2D(0.21f, 0.18f));
 
-	Text* pCloseText = new Text("Tablet_Text", "JainiPurva-Regular.ttf", 90, 0, false);
+	Text* pCloseText = new Text("CloseText", "JainiPurva-Regular.ttf", 70);
 	pClose->attachChild(pCloseText);
-
 	pCloseText->setIsScreenObject(true);
-	pCloseText->setMessage("CLose");
-	pCloseText->setScale(Vector2D(1, 1));
-	pCloseText->setPos(Vector2D(0, -15));
+	pCloseText->setMessage("Dismiss");
+	pCloseText->setLocalPos(Vector2D(0, -33.33f));
+	pCloseText->setLocalScale(Vector2D(1 / 0.21f, 1 / 0.18f));
+	pCloseText->setColor(SDL_Color(157, 107, 97, 255));
 
-	pClose->setPos(Vector2D(1000, 975));
-
-	TextRenderer* pCloseTextR1 = (TextRenderer*)pCloseText->findComponentByName("TextRenderer");
-
-;
-	
 	EventBroadcaster::getInstance()->registerListener(this);
 	EventBroadcaster::getInstance()->disableOtherListenerExcept(this);
 }

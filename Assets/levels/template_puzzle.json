@@ -2,744 +2,1644 @@
   "genre": "puzzle",
   "objects": [
     {
-      "color": [255, 255, 255, 255],
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
       "enabled": true,
       "flipX": false,
       "flipY": false,
       "isScreenObject": false,
       "name": "Background",
-      "pivot": [0.0, 0.0],
-      "position": [-965.3192, -511.4138],
+      "pivot": [
+        0.0,
+        0.0
+      ],
+      "position": [
+        -965.0,
+        -541.0
+      ],
       "rotation": 0.0,
-      "scale": [1.0, 0.9],
-      "texture": "BG",
+      "scale": [
+        1.0,
+        0.8999999761581421
+      ],
+      "texture": "sequence_game/low_order_bg.png",
       "type": "background"
     },
     {
       "children": [
         {
-          "color": [255, 255, 255, 255],
-          "enabled": true,
-          "flipX": false,
-          "flipY": false,
-          "isScreenObject": false,
-          "name": "Dragon_Head",
-          "pivot": [0.5, 0.5],
-          "position": [-360.0, 50.0],
-          "rotation": 0.0,
-          "scale": [0.6, 0.6],
-          "texture": "Dragon_Head",
-          "type": "sprite"
-        },
-        {
-          "color": [255, 255, 255, 255],
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
           "enabled": true,
           "flipX": false,
           "flipY": false,
           "isScreenObject": false,
           "name": "Dragon_Tail",
-          "pivot": [0.5, 0.5],
-          "position": [450.0, 50.0],
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            750.0,
+            83.33332824707031
+          ],
           "rotation": 0.0,
-          "scale": [0.6, 0.6],
-          "texture": "Dragon_Tail",
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "texture": "sequence_game/Dragon_RedTail.png",
+          "type": "sprite"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "enabled": true,
+          "flipX": false,
+          "flipY": false,
+          "isScreenObject": false,
+          "name": "Dragon_Head",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            -600.0,
+            83.33332824707031
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "texture": "sequence_game/Dragon_RedHead.png",
           "type": "sprite"
         },
         {
           "children": [
             {
-              "color": [100, 31, 31, 255],
+              "children": [
+                {
+                  "enabled": true,
+                  "isScreenObject": false,
+                  "name": "Token_Claw_Slot",
+                  "position": [
+                    33.684242248535156,
+                    -28.421052932739258
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    1.0526316165924072,
+                    1.0526316165924072
+                  ],
+                  "type": "empty"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
               "enabled": true,
-              "fontSize": 200,
+              "flipX": false,
+              "flipY": false,
               "isScreenObject": false,
-              "name": "Tile_Text_1",
-              "position": [30.0, -20.0],
+              "name": "Dragon_Tile_1",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -702.955078125,
+                -136.55174255371094
+              ],
               "rotation": 0.0,
-              "scale": [1.0, 1.0],
-              "text": "1",
-              "type": "text"
-            }
-          ],
-          "color": [255, 255, 255, 255],
-          "enabled": true,
-          "flipX": false,
-          "flipY": false,
-          "isScreenObject": false,
-          "name": "Dragon_Tile_1",
-          "pivot": [0.5, 0.5],
-          "position": [-410.0, 50.0],
-          "rotation": 0.0,
-          "scale": [0.95, 0.95],
-          "texture": "Dragon_Tile",
-          "type": "sprite"
-        },
-        {
-          "children": [
+              "scale": [
+                0.949999988079071,
+                0.949999988079071
+              ],
+              "texture": "sequence_game/Dragon_RedTile.png",
+              "type": "sprite"
+            },
             {
-              "color": [100, 31, 31, 255],
+              "children": [
+                {
+                  "enabled": true,
+                  "isScreenObject": false,
+                  "name": "Token_Eye_Slot",
+                  "position": [
+                    32.6315803527832,
+                    -28.421052932739258
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    1.0526316165924072,
+                    1.0526316165924072
+                  ],
+                  "type": "empty"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
               "enabled": true,
-              "fontSize": 200,
+              "flipX": false,
+              "flipY": false,
               "isScreenObject": false,
-              "name": "Tile_Text_2",
-              "position": [30.0, -20.0],
+              "name": "Dragon_Tile_2",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -322.9550476074219,
+                -136.55174255371094
+              ],
               "rotation": 0.0,
-              "scale": [1.0, 1.0],
-              "text": "2",
-              "type": "text"
-            }
-          ],
-          "color": [255, 255, 255, 255],
-          "enabled": true,
-          "flipX": false,
-          "flipY": false,
-          "isScreenObject": false,
-          "name": "Dragon_Tile_2",
-          "pivot": [0.5, 0.5],
-          "position": [-30.0, 50.0],
-          "rotation": 0.0,
-          "scale": [0.95, 0.95],
-          "texture": "Dragon_Tile",
-          "type": "sprite"
-        },
-        {
-          "children": [
+              "scale": [
+                0.949999988079071,
+                0.949999988079071
+              ],
+              "texture": "sequence_game/Dragon_RedTile.png",
+              "type": "sprite"
+            },
             {
-              "color": [100, 31, 31, 255],
+              "children": [
+                {
+                  "enabled": true,
+                  "isScreenObject": false,
+                  "name": "Token_Horn_Slot",
+                  "position": [
+                    35.78947448730469,
+                    -28.421052932739258
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    1.0526316165924072,
+                    1.0526316165924072
+                  ],
+                  "type": "empty"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
               "enabled": true,
-              "fontSize": 200,
+              "flipX": false,
+              "flipY": false,
               "isScreenObject": false,
-              "name": "Tile_Text_3",
-              "position": [30.0, -20.0],
+              "name": "Dragon_Tile_3",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                57.044952392578125,
+                -136.55174255371094
+              ],
               "rotation": 0.0,
-              "scale": [1.0, 1.0],
-              "text": "3",
-              "type": "text"
+              "scale": [
+                0.949999988079071,
+                0.949999988079071
+              ],
+              "texture": "sequence_game/Dragon_RedTile.png",
+              "type": "sprite"
+            },
+            {
+              "children": [
+                {
+                  "color": [
+                    154,
+                    90,
+                    90,
+                    255
+                  ],
+                  "enabled": true,
+                  "font": "Maragsa.otf",
+                  "fontSize": 195,
+                  "isScreenObject": false,
+                  "name": "1",
+                  "position": [
+                    -369.448974609375,
+                    -166.80702209472656
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    1.0,
+                    1.0
+                  ],
+                  "text": "1",
+                  "type": "text"
+                },
+                {
+                  "color": [
+                    154,
+                    90,
+                    90,
+                    255
+                  ],
+                  "enabled": true,
+                  "font": "Maragsa.otf",
+                  "fontSize": 195,
+                  "isScreenObject": false,
+                  "name": "2",
+                  "position": [
+                    13.551055908203125,
+                    -166.80702209472656
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    1.0,
+                    1.0
+                  ],
+                  "text": "2",
+                  "type": "text"
+                },
+                {
+                  "color": [
+                    154,
+                    90,
+                    90,
+                    255
+                  ],
+                  "enabled": true,
+                  "font": "Maragsa.otf",
+                  "fontSize": 195,
+                  "isScreenObject": false,
+                  "name": "3",
+                  "position": [
+                    393.5510559082031,
+                    -166.80702209472656
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    1.0,
+                    1.0
+                  ],
+                  "text": "3",
+                  "type": "text"
+                }
+              ],
+              "enabled": true,
+              "isScreenObject": false,
+              "name": "Numbers",
+              "position": [
+                -308.506103515625,
+                14.255279541015625
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ],
+              "type": "empty"
             }
           ],
-          "color": [255, 255, 255, 255],
           "enabled": true,
-          "flipX": false,
-          "flipY": false,
           "isScreenObject": false,
-          "name": "Dragon_Tile_3",
-          "pivot": [0.5, 0.5],
-          "position": [350.0, 50.0],
+          "name": "Dragon_Tiles",
+          "position": [
+            488.2583923339844,
+            310.9195556640625
+          ],
           "rotation": 0.0,
-          "scale": [0.95, 0.95],
-          "texture": "Dragon_Tile",
-          "type": "sprite"
+          "scale": [
+            1.6666666269302368,
+            1.6666666269302368
+          ],
+          "type": "empty"
         }
       ],
       "enabled": true,
       "isScreenObject": false,
       "name": "DragonContainer",
-      "position": [0.0, 0.0],
+      "position": [
+        0.0,
+        0.0
+      ],
       "rotation": 0.0,
-      "scale": [1.0, 1.0],
+      "scale": [
+        0.6000000238418579,
+        0.6000000238418579
+      ],
       "type": "empty"
     },
     {
-      "color": [255, 255, 255, 255],
-      "enabled": true,
-      "flipX": false,
-      "flipY": false,
-      "isScreenObject": false,
-      "name": "Token_Blank_1",
-      "pivot": [0.5, 0.5],
-      "position": [-280.0, -375.0],
-      "rotation": 0.0,
-      "scale": [0.45, 0.45],
-      "texture": "Token_Blank",
-      "type": "sprite"
-    },
-    {
-      "color": [255, 255, 255, 255],
-      "enabled": true,
-      "flipX": false,
-      "flipY": false,
-      "isScreenObject": false,
-      "name": "Token_Blank_2",
-      "pivot": [0.5, 0.5],
-      "position": [0.0, -375.0],
-      "rotation": 0.0,
-      "scale": [0.45, 0.45],
-      "texture": "Token_Blank",
-      "type": "sprite"
-    },
-    {
-      "color": [255, 255, 255, 255],
-      "enabled": true,
-      "flipX": false,
-      "flipY": false,
-      "isScreenObject": false,
-      "name": "Token_Blank_3",
-      "pivot": [0.5, 0.5],
-      "position": [280.0, -375.0],
-      "rotation": 0.0,
-      "scale": [0.45, 0.45],
-      "texture": "Token_Blank",
-      "type": "sprite"
-    },
-    {
-      "color": [255, 255, 255, 255],
-      "enabled": true,
-      "flipX": false,
-      "flipY": false,
-      "hint": "\"Bathala planted tall bamboo trees so that\n Bakunawa would not be able to swallow the\n moon so easily. These bamboo trees looked\nlike stains or dark spots on the surface of the\n moon from afar.\"",
-      "isScreenObject": false,
-      "name": "Token_Horns",
-      "pivot": [0.5, 0.5],
-      "position": [-280.0, -375.0],
-      "rotation": 0.0,
-      "scale": [0.08, 0.08],
-      "targetPosition": [0.0, 27.0],
-      "texture": "Token_Horns",
-      "type": "puzzle_token"
-    },
-    {
-      "color": [255, 255, 255, 255],
-      "enabled": true,
-      "flipX": false,
-      "flipY": false,
-      "hint": "\"Bakunawa sprung from the pitch-black \n ocean and bolted towards the sky he opened \n his mouth wide as he could around one of\n the moons and with one powerful swoop,\n swallowed it whole. As he did so a huge wave\n of earthquakes shook the ancient land of\n the Philippines.\"",
-      "isScreenObject": false,
-      "name": "Token_Claws",
-      "pivot": [0.5, 0.5],
-      "position": [0.0, -375.0],
-      "rotation": 0.0,
-      "scale": [0.08, 0.08],
-      "targetPosition": [-380.0, 27.0],
-      "texture": "Token_Claws",
-      "type": "puzzle_token"
-    },
-    {
-      "color": [255, 255, 255, 255],
-      "enabled": true,
-      "flipX": false,
-      "flipY": false,
-      "hint": "\"The ancient Filipinos ran to the ocean while\n banging their pots and pans and shouted\n together, 'Return our moon'. Bakunawa was\n so startled by the loud sudden noise that it \n spat out the seventh moon.\"",
-      "isScreenObject": false,
-      "name": "Token_Eyes",
-      "pivot": [0.5, 0.5],
-      "position": [280.0, -375.0],
-      "rotation": 0.0,
-      "scale": [0.08, 0.08],
-      "targetPosition": [380.0, 27.0],
-      "texture": "Token_Eyes",
-      "type": "puzzle_token"
-    },
-    {
-      "color": [255, 255, 255, 255],
-      "enabled": false,
-      "flipX": false,
-      "flipY": false,
-      "isScreenObject": false,
-      "name": "Complete_Dragon",
-      "pivot": [0.5, 0.5],
-      "position": [50.0, 75.0],
-      "rotation": 0.0,
-      "scale": [0.55, 0.55],
-      "texture": "Full_Dragon",
-      "type": "sprite"
-    },
-    {
-      "color": [255, 255, 255, 255],
-      "enabled": true,
-      "flipX": false,
-      "flipY": false,
-      "isScreenObject": true,
-      "name": "Pause_Button",
-      "pivot": [0.5, 0.5],
-      "position": [372.9463, 124.2812],
-      "rotation": 0.0,
-      "scale": [0.08, 0.08],
-      "texture": "Pause_Button",
-      "type": "gui_button"
-    },
-    {
-      "color": [255, 255, 255, 255],
-      "enabled": true,
-      "flipX": false,
-      "flipY": false,
-      "isScreenObject": true,
-      "name": "Story_Button",
-      "pivot": [0.5, 0.5],
-      "position": [174.4292, 127.246],
-      "rotation": 0.0,
-      "scale": [0.08, 0.08],
-      "texture": "Story_Button",
-      "type": "gui_button"
-    },
-    {
       "children": [
         {
-          "color": [255, 255, 255, 255],
+          "children": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": false,
+              "name": "Token_Blank_1",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -375.55157470703125,
+                -310.84796142578125
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.44999998807907104,
+                0.44999998807907104
+              ],
+              "texture": "sequence_game/Token_Blank.png",
+              "type": "sprite"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": false,
+              "name": "Token_Blank_2",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -95.55157470703125,
+                -310.84796142578125
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.44999998807907104,
+                0.44999998807907104
+              ],
+              "texture": "sequence_game/Token_Blank.png",
+              "type": "sprite"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": false,
+              "name": "Token_Blank_3",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                184.44842529296875,
+                -310.84796142578125
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.44999998807907104,
+                0.44999998807907104
+              ],
+              "texture": "sequence_game/Token_Blank.png",
+              "type": "sprite"
+            }
+          ],
+          "enabled": true,
+          "isScreenObject": false,
+          "name": "Blank",
+          "position": [
+            292.64105224609375,
+            163.16151428222656
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "type": "empty"
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
           "enabled": true,
           "flipX": false,
           "flipY": false,
-          "isScreenObject": true,
-          "name": "HintPage",
-          "pivot": [0.5, 0.5],
-          "position": [0.0, 0.0],
+          "hint": "\"Bathala planted tall bamboo trees so that \nBakunawa would not be able to swallow the \nmoon so easily These bamboo trees looked\nlike stains or dark spots on the surface of the\nmoon from afar.\"",
+          "isScreenObject": false,
+          "name": "Token_Horns",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            -82.9105224609375,
+            -147.68646240234375
+          ],
           "rotation": 0.0,
-          "scale": [1.0, 1.0],
-          "texture": "HintPage",
-          "type": "sprite"
+          "scale": [
+            0.07999999821186066,
+            0.07999999821186066
+          ],
+          "target": "Token_Horn_Slot",
+          "texture": "sequence_game/Token_Horns.png",
+          "type": "puzzle_token"
         },
         {
-          "color": [0, 0, 0, 255],
-          "enabled": true,
-          "fontSize": 90,
-          "isScreenObject": true,
-          "name": "TextHint",
-          "position": [0.0, 50.0],
-          "rotation": 0.0,
-          "scale": [0.75, 0.75],
-          "text": "Place Holder",
-          "type": "text"
-        },
-        {
-          "color": [255, 255, 255, 255],
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
           "enabled": true,
           "flipX": false,
           "flipY": false,
-          "isScreenObject": true,
-          "name": "CloseButton",
-          "pivot": [0.5, 0.5],
-          "position": [0.0, -300.0],
+          "hint": "\"Bathala sprung from the pitch-black\nocean and bolted towards the sky-he opened\nhis mouth as wide as he could around one of\nthe moons and with one powerful swoop,\nswallowed it whole. As he did so, a huge wave\nof earthquake shook the ancient land of the\nPhilippines.\"",
+          "isScreenObject": false,
+          "name": "Token_Claws",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            197.0894775390625,
+            -147.68646240234375
+          ],
           "rotation": 0.0,
-          "scale": [0.15, 0.15],
-          "texture": "Close_Button",
-          "type": "gui_button"
+          "scale": [
+            0.07999999821186066,
+            0.07999999821186066
+          ],
+          "target": "Token_Claw_Slot",
+          "texture": "sequence_game/Token_Claws.png",
+          "type": "puzzle_token"
         },
         {
-          "color": [0, 0, 0, 255],
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
           "enabled": true,
-          "fontSize": 90,
-          "isScreenObject": true,
-          "name": "Decline_Text",
-          "position": [0.0, -300.0],
+          "flipX": false,
+          "flipY": false,
+          "hint": "\"The ancient Filipinos ran to the ocean while\nbanging their pots and pans and shouted\ntogether, 'Return our moon!'. Bakunawa was\nso startled by the loud sudden noise that it\nspat out the seventh moon.\"",
+          "isScreenObject": false,
+          "name": "Token_Eyes",
+          "pivot": [
+            0.5,
+            0.5
+          ],
+          "position": [
+            477.0894775390625,
+            -147.68646240234375
+          ],
           "rotation": 0.0,
-          "scale": [0.75, 0.75],
-          "text": "Close",
-          "type": "text"
+          "scale": [
+            0.07999999821186066,
+            0.07999999821186066
+          ],
+          "target": "Token_Eye_Slot",
+          "texture": "sequence_game/Token_Eyes.png",
+          "type": "puzzle_token"
         }
       ],
-      "enabled": false,
-      "isScreenObject": true,
-      "name": "PuzzleHintWindow",
-      "position": [0.0, 0.0],
+      "enabled": true,
+      "isScreenObject": false,
+      "name": "Tokens",
+      "position": [
+        -197.0894775390625,
+        -227.31353759765625
+      ],
       "rotation": 0.0,
-      "scale": [1.0, 1.0],
-      "type": "puzzle_hint"
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "type": "empty"
     },
     {
       "children": [
         {
           "children": [
             {
-              "color": [165, 42, 42, 255],
-              "enabled": true,
-              "fontSize": 120,
-              "isScreenObject": true,
-              "name": "PauseText",
-              "position": [550.0, 200.0],
-              "rotation": -15.0,
-              "scale": [0.2, 0.2],
-              "text": "Paused",
-              "type": "text"
-            },
-            {
-              "children": [
-                {
-                  "color": [255, 255, 255, 255],
-                  "enabled": true,
-                  "fontSize": 45,
-                  "isScreenObject": true,
-                  "name": "ResumeText",
-                  "position": [0.0, 0.0],
-                  "rotation": 0.0,
-                  "scale": [6.6667, 6.6667],
-                  "text": "Resume",
-                  "type": "text"
-                }
+              "color": [
+                255,
+                255,
+                255,
+                255
               ],
-              "color": [255, 255, 255, 255],
               "enabled": true,
               "flipX": false,
               "flipY": false,
               "isScreenObject": true,
-              "name": "ResumeButton",
-              "pivot": [0.5, 0.5],
-              "position": [500.0, 350.0],
-              "rotation": -17.5,
-              "scale": [0.03, 0.03],
-              "texture": "BrownButton",
+              "name": "Pause_Button",
+              "onClick": "Pause",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                929.378662109375,
+                -286.58526611328125
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.10000000149011612,
+                0.10000000149011612
+              ],
+              "texture": "GUI/pause.png",
               "type": "gui_button"
             },
             {
-              "children": [
-                {
-                  "color": [255, 255, 255, 255],
-                  "enabled": true,
-                  "fontSize": 45,
-                  "isScreenObject": true,
-                  "name": "QuitText",
-                  "position": [0.0, 0.0],
-                  "rotation": 0.0,
-                  "scale": [6.6667, 6.6667],
-                  "text": "Quit Stage",
-                  "type": "text"
-                }
+              "color": [
+                255,
+                255,
+                255,
+                255
               ],
-              "color": [255, 255, 255, 255],
               "enabled": true,
               "flipX": false,
               "flipY": false,
               "isScreenObject": true,
-              "name": "QuitButton",
-              "pivot": [0.5, 0.5],
-              "position": [500.0, 550.0],
-              "rotation": -17.0,
-              "scale": [0.03, 0.03],
-              "texture": "BrownButton",
+              "name": "Story_Button",
+              "onClick": "Story",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                679.378662109375,
+                -286.58526611328125
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.10000000149011612,
+                0.10000000149011612
+              ],
+              "texture": "GUI/story.png",
               "type": "gui_button"
             }
           ],
-          "color": [250, 227, 150, 127],
-          "enabled": false,
-          "flipX": false,
-          "flipY": false,
+          "enabled": true,
           "isScreenObject": true,
-          "name": "TransparentBG",
-          "pivot": [0.0, 0.0],
-          "position": [0.0, 0.0],
+          "name": "GUI Buttons",
+          "position": [
+            -139.378662109375,
+            -103.41473388671875
+          ],
           "rotation": 0.0,
-          "scale": [5.0, 5.0],
-          "texture": "Square",
-          "type": "background"
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "type": "empty"
         },
         {
-          "color": [255, 255, 255, 255],
+          "children": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "TransparentBG",
+              "pivot": [
+                0.0,
+                0.0
+              ],
+              "position": [
+                -1050.0,
+                -545.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.38999998569488525,
+                0.3700000047683716
+              ],
+              "texture": "GUI/Panel.png",
+              "type": "background"
+            },
+            {
+              "children": [
+                {
+                  "color": [
+                    139,
+                    58,
+                    47,
+                    255
+                  ],
+                  "enabled": true,
+                  "font": "JainiPurva-Regular.ttf",
+                  "fontSize": 72,
+                  "isScreenObject": true,
+                  "name": "Message",
+                  "position": [
+                    34.20000076293945,
+                    -3.549999952316284
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    0.25850000977516174,
+                    0.7092198729515076
+                  ],
+                  "text": "Bakunawa and the Seven Moons\n\nOnce upon a time, in the ancient Philippines, Bathala-a supreme\ngod-created seven moons that lit up the earth.\n\nThey floated across the night sky, turning darkness into beauty and\nsilence into wonder.\n\nBut deep beneath the waves was a scary creature.\n\nThat creature was Bakunawa, a great serpent-dragon of the sea,\nwho ruled over the ocean. His body wrapped around the world, and\nhis home was cold and shadowy.\n\nOne night, he rose from the depths and saw the moons for the first\ntime.\n\nHe was amazed.\n\nTheir soft glow lit the world in ways he had never known. They were\nso bright... so beautiful...\n\nAnd he wanted them-all of them.\n\nAnd so, one night, Bakunawa leapt from the black ocean and flew\ninto the sky.\n\nHe opened his massive jaws and swallowed one moon whole.\n\nAs the moon disappeared, the Earth trembled. A terrible earthquake\nshook the night.\nBakunawa returned to the sea, full and satisfied.\nBut soon, the moon inside him melted away, like a wax near fire.\n\nFurious, Bakunawa tried again the next night. He devoured a second\nmoon.\nAnd again... it melted.\n\n\"There are so many moons,\" he hissed. \"I will eat them all!\"\n\nNight after night, the serpent struck. And night after night, another\nmoon vanished.\n\nSix moons were gone.\n\nOnly one remained.\n\nThe people of the ancient lands were afraid.\n\nEach time a moon vanished, earthquakes shook their homes, and\ndarkness filled the skies.\n\nThey knew Bakunawa would return-and they had to stop him.\n\nSo they learned the sea dragon feared loud noises.\n\nSo they gathered their pots, pans, gongs, and drums. And they\nwaited.\n\nOn a moonless night, Bakunawa rose once more from the sea.\n\nWith a thunderous cry, he soared upwards, mouth opened wide, and\nwrapped his teeth around the seventh and final moon.\n\nThe world began to dim. Shadows spread across the land. It was\nalmost gone.\n\nBut then-BANG! CLANG! BOOM!\n\nThe people ran to the serpent dragon, shouting:\n\n\"Return our moon!\"\n\nThey banged pots and pans, beat gongs, and yelled into the sky. The\nnoise thundered across the land and sea.\n\nStartled and afraid, Bakunawa spat out the moon just before\nswallowing it whole. He roared and went back into the deep and\ndark ocean.\n\nThe moon rose again, casting light on the land. The people cheered\nand danced beneath its glow.\n\nLittle did Bakunawa know, Bathala had seen everything.\n\nTo guard the moon forever, Bathala planted tall bamboo trees on its\nsurface. From afar, they looked like dark spots-shadows that still\nremain today.\n\nBakunawa never gave up. Even now, sometimes, he tries to steal the\nmoon again.\n\nAnd whenever he does, people make noise-banging drums,\nlighting fireworks, and shouting to the skies-until the moon is safe\nonce more.\n\nBecause as long as the bamboo trees stand, and the people\nremember...\n\nBakunawa will never succeed.\n\n-THE END-",
+                  "type": "text"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                0
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "ParentBG",
+              "pivot": [
+                0.0,
+                0.0
+              ],
+              "position": [
+                -1055.0,
+                -251.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                3.8299999237060547,
+                1.409999966621399
+              ],
+              "texture": "Square.png",
+              "type": "background"
+            },
+            {
+              "color": [
+                0,
+                0,
+                0,
+                255
+              ],
+              "enabled": true,
+              "font": "JainiPurva-Regular.ttf",
+              "fontSize": 113,
+              "isScreenObject": true,
+              "name": "TitleText",
+              "position": [
+                -96.0,
+                -425.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ],
+              "text": "Story",
+              "type": "text"
+            },
+            {
+              "color": [
+                0,
+                0,
+                0,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "LineBreak",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -86.0,
+                -294.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                3.2699999809265137,
+                0.019999999552965164
+              ],
+              "texture": "Square.png",
+              "type": "sprite"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "CloseButton",
+              "onClick": "Story",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -919.0,
+                -418.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.09000000357627869,
+                0.09000000357627869
+              ],
+              "texture": "GUI/back.png",
+              "type": "gui_button"
+            }
+          ],
           "enabled": false,
-          "flipX": false,
-          "flipY": false,
           "isScreenObject": true,
-          "name": "PauseAnim",
-          "pivot": [0.0, 0.0],
-          "position": [250.0, 0.0],
+          "name": "Story_Window",
+          "position": [
+            86.0,
+            0.0
+          ],
           "rotation": 0.0,
-          "scale": [0.9, 0.9],
-          "texture": "Pause",
-          "type": "animated_sprite"
-        }
-      ],
-      "enabled": true,
-      "isScreenObject": true,
-      "name": "PauseScreen",
-      "position": [0.0, 0.0],
-      "rotation": 0.0,
-      "scale": [1.0, 1.0],
-      "type": "pause_screen"
-    },
-    {
-      "children": [
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "type": "story_window"
+        },
         {
           "children": [
             {
               "children": [
                 {
-                  "color": [0, 0, 0, 255],
+                  "color": [
+                    255,
+                    255,
+                    255,
+                    179
+                  ],
                   "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "TransparentBG",
+                  "pivot": [
+                    0.0,
+                    0.0
+                  ],
+                  "position": [
+                    -1059.0,
+                    -543.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    0.38999998569488525,
+                    0.36000001430511475
+                  ],
+                  "texture": "GUI/Panel.png",
+                  "type": "background"
+                },
+                {
+                  "color": [
+                    76,
+                    0,
+                    0,
+                    255
+                  ],
+                  "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "MenuBanner",
+                  "pivot": [
+                    0.5,
+                    0.5
+                  ],
+                  "position": [
+                    -1010.0,
+                    32.0
+                  ],
+                  "rotation": 20.0,
+                  "scale": [
+                    1.0,
+                    3.3299999237060547
+                  ],
+                  "texture": "Square.png",
+                  "type": "sprite"
+                },
+                {
+                  "color": [
+                    142,
+                    27,
+                    27,
+                    255
+                  ],
+                  "enabled": true,
+                  "font": "JainiPurva-Regular.ttf",
+                  "fontSize": 200,
+                  "isScreenObject": true,
+                  "name": "PauseText",
+                  "position": [
+                    -496.0,
+                    -420.0
+                  ],
+                  "rotation": 20.0,
+                  "scale": [
+                    0.8299999833106995,
+                    0.8299999833106995
+                  ],
+                  "text": "Paused",
+                  "type": "text"
+                },
+                {
+                  "children": [
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "enabled": true,
+                      "font": "JainiPurva-Regular.ttf",
+                      "fontSize": 60,
+                      "isScreenObject": true,
+                      "name": "ResumeText",
+                      "position": [
+                        -26.100000381469727,
+                        -11.399999618530273
+                      ],
+                      "rotation": 0.0,
+                      "scale": [
+                        5.55555534362793,
+                        6.666666507720947
+                      ],
+                      "text": "Resume",
+                      "type": "text"
+                    }
+                  ],
+                  "color": [
+                    255,
+                    255,
+                    255,
+                    255
+                  ],
+                  "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "ResumeButton",
+                  "onClick": "Pause",
+                  "pivot": [
+                    0.5,
+                    0.5
+                  ],
+                  "position": [
+                    -441.0,
+                    -240.0
+                  ],
+                  "rotation": 20.0,
+                  "scale": [
+                    0.18000000715255737,
+                    0.15000000596046448
+                  ],
+                  "texture": "GUI/button5.png",
+                  "type": "gui_button"
+                },
+                {
+                  "children": [
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "enabled": true,
+                      "font": "JainiPurva-Regular.ttf",
+                      "fontSize": 60,
+                      "isScreenObject": true,
+                      "name": "QuitText",
+                      "position": [
+                        8.079999923706055,
+                        -46.130001068115234
+                      ],
+                      "rotation": 0.0,
+                      "scale": [
+                        5.55555534362793,
+                        6.666666507720947
+                      ],
+                      "text": "Quit Stage",
+                      "type": "text"
+                    }
+                  ],
+                  "color": [
+                    255,
+                    255,
+                    255,
+                    255
+                  ],
+                  "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "QuitButton",
+                  "pivot": [
+                    0.5,
+                    0.5
+                  ],
+                  "position": [
+                    -388.0,
+                    -83.0
+                  ],
+                  "rotation": 20.0,
+                  "scale": [
+                    0.18000000715255737,
+                    0.15000000596046448
+                  ],
+                  "texture": "GUI/button5.png",
+                  "type": "gui_button"
+                }
+              ],
+              "enabled": false,
+              "isScreenObject": true,
+              "name": "Menu",
+              "position": [
+                0.0,
+                0.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ],
+              "type": "empty"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": false,
+              "flipX": false,
+              "flipY": false,
+              "frameRate": 12,
+              "isScreenObject": true,
+              "name": "PauseAnim",
+              "pivot": [
+                0.0,
+                0.0
+              ],
+              "playMode": 0,
+              "position": [
+                -946.0,
+                -611.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.949999988079071,
+                0.9599999785423279
+              ],
+              "texture": "animations/pause_animation",
+              "type": "animated_sprite"
+            }
+          ],
+          "enabled": true,
+          "isScreenObject": true,
+          "name": "Pause_Screen",
+          "position": [
+            86.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "type": "pause_screen"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "color": [
+                    0,
+                    0,
+                    0,
+                    127
+                  ],
+                  "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "TransparentBG",
+                  "pivot": [
+                    0.0,
+                    0.0
+                  ],
+                  "position": [
+                    -33.0,
+                    -1.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    3.7799999713897705,
+                    2.119999885559082
+                  ],
+                  "texture": "Square.png",
+                  "type": "background"
+                },
+                {
+                  "color": [
+                    255,
+                    255,
+                    255,
+                    255
+                  ],
+                  "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "Complete_Dragon",
+                  "pivot": [
+                    0.5,
+                    0.5
+                  ],
+                  "position": [
+                    934.0,
+                    542.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    0.6600000262260437,
+                    0.6600000262260437
+                  ],
+                  "texture": "sequence_game/Dragon_RedFull.png",
+                  "type": "sprite"
+                },
+                {
+                  "children": [
+                    {
+                      "color": [
+                        0,
+                        0,
+                        0,
+                        255
+                      ],
+                      "enabled": true,
+                      "font": "Maragsa.otf",
+                      "fontSize": 64,
+                      "isScreenObject": true,
+                      "name": "Level Complete",
+                      "position": [
+                        0.0,
+                        0.0
+                      ],
+                      "rotation": 0.0,
+                      "scale": [
+                        3.125,
+                        3.846153974533081
+                      ],
+                      "text": "Level Complete",
+                      "type": "text"
+                    }
+                  ],
+                  "color": [
+                    255,
+                    255,
+                    255,
+                    255
+                  ],
+                  "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "pTextHolder",
+                  "pivot": [
+                    0.5,
+                    0.5
+                  ],
+                  "position": [
+                    944.0,
+                    202.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    0.3199999928474426,
+                    0.25999999046325684
+                  ],
+                  "texture": "GUI/tablet.png",
+                  "type": "sprite"
+                },
+                {
+                  "children": [
+                    {
+                      "color": [
+                        139,
+                        32,
+                        32,
+                        255
+                      ],
+                      "enabled": true,
+                      "font": "Maragsa.otf",
+                      "fontSize": 349,
+                      "isScreenObject": true,
+                      "name": "Exit Text",
+                      "position": [
+                        0.0,
+                        0.0
+                      ],
+                      "rotation": 0.0,
+                      "scale": [
+                        1.0,
+                        1.0
+                      ],
+                      "text": "Return",
+                      "type": "text"
+                    }
+                  ],
+                  "color": [
+                    255,
+                    255,
+                    255,
+                    255
+                  ],
+                  "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "Button_Exit",
+                  "pivot": [
+                    0.5,
+                    0.5
+                  ],
+                  "position": [
+                    944.0,
+                    952.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    0.1899999976158142,
+                    0.1899999976158142
+                  ],
+                  "texture": "GUI/button6.png",
+                  "type": "gui_button"
+                }
+              ],
+              "enabled": false,
+              "isScreenObject": true,
+              "name": "Menu",
+              "position": [
+                -1020.0,
+                -542.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ],
+              "type": "empty"
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": false,
+              "flipX": false,
+              "flipY": false,
+              "frameRate": 12,
+              "isScreenObject": true,
+              "name": "EndAnim",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "playMode": 0,
+              "position": [
+                -85.0,
+                7.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.9599999785423279,
+                0.8999999761581421
+              ],
+              "texture": "animations/low_order_success",
+              "type": "animated_sprite"
+            }
+          ],
+          "enabled": true,
+          "isScreenObject": true,
+          "name": "Puzzle_End",
+          "position": [
+            86.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "type": "puzzle_end"
+        },
+        {
+          "children": [
+            {
+              "color": [
+                0,
+                0,
+                0,
+                127
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "Transparent_BG",
+              "pivot": [
+                0.0,
+                0.0
+              ],
+              "position": [
+                -1057.0,
+                -564.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                3.950000047683716,
+                2.180000066757202
+              ],
+              "texture": "Square.png",
+              "type": "background"
+            },
+            {
+              "children": [
+                {
+                  "color": [
+                    0,
+                    0,
+                    0,
+                    255
+                  ],
+                  "enabled": true,
+                  "font": "JainiPurva-Regular.ttf",
                   "fontSize": 90,
                   "isScreenObject": true,
                   "name": "Tablet_Text",
-                  "position": [-400.0, 0.0],
+                  "position": [
+                    -496.0,
+                    2.380000114440918
+                  ],
                   "rotation": 0.0,
-                  "scale": [1.0, 1.0],
-                  "text": "Objective:\nForm the Bakunawa!\nRelics to sequence: 3",
+                  "scale": [
+                    1.0,
+                    1.1904761791229248
+                  ],
+                  "text": "Objective:\nForm the Bakunawa!\n\nRelics to Sequence: 3",
                   "type": "text"
                 }
               ],
-              "color": [255, 255, 255, 255],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
               "enabled": true,
               "flipX": false,
               "flipY": false,
               "isScreenObject": true,
               "name": "Tablet",
-              "pivot": [0.5, 0.5],
-              "position": [1000.0, 450.0],
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -96.0,
+                -75.0
+              ],
               "rotation": 0.0,
-              "scale": [0.2, 0.2],
-              "texture": "Tablet",
+              "scale": [
+                0.9900000095367432,
+                0.7799999713897705
+              ],
+              "texture": "GUI/tablet.png",
               "type": "sprite"
             },
             {
-              "color": [255, 255, 255, 255],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
               "enabled": true,
               "flipX": false,
               "flipY": false,
+              "frameRate": 12,
               "isScreenObject": true,
               "name": "Intro",
-              "pivot": [0.0, 0.0],
-              "position": [200.0, 0.0],
-              "rotation": 0.0,
-              "scale": [0.2, 0.2],
-              "texture": "Intro",
-              "type": "animated_sprite"
-            }
-          ],
-          "color": [0, 0, 0, 127],
-          "enabled": true,
-          "flipX": false,
-          "flipY": false,
-          "isScreenObject": true,
-          "name": "Transparent_BG",
-          "pivot": [0.0, 0.0],
-          "position": [0.0, 0.0],
-          "rotation": 0.0,
-          "scale": [5.0, 5.0],
-          "texture": "Square",
-          "type": "background"
-        },
-        {
-          "children": [
-            {
-              "color": [0, 0, 0, 255],
-              "enabled": true,
-              "fontSize": 90,
-              "isScreenObject": true,
-              "name": "Tablet_Text",
-              "position": [0.0, -15.0],
-              "rotation": 0.0,
-              "scale": [6.6667, 6.6667],
-              "text": "CLose",
-              "type": "text"
-            }
-          ],
-          "color": [255, 255, 255, 255],
-          "enabled": true,
-          "flipX": false,
-          "flipY": false,
-          "isScreenObject": true,
-          "name": "Close",
-          "pivot": [0.5, 0.5],
-          "position": [1000.0, 975.0],
-          "rotation": 0.0,
-          "scale": [0.15, 0.15],
-          "texture": "Close_Button",
-          "type": "gui_button"
-        }
-      ],
-      "enabled": false,
-      "isScreenObject": true,
-      "name": "L1_Obj",
-      "position": [0.0, 0.0],
-      "rotation": 0.0,
-      "scale": [1.0, 1.0],
-      "type": "objective_intro"
-    },
-    {
-      "children": [
-        {
-          "color": [250, 227, 150, 127],
-          "enabled": true,
-          "flipX": false,
-          "flipY": false,
-          "isScreenObject": true,
-          "name": "TransparentBG",
-          "pivot": [0.0, 0.0],
-          "position": [0.0, 0.0],
-          "rotation": 0.0,
-          "scale": [5.0, 5.0],
-          "texture": "Square",
-          "type": "background"
-        },
-        {
-          "children": [
-            {
-              "color": [0, 0, 0, 255],
-              "enabled": true,
-              "fontSize": 45,
-              "isScreenObject": true,
-              "name": "Message",
-              "position": [0.0, -200.0],
-              "rotation": 0.0,
-              "scale": [0.2, 0.8],
-              "text": "Once upon a time, in the ancient Philippines, Bathala, a supreme god, created seven moons that lit up the earth.\n\nThey floated across the night sky, turning darkness into beauty and silence into wonder.\n\nBut deep beneath the waves was a scary creature. That creature was Bakunawa, a great serpent-dragon of the sea, who ruled over the ocean. His body wrapped around the world, and his home was cold and shadowy.\n\nOne night, he rose from the depths and saw the moons for the first time.\n\nHe was amazed.\n\nTheir soft glow lit the world in ways he had never known. They were so bright... so beautiful...\n\nAnd he wanted them, all of them.\n\nAnd so, one night, Bakunawa leapt from the black ocean and flew into the sky.\nHe opened his massive jaws and swallowed one moon whole.\n\nAs the moon disappeared, the Earth trembled. A terrible earthquake shook the night.\nBakunawa returned to the sea, full and satisfied.\nBut soon, the moon inside him melted away, like wax near fire.\n\nFurious, Bakunawa tried again the next night. He devoured a second moon.\nAnd again... it melted.\n\n\"There are so many moons,\" he hissed. \"I will eat them all!\"\n\nNight after night, the serpent struck. And night after night, another moon vanished.\n\nSix moons were gone.\n\n\nOnly one remained.\n\nThe people of the ancient islands were afraid.\n\nEach time a moon vanished, earthquakes shook their homes, and darkness filled the skies.\n\nThey knew Bakunawa would return, and they had to stop him.\n\nSo they learned the sea dragon feared loud noises.\n\nSo they gathered their pots, pans, gongs, and drums. And they waited.\n\nOn a moonless night, Bakunawa rose once more from the sea.\n\nWith a thunderous cry, he soared upwards, mouth opened wide, and wrapped his teeth around the seventh and final moon.\n\nThe world began to dim. Shadows spread across the land. It was almost gone.\n\nBut then, BANG! CLANG! BOOM!\n\nThe people ran to the serpent dragon, shouting:\n\n\"Return our moon!\"\n\nThey banged pots and pans, beat gongs,\n and yelled into the sky. The noise thundered across the land and sea.\n\nStartled and afraid, Bakunawa spat out the moon just before\n swallowing it whole. He roared and went back into the deep and dark ocean.\n\nThe moon rose again, casting light on the land. The people cheered and danced beneath its glow.\n\nLittle did Bakunawa know, Bathala had seen everything.\n\nTo guard the moon forever, Bathala planted tall bamboo trees on its surface. From afar,\n they looked like dark spots, shadows that still remain today.\n\nBakunawa never gave up. Even now, sometimes, he tries to steal the moon again.\n\nAnd whenever he does, the people make noise, banging drums, lighting fireworks, and shouting to the skies\n until the moon is safe once more.\n\nBecause as long as the bamboo trees stand, and the people remember...\n\nBakunawa will never succeed.",
-              "type": "text"
-            }
-          ],
-          "color": [255, 255, 255, 0],
-          "enabled": true,
-          "flipX": false,
-          "flipY": false,
-          "isScreenObject": true,
-          "name": "ParentBG",
-          "pivot": [0.0, 0.0],
-          "position": [0.0, 200.0],
-          "rotation": 0.0,
-          "scale": [5.0, 1.25],
-          "texture": "Square",
-          "type": "background"
-        },
-        {
-          "color": [0, 0, 0, 255],
-          "enabled": true,
-          "fontSize": 90,
-          "isScreenObject": true,
-          "name": "TitleText",
-          "position": [1000.0, 100.0],
-          "rotation": 0.0,
-          "scale": [1.0, 1.0],
-          "text": "Bakunawa and the Seven Moons",
-          "type": "text"
-        },
-        {
-          "color": [0, 0, 0, 255],
-          "enabled": true,
-          "fontSize": 90,
-          "isScreenObject": true,
-          "name": "LineBreak",
-          "position": [1000.0, 150.0],
-          "rotation": 0.0,
-          "scale": [1.0, 1.0],
-          "text": "----------------------------------------",
-          "type": "text"
-        },
-        {
-          "children": [
-            {
-              "color": [0, 0, 0, 255],
-              "enabled": true,
-              "fontSize": 90,
-              "isScreenObject": true,
-              "name": "Decline_Text",
-              "position": [0.0, 0.0],
-              "rotation": 0.0,
-              "scale": [5.0, 5.0],
-              "text": "Close",
-              "type": "text"
-            }
-          ],
-          "color": [255, 255, 255, 255],
-          "enabled": true,
-          "flipX": false,
-          "flipY": false,
-          "isScreenObject": true,
-          "name": "CloseButton",
-          "pivot": [0.5, 0.5],
-          "position": [1000.0, 950.0],
-          "rotation": 0.0,
-          "scale": [0.15, 0.15],
-          "texture": "Close_Button",
-          "type": "gui_button"
-        }
-      ],
-      "enabled": false,
-      "isScreenObject": true,
-      "name": "Puzzle1StoryWindow",
-      "position": [0.0, 0.0],
-      "rotation": 0.0,
-      "scale": [1.0, 1.0],
-      "type": "story_window"
-    },
-    {
-      "children": [
-        {
-          "children": [
-            {
-              "children": [
-                {
-                  "color": [0, 0, 0, 255],
-                  "enabled": true,
-                  "fontSize": 200,
-                  "isScreenObject": true,
-                  "name": "Exit Text",
-                  "position": [0.0, 0.0],
-                  "rotation": 0.0,
-                  "scale": [1.0, 1.0],
-                  "text": "Return",
-                  "type": "text"
-                }
+              "pivot": [
+                0.0,
+                0.0
               ],
-              "color": [255, 255, 255, 255],
-              "enabled": true,
-              "flipX": false,
-              "flipY": false,
-              "isScreenObject": true,
-              "name": "Button_Exit",
-              "pivot": [0.5, 0.5],
-              "position": [1000.0, 800.0],
+              "playMode": 0,
+              "position": [
+                -909.0,
+                -566.0
+              ],
               "rotation": 0.0,
-              "scale": [0.025, 0.025],
-              "texture": "Close_Button",
-              "type": "gui_button"
+              "scale": [
+                0.9200000166893005,
+                0.9200000166893005
+              ],
+              "texture": "animations/level_intro",
+              "type": "animated_sprite"
             },
             {
               "children": [
                 {
-                  "color": [0, 0, 0, 255],
+                  "color": [
+                    157,
+                    107,
+                    97,
+                    255
+                  ],
                   "enabled": true,
-                  "fontSize": 200,
+                  "font": "JainiPurva-Regular.ttf",
+                  "fontSize": 70,
                   "isScreenObject": true,
-                  "name": "Level Complete",
-                  "position": [0.0, 0.0],
+                  "name": "CloseText",
+                  "position": [
+                    0.0,
+                    -33.33000183105469
+                  ],
                   "rotation": 0.0,
-                  "scale": [1.0, 1.0],
-                  "text": "Level Complete",
+                  "scale": [
+                    4.761904716491699,
+                    5.55555534362793
+                  ],
+                  "text": "Dismiss",
                   "type": "text"
                 }
               ],
-              "color": [255, 255, 255, 255],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
               "enabled": true,
               "flipX": false,
               "flipY": false,
               "isScreenObject": true,
-              "name": "pTextHolder",
-              "pivot": [0.5, 0.5],
-              "position": [1000.0, 300.0],
+              "name": "Close",
+              "onClick": "Objective",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -96.0,
+                410.0
+              ],
               "rotation": 0.0,
-              "scale": [0.05, 0.05],
-              "texture": "Tablet",
-              "type": "sprite"
+              "scale": [
+                0.20999999344348907,
+                0.18000000715255737
+              ],
+              "texture": "GUI/button6.png",
+              "type": "gui_button"
             }
           ],
-          "color": [255, 255, 255, 0],
-          "enabled": false,
-          "flipX": false,
-          "flipY": false,
+          "enabled": true,
           "isScreenObject": true,
-          "name": "TransparentBG",
-          "pivot": [0.0, 0.0],
-          "position": [0.0, 0.0],
+          "name": "Objective_Intro",
+          "position": [
+            86.0,
+            0.0
+          ],
           "rotation": 0.0,
-          "scale": [5.0, 5.0],
-          "texture": "Square",
-          "type": "background"
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "type": "objective_intro"
         },
         {
-          "color": [255, 255, 255, 255],
+          "children": [
+            {
+              "color": [
+                0,
+                0,
+                0,
+                127
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "Transparent_BG",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -86.0,
+                0.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                4.039999961853027,
+                2.1700000762939453
+              ],
+              "texture": "Square.png",
+              "type": "sprite"
+            },
+            {
+              "children": [
+                {
+                  "color": [
+                    138,
+                    75,
+                    75,
+                    255
+                  ],
+                  "enabled": true,
+                  "font": "Maragsa.otf",
+                  "fontSize": 90,
+                  "isScreenObject": true,
+                  "name": "TextHint",
+                  "position": [
+                    0.0,
+                    -11.34000015258789
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    0.7731999754905701,
+                    0.7731999754905701
+                  ],
+                  "text": "Placeholder",
+                  "type": "text"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "HintPage",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -96.0,
+                10.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.9700000286102295,
+                0.9700000286102295
+              ],
+              "texture": "sequence_game/Popup_Panel.png",
+              "type": "sprite"
+            },
+            {
+              "children": [
+                {
+                  "color": [
+                    157,
+                    107,
+                    97,
+                    255
+                  ],
+                  "enabled": true,
+                  "font": "JainiPurva-Regular.ttf",
+                  "fontSize": 90,
+                  "isScreenObject": true,
+                  "name": "Decline_Text",
+                  "position": [
+                    0.0,
+                    0.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    5.0,
+                    5.0
+                  ],
+                  "text": "Close",
+                  "type": "text"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "CloseButton",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -96.0,
+                360.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.15000000596046448,
+                0.15000000596046448
+              ],
+              "texture": "GUI/button6.png",
+              "type": "gui_button"
+            }
+          ],
           "enabled": false,
-          "flipX": false,
-          "flipY": false,
           "isScreenObject": true,
-          "name": "EndAnim",
-          "pivot": [0.0, 0.0],
-          "position": [0.0, 0.0],
+          "name": "Puzzle_Hint",
+          "position": [
+            86.0,
+            0.0
+          ],
           "rotation": 0.0,
-          "scale": [1.0, 1.0],
-          "texture": "Puzzle_End",
-          "type": "animated_sprite"
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "type": "puzzle_hint"
         }
       ],
       "enabled": true,
       "isScreenObject": true,
-      "name": "EndScreen",
-      "position": [0.0, 0.0],
+      "name": "UI",
+      "position": [
+        960.0,
+        540.0
+      ],
       "rotation": 0.0,
-      "scale": [1.0, 1.0],
-      "type": "puzzle_end"
+      "scale": [
+        1.0,
+        1.0
+      ],
+      "type": "empty"
     }
   ],
   "version": 1

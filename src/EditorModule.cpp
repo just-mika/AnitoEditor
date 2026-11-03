@@ -53,6 +53,7 @@ void Editor::EditorModule::togglePlayMode(){
             this->editorCamScale = cam->getScale();
             cam->setScale(Vector2D(1.0f, 1.0f));
             cam->setPos(Vector2D(0.0f, 0.0f));
+            LevelDataManager::getInstance()->rewireScene();   //pick up slot edits made in edit mode
         }
         else
         {
@@ -190,7 +191,7 @@ void Editor::EditorModule::processEditorInput(const SDL_Event* eEvent)
             if (eEvent->key.mod & SDL_KMOD_CTRL)
             {
                 LevelDataManager* ldm = LevelDataManager::getInstance();
-                bool bShift = (eEvent->key.mod & SDL_KMOD_SHIFT != 0);
+                bool bShift = (eEvent->key.mod & SDL_KMOD_SHIFT) != 0;
 
                 if (eEvent->key.key == SDLK_Z && !bShift)
                 {

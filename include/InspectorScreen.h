@@ -1,6 +1,8 @@
 #pragma once
 #include "AUIScreen.h"
 #include "AGameObject.h"
+#include "AssetBrowserPanel.h"
+#include "Text.h"
 
 class InspectorScreen : public AUIScreen
 {
@@ -9,9 +11,11 @@ private:
     Vector2D mousePos;
     AGameObject* lastSelected = nullptr;
     char nameBuf[128] = {};
-    char textBuf[512] = {};
+    char textBuf[16384] = {};
     int fontSizeBuf = 45;
     bool pendingDelete = false;
+    AssetBrowserPanel assetBrowser;
+    Text* pEditingText = nullptr;
 
 public:
     void setMousePos(Vector2D mousePos);

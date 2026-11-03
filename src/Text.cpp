@@ -78,3 +78,11 @@ void Text::initialize()
 	TextRenderer* pTextRenderer = new TextRenderer();
 	this->attachComponent((AComponent*)pTextRenderer);
 }
+
+void Text::setFontName(const std::string& strFontName)
+{
+	this->strFontName = strFontName;
+	// setMessage() reloads the font and rebuilds the texture
+	if (!this->strMessage.empty() && this->findComponentByName("TextRenderer"))
+		this->setMessage(this->strMessage);
+}

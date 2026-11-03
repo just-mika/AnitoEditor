@@ -51,5 +51,6 @@ public:
     double getAngle();
     Vector2D getPivot();
     std::string getTextureKey() const { return m_textureKey; }
+    Vector2D getTexSize() const { return texSize; }
 
 };

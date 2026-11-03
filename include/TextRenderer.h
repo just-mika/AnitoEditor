@@ -42,6 +42,7 @@ public:
     void setViewHeight(float fViewHeight);
     float getViewHeight();
     void setColor(SDL_Color color) override;
+    Vector2D getTexSize() const { return texSize; }
 
 };
 
