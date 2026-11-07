@@ -22,6 +22,10 @@ Animation::Animation(
 
 void Animation::play()
 {
+	//a finished one-shot animation would otherwise resume past its last frame
+	if (this->bFinished)
+		this->stop();
+
 	this->bIsPlaying = true;
 	this->bFinished = false;
 }
@@ -42,47 +46,43 @@ void Animation::stop()
 
 void Animation::step(float fDeltaTime)
 {
-	if (!this->bIsPlaying) return;
+	if (!this->bIsPlaying || this->vecFrames.empty()) return;
 
 	this->fTicks += fDeltaTime;
 	float ticksPerFrame = this->getTicksPerFrame();
+	if (this->fTicks < ticksPerFrame) return;
+	this->fTicks = std::fmod(this->fTicks, ticksPerFrame);
 
-	if (this->fTicks >= ticksPerFrame)
+	unsigned int nLast = (unsigned int)this->vecFrames.size() - 1;
+
+	switch (this->EType)
 	{
-		this->fTicks = std::fmod(this->fTicks, ticksPerFrame);
+	case AnimationType::ONCE:
+		if (this->nFrameIndex < nLast) this->nFrameIndex++;
+		if (this->nFrameIndex >= nLast) this->bFinished = true;
+		break;
 
-		if (!this->bIsReverse) this->nFrameIndex++;
-		else this->nFrameIndex--;
+	case AnimationType::LOOP:
+		this->nFrameIndex = (this->nFrameIndex >= nLast) ? 0 : this->nFrameIndex + 1;
+		break;
 
-		switch (this->EType)
+	case AnimationType::YOYO:
+	case AnimationType::YOYO_ONCE:
+		if (!this->bIsReverse)
 		{
-		case AnimationType::ONCE:
-			if (this->nFrameIndex == this->vecFrames.size() - 1) this->bFinished = true;
-			break;
-
-		case AnimationType::LOOP:
-			this->nFrameIndex %= this->vecFrames.size();
-			break;
-
-		case AnimationType::YOYO:
-			if (this->nFrameIndex == this->vecFrames.size() - 1 ||
-				this->nFrameIndex == 0)
-			{
-				this->bIsReverse = !this->bIsReverse;
-			}
-			break;
-
-		case AnimationType::YOYO_ONCE:
-			if (this->nFrameIndex == this->vecFrames.size() - 1)
-			{
-				this->bIsReverse = true;
-			}
-			else if (this->nFrameIndex == 0)
-			{
-				this->bFinished = true;
-			}
-			break;
+			if (this->nFrameIndex < nLast) this->nFrameIndex++;
+			if (this->nFrameIndex >= nLast) this->bIsReverse = true;
 		}
+		else
+		{
+			if (this->nFrameIndex > 0) this->nFrameIndex--;
+			if (this->nFrameIndex == 0)
+			{
+				if (this->EType == AnimationType::YOYO) this->bIsReverse = false;
+				else this->bFinished = true;   //YOYO_ONCE: back at the start, done
+			}
+		}
+		break;
 	}
 }
 
@@ -93,7 +93,7 @@ bool Animation::finished() const
 
 void Animation::setFrameRate(Uint8 nFrameRate)
 {
-    this->nFrameRate = nFrameRate;
+	this->nFrameRate = (nFrameRate > 0) ? nFrameRate : 1;
 }
 
 void Animation::setType(AnimationType EType)
@@ -123,7 +123,9 @@ std::string Animation::getName() const
 
 SDL_Texture* Animation::getCurrentFrame() const
 {
-	return this->vecFrames.empty() ? NULL : this->vecFrames[this->nFrameIndex];
+	if (this->vecFrames.empty()) return NULL;
+	if (this->nFrameIndex >= this->vecFrames.size()) return this->vecFrames.back();
+	return this->vecFrames[this->nFrameIndex];
 }
 
 unsigned int Animation::getFrameCount()
@@ -154,4 +156,20 @@ OnAnimFinished Animation::getOnAnimFinished() const
 std::string Animation::getNextState() const
 {
     return this->strNextState;
+}
+
+void Animation::stopAtEnd()
+{
+	this->stop();
+	if (!this->vecFrames.empty())
+		this->nFrameIndex = (unsigned int)this->vecFrames.size() - 1;
+}
+
+// replaces the frames and restarts from the first one
+void Animation::setFrames(std::vector<SDL_Texture*> vecFrames)
+{
+	this->vecFrames = vecFrames;
+	this->nFrameIndex = 0;
+	this->fTicks = 0;
+	this->bFinished = false;
 }

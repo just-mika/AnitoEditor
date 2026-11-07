@@ -7,6 +7,8 @@
 #include <cassert>
 #include <iostream>
 
+#include "ObjectFactory.h"
+
 // ---------------------------------------------------------------------------
 // Per-frame lifecycle
 // ---------------------------------------------------------------------------
@@ -61,17 +63,27 @@ void GameObjectManager::cleanUpDeletedObjects()
     {
         if (!pObject) continue;
 
-        // Remove from the ordered vector (O(G) erase).
-        auto vecIt = std::find(vecGameObject.begin(), vecGameObject.end(), pObject);
-        if (vecIt != vecGameObject.end())
-            vecGameObject.erase(vecIt);
+        if (AGameObject* pParent = pObject->getParent())
+        {
+            // a child: its parent's list is the only place that holds it,
+            // so take it out of there (otherwise the parent deletes it again later)
+            pParent->detachChild(pObject);
+        }
+        else
+        {
+            // a root: remove it from the ordered vector (O(G) erase)
+            auto vecIt = std::find(vecGameObject.begin(), vecGameObject.end(), pObject);
+            if (vecIt != vecGameObject.end())
+                vecGameObject.erase(vecIt);
 
-        // Remove from the name map (O(1) average).
-        mapGameObject.erase(pObject->getName());
+            // and from the name map, only if the entry is this object
+            // (another root with the same name must not lose its entry)
+            auto mapIt = mapGameObject.find(pObject->getName());
+            if (mapIt != mapGameObject.end() && mapIt->second == pObject)
+                mapGameObject.erase(mapIt);
+        }
 
         delete pObject;
-        // Note: pObject is a local copy; setting it to nullptr here would be
-        // a no-op on the original pointer, so we omit the misleading line.
     }
 }
 
@@ -173,6 +185,33 @@ std::vector<AGameObject*>& GameObjectManager::getAllObjects()
     return vecGameObject;
 }
 
+AGameObject* GameObjectManager::findObjectInTree(const std::string& strName) const
+{
+    // roots first (fast map lookup)
+    if (AGameObject* pRoot = findObjectByName(strName))
+        return pRoot;   //roots: fast map lookup
+
+    for (AGameObject* o : getAllObjectsRecursively())
+        if (o->getName() == strName)
+            return o;
+
+    return nullptr;
+}
+
+std::vector<AGameObject*> GameObjectManager::getAllObjectsRecursively() const
+{
+    // every object, including children (getAllObjects only returns roots)
+    std::vector<AGameObject*> all;
+    for (AGameObject* root : vecGameObject)
+    {
+        all.push_back(root);
+        std::vector<AGameObject*> tree = root->getChildrenRecursively();
+        all.insert(all.end(), tree.begin(), tree.end());
+    }
+
+    return all;
+}
+
 // ---------------------------------------------------------------------------
 // Hierarchy editing
 // ---------------------------------------------------------------------------
@@ -191,6 +230,11 @@ int GameObjectManager::getSiblingIndex(AGameObject* pObject) const
 bool GameObjectManager::canMoveObject(AGameObject* pObject, AGameObject* pNewParent) const
 {
     if (!pObject) return false;
+
+    // a composite's children are built in code: they can't leave, and nothing can enter
+    if (ObjectFactory::isInsideComposite(pObject)) return false;
+    if (pNewParent && (ObjectFactory::isComposite(pNewParent) || ObjectFactory::isInsideComposite(pNewParent)))
+        return false;
 
     if (pNewParent)
     {
@@ -264,6 +308,11 @@ void GameObjectManager::moveObject(AGameObject* pObject, AGameObject* pNewParent
 bool GameObjectManager::reparentObject(AGameObject* pObject, AGameObject* pNewParent)
 {
     if (!pObject || pObject == pNewParent || pObject->getParent() == pNewParent)
+        return false;
+
+    // same rule as canMoveObject (this path is used by the Inspector, not the Hierarchy)
+    if (ObjectFactory::isInsideComposite(pObject)) return false;
+    if (pNewParent && (ObjectFactory::isComposite(pNewParent) || ObjectFactory::isInsideComposite(pNewParent)))
         return false;
 
     if (pNewParent)

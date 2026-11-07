@@ -23,66 +23,83 @@ LevelEndGUI::~LevelEndGUI()
 
 void LevelEndGUI::initialize()
 {
-	Background* pTransBack = new Background("TransparentBG", "Square", Vector2D(5.f));
-
+	Background* pTransBack = new Background("TransparentBG", "Square", Vector2D(1.0f));
 	this->attachChild(pTransBack);
+	pTransBack->setLocalPos(Vector2D(0, 0));
+	pTransBack->setLocalScale(Vector2D(5.0f, 1.0f));
 	SpriteRenderer* pTransBGR = (SpriteRenderer*)pTransBack->findComponentByName("SpriteRenderer");
 	pTransBGR->setColor({ 255, 255, 255, 0 });
 
-	AnimatedSprite* pAnimSprite = new AnimatedSprite("EndAnim", "End_Level", Vector2D(0, 0.0f), Vector2D(0.9f), 0.0f, 12);
-	pAnimSprite->setIsScreenObject(true);
+	// plays first, stays on its last frame behind the panel
+	AnimatedSprite* pAnimSprite = new AnimatedSprite("EndAnim", "End_Level", Vector2D(0.0f), Vector2D(1.0f), 0.0f, 12);
 	this->attachChild(pAnimSprite);
-	SpriteAnimator* pAnimator = (SpriteAnimator*)pAnimSprite->findComponentByName("SpriteAnimator");
+	pAnimSprite->setIsScreenObject(true);
+	pAnimSprite->setLocalPos(Vector2D(-47, -9));
+	pAnimSprite->setLocalRot(4.66f);
 	SpriteRenderer* pSpriteRenderer = (SpriteRenderer*)pAnimSprite->findComponentByName("SpriteRenderer");
 	pSpriteRenderer->setPivot(Vector2D(0, 0));
+	SpriteAnimator* pAnimator = (SpriteAnimator*)pAnimSprite->findComponentByName("SpriteAnimator");
 	pAnimator->getCurrentAnimation()->setType(AnimationType::ONCE);
 	pAnimator->getCurrentAnimation()->setOnAnimFinished(OnAnimFinished::FUNC);
+	pAnimator->addListener(this);
 
 	GUIButton* pExit = new GUIButton("Button_Exit", "Exit");
+	this->attachChild(pExit);
 	pExit->setIsScreenObject(true);
-	pExit->setPos(Vector2D(1500, 800));
-	pExit->setScale(Vector2D(.025, .025));
-	SceneSwitcher* pExitSwitch = new SceneSwitcher(SceneTag::LOBBY_SCENE);
-	pExit->attachComponent(pExitSwitch);
-	pTransBack->attachChild(pExit);
+	pExit->setLocalPos(Vector2D(1450, 801));
+	pExit->setLocalScale(Vector2D(0.2f, 0.24f));
+	pExit->attachComponent(new SceneSwitcher(SceneTag::LOBBY_SCENE));
 
 	Text* pExitText = new Text("ExitText", "JainiPurva-Regular.ttf", 40, 0.f, false);
 	pExit->attachChild(pExitText);
+	pExitText->setIsScreenObject(true);
 	pExitText->setMessage("Return to Hub");
-	pExitText->setScale(Vector2D(1, 1));
+	pExitText->setLocalPos(Vector2D(0, -16.67f));
+	pExitText->setLocalScale(Vector2D(8.0f, 6.958f));
+	pExitText->setColor(SDL_Color(174, 109, 109, 255));
 
 	Sprite* pTextHolder = new Sprite("pTextHolder", "Tablet");
+	this->attachChild(pTextHolder);
 	pTextHolder->setIsScreenObject(true);
-	pTextHolder->setPos(Vector2D(1500, 450));
-	pTextHolder->setScale(Vector2D(.075, .075));
-	pTransBack->attachChild(pTextHolder);
+	pTextHolder->setLocalPos(Vector2D(1456, 351));
+	pTextHolder->setLocalScale(Vector2D(0.42f, 0.42f));
 
 	Text* pClearText = new Text("ClearText", "JainiPurva-Regular.ttf", 120, 0.f, false);
 	pTextHolder->attachChild(pClearText);
-	pClearText->setMessage("Cleared");
+	pClearText->setIsScreenObject(true);
+	pClearText->setMessage("Cleared!");
+	pClearText->setLocalPos(Vector2D(0, -28.57f));
+	pClearText->setLocalScale(Vector2D(2.381f, 2.5f));
 	pClearText->setColor(colorWhite);
-	pClearText->setScale(Vector2D(1, 1));
-
 
 	pTransBack->setEnabled(false);
 	pAnimSprite->setEnabled(false);
-	pAnimator->addListener(this);
+	pExit->setEnabled(false);
+	pTextHolder->setEnabled(false);
 	EventBroadcaster::getInstance()->registerListener(this);
 }
 
 void LevelEndGUI::onEventTrigger(std::unordered_map<std::string, void*> mapParameter)
 {
-	Background* pTransBack = (Background*)this->findChildByName("TransparentBG");
+	// switched off in the level (or inside a disabled group): this screen isn't in play
+	if (!this->isGloballyEnabled()) return;
+
 	AnimatedSprite* pAnimSprite = (AnimatedSprite*)this->findChildByName("EndAnim");
 	SpriteAnimator* pAnimator = (SpriteAnimator*)pAnimSprite->findComponentByName("SpriteAnimator");
-	if (!pTransBack->getEnabled())
+
+	// open = the animation is showing (it stays on its last frame)
+	if (!pAnimSprite->getEnabled())
 	{
+		// start clean whatever the level saved: only the animation shows until it ends
+		this->findChildByName("TransparentBG")->setEnabled(false);
+		this->findChildByName("Button_Exit")->setEnabled(false);
+		this->findChildByName("pTextHolder")->setEnabled(false);
+
 		pAnimSprite->setEnabled(true);
 		EventBroadcaster::getInstance()->disableOtherListenerExcept(this);
 		pAnimator->getCurrentAnimation()->stop();
 		pAnimator->getCurrentAnimation()->play();
 	}
-
 }
 
 EventKey LevelEndGUI::getKey()
@@ -107,6 +124,8 @@ std::string LevelEndGUI::getListenerOwnerName()
 
 void LevelEndGUI::onAnimationFinished()
 {
-	Background* pTransBack = (Background*)this->findChildByName("TransparentBG");
-	pTransBack->setEnabled(true);
+	// show the panel on top of the last frame
+	this->findChildByName("TransparentBG")->setEnabled(true);
+	this->findChildByName("Button_Exit")->setEnabled(true);
+	this->findChildByName("pTextHolder")->setEnabled(true);
 }

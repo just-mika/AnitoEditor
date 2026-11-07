@@ -7,7 +7,7 @@
 
 class EventListener {
     public:
-        virtual ~EventListener() {}
+        virtual ~EventListener();
 
     public:
         virtual void onEventTrigger(std::unordered_map<std::string, void*> mapParameter) = 0;

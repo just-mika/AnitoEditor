@@ -16,6 +16,10 @@ private:
 	bool bListenerEnabled;
 	Player* pPlayer;
 	std::vector<GUIButton*> vecGems;
+
+	void setPanelVisible(bool bVisible);   //the panel parts shown after the animation
+	static std::string gemOfButton(const std::string& strButton);   //"Gem_Cyan_Button" -> "Gem_Cyan" ("" if not a gem button)
+
 public:
 	InventoryGUI(std::string strName);
 	~InventoryGUI();

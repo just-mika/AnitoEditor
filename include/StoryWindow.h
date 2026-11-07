@@ -15,6 +15,9 @@ private:
 	bool bListenerEnabled;
 	Text* pTitle;
 	Text* pMessage;
+	Vector2D textStartPos;   //where the story text sits before scrolling
+	std::vector<EventListener*> vecRestore;   //listeners that were enabled before the story opened
+
 public:
 	StoryWindow(std::string strName);
 	~StoryWindow();

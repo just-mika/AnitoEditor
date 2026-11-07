@@ -34,6 +34,8 @@
 #include "LevelEndGUI.h"
 #include "PauseScreen.h"
 #include "ObjectiveIntro.h"
+#include "PlatformerPickupGUI.h"
+#include "SequenceGameManager.h"
 
 static const std::vector<ObjectTypeInfo> S_REGISTERED_TYPES = {
     // --- Primitives ---
@@ -41,7 +43,7 @@ static const std::vector<ObjectTypeInfo> S_REGISTERED_TYPES = {
     { "sprite",            "Sprite",            ObjectCategory::Primitive, false },
     { "animated_sprite",   "Animated Sprite",   ObjectCategory::Primitive, false },
     { "text",              "Text",              ObjectCategory::Primitive, false },
-    { "background",        "Background",        ObjectCategory::Primitive, false },
+    { "background",        "Background",        ObjectCategory::Primitive, true },
 
     // --- Gameplay Entities ---
     { "player",           "Player",           ObjectCategory::Gameplay, false,{ Dependency::Physics } },
@@ -50,18 +52,19 @@ static const std::vector<ObjectTypeInfo> S_REGISTERED_TYPES = {
 	{ "statue",       "Statue",       ObjectCategory::Gameplay, false,{ Dependency::Physics },{ "Statue_Carabao" } },
 	{ "gate",             "Gate",             ObjectCategory::Gameplay, false,{ Dependency::Physics } },
 	{ "platform",         "Platform",         ObjectCategory::Gameplay, false,{ Dependency::Physics } },
-	{ "puzzle_token", "Puzzle Token", ObjectCategory::Gameplay, false,{} },   // delete the variants list
+    { "puzzle_token", "Puzzle Token", ObjectCategory::Gameplay, false,{ Dependency::SequenceGame } },
 
 
     // --- UI & Narrative Composites ---
     { "story_window",      "Story Window",      ObjectCategory::UI,        true  },
-    { "puzzle_hint",       "Puzzle Hint",       ObjectCategory::UI,        true  },
-    { "puzzle_end",        "Puzzle End",        ObjectCategory::UI,        true  },
+    { "puzzle_hint",       "Puzzle Hint",       ObjectCategory::UI,        true,{ Dependency::SequenceGame } },
+    { "puzzle_end",        "Puzzle End",        ObjectCategory::UI,        true,{ Dependency::SequenceGame } },
     { "gui_button",        "GUI Button",        ObjectCategory::UI,        true  },
 	{ "gem_input_screen", "Gem Input Screen", ObjectCategory::UI, true,{ Dependency::GemInputManager, Dependency::GemDataAsset } },
     { "gem_input_token",   "Gem Input Token",   ObjectCategory::UI,        true  },
 	{ "gem_input_preview","Gem Input Preview",ObjectCategory::UI, true,{ Dependency::GemDataAsset } },
     { "inventory_gui",    "Inventory GUI",    ObjectCategory::UI, true,{ Dependency::GemDataAsset } },
+    { "pickup_gui",       "Pickup GUI",       ObjectCategory::UI, true,{ Dependency::GemDataAsset } },
 	{ "level_end_gui",     "Level End GUI",     ObjectCategory::UI,        true  },
     { "pause_screen",      "Pause Screen",      ObjectCategory::UI,        true  },
     { "objective_intro",   "Objective Intro",   ObjectCategory::UI,        true  }
@@ -176,6 +179,9 @@ AGameObject* ObjectFactory::createObject(const std::string& typeKey, const std::
     else if (typeKey == "inventory_gui") {
         newObj = new InventoryGUI(uniqueName);
     }
+    else if (typeKey == "pickup_gui") {
+        newObj = new PlatformerPickupGUI(uniqueName);
+    }
     else if (typeKey == "level_end_gui") {
         newObj = new LevelEndGUI(uniqueName);
     }
@@ -219,6 +225,7 @@ const char* ObjectFactory::typeKeyOf(AGameObject* o)
         { "gem_input_token",   isType<GemInputToken> },
         { "gem_input_preview", isType<GemInputPreview> },
         { "inventory_gui",     isType<InventoryGUI> },
+        { "pickup_gui",        isType<PlatformerPickupGUI> },
         { "level_end_gui",     isType<LevelEndGUI> },
         { "pause_screen",      isType<PauseScreen> },
         { "objective_intro",   isType<ObjectiveIntro> },
@@ -239,6 +246,8 @@ static const char* missingName(Dependency d)
     case Dependency::GemDataAsset:
         return DataAssetManager::getInstance()->getDataAsset("CollectableGemDataAsset")
             ? nullptr : "CollectableGemDataAsset";
+    case Dependency::SequenceGame:
+        return SequenceGameManager::getInstance() ? nullptr : "SequenceGameManager";
     }
     return nullptr;
 }
@@ -252,3 +261,22 @@ std::vector<std::string> ObjectFactory::getMissingDependencies(const std::string
                 if (const char* n = missingName(d)) missing.push_back(n);
     return missing;
 }
+
+// the screens whose children are built in code (their structure can't change in the editor)
+bool ObjectFactory::isComposite(AGameObject* pObject)
+{
+    const char* key = typeKeyOf(pObject);
+    if (!key) return false;
+    std::string k = key;
+    return k == "pause_screen" || k == "objective_intro" || k == "puzzle_end" || k == "pickup_gui" || k == "inventory_gui" || k == "level_end_gui";
+}
+
+// true if any ancestor is a composite
+bool ObjectFactory::isInsideComposite(AGameObject* pObject)
+{
+    for (AGameObject* p = pObject->getParent(); p; p = p->getParent())
+        if (isComposite(p))
+            return true;
+    return false;
+}
+

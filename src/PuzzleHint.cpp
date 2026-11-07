@@ -3,11 +3,12 @@
 #include "GameObjectManager.h"
 #include "PuzzleToken.h"
 
-PuzzleHint::PuzzleHint(std::string strName):AGameObject(strName)
+PuzzleHint::PuzzleHint(std::string strName) :AGameObject(strName)
 {
 	this->EKey = EventKey::RIGHT_CLICK;
 	this->pText = NULL;
 	this->bListenerEnabled = true;
+	this->bIsScreenObject = true;   //drawn on the canvas, like the other screens
 }
 
 PuzzleHint::~PuzzleHint()
@@ -15,60 +16,78 @@ PuzzleHint::~PuzzleHint()
 	TextureManager::getInstance()->unload("HintPage");
 }
 
+// Layout copied from the editor (all values are LOCAL, same as the save file)
 void PuzzleHint::initialize()
 {
 	TextureManager::getInstance()->load("sequence_game/Popup_Panel.png", "HintPage");
-	Sprite* pSprite = new Sprite("HintPage", "HintPage", Vector2D(0), Vector2D(1), 0);
-	this->attachChild(pSprite);
+
+	// dims the board behind the hint (drawn first, so everything else is on top)
+	Sprite* pTransBG = new Sprite("Transparent_BG", "Square");
+	this->attachChild(pTransBG);
+	pTransBG->setIsScreenObject(true);
+	pTransBG->setLocalPos(Vector2D(-86, 0));   //centered on the canvas (hint sits at 1046, 540)
+	pTransBG->setLocalScale(Vector2D(4.04f, 2.17f));
+	SpriteRenderer* pTransBGR = (SpriteRenderer*)pTransBG->findComponentByName("SpriteRenderer");
+	pTransBGR->setColor({ 0, 0, 0, 127 });
+
+	Sprite* pPage = new Sprite("HintPage", "HintPage");
+	this->attachChild(pPage);
+	pPage->setIsScreenObject(true);
+	pPage->setLocalPos(Vector2D(-96, 10));
+	pPage->setLocalScale(Vector2D(0.97f, 0.97f));
 
 	this->pText = new Text("TextHint", "Maragsa.otf", 90);
-	pText->setPos(Vector2D(0, 50));
-	pText->setScale(Vector2D(.75, .75));
-	this->attachChild(this->pText);
-	this->pText->setMessage("Place Holder");
+	pPage->attachChild(this->pText);
+	this->pText->setIsScreenObject(true);
+	this->pText->setMessage("Placeholder");
+	this->pText->setLocalPos(Vector2D(0, -11.34f));
+	this->pText->setLocalScale(Vector2D(0.7732f, 0.7732f));
+	this->pText->setColor(SDL_Color(138, 75, 75, 255));
 
 	GUIButton* pButton = new GUIButton("CloseButton", "Close_Button");
-	GUIToggle* pToggle = new GUIToggle(EventKey::RIGHT_CLICK);
-	pButton->setPos(Vector2D(0, -300));
-	pButton->setScale(Vector2D(.15, .15));
-	pButton->attachComponent(pToggle);
 	this->attachChild(pButton);
+	pButton->setIsScreenObject(true);
+	pButton->attachComponent(new GUIToggle(EventKey::RIGHT_CLICK));
+	pButton->setLocalPos(Vector2D(-96, 360));
+	pButton->setLocalScale(Vector2D(0.15f, 0.15f));
 
-
-	Text* pDeclineText = new Text("Decline_Text", "JainiPurva-Regular.ttf", 90, 0.f, false);
-	pDeclineText->setPos(Vector2D(0, -300));
-	pDeclineText->setScale(Vector2D(.75, .75));
-	this->attachChild(pDeclineText);
+	Text* pDeclineText = new Text("Decline_Text", "JainiPurva-Regular.ttf", 90);
+	pButton->attachChild(pDeclineText);
+	pDeclineText->setIsScreenObject(true);
 	pDeclineText->setMessage("Close");
+	pDeclineText->setLocalScale(Vector2D(5.0f, 5.0f));
+	pDeclineText->setColor(SDL_Color(157, 107, 97, 255));
 
 	EventBroadcaster::getInstance()->registerListener(this);
 }
+
 void PuzzleHint::onEventTrigger(std::unordered_map<std::string, void*> mapParameter)
 {
-	bool bFromToggle = false;
-	// checks if the sender is the button that closes it.
-	if (mapParameter.find("Sender") != mapParameter.end())
+	// inside a disabled group: not in play (its own enabled flag just means open/closed)
+	if (this->getParent() && !this->getParent()->isGloballyEnabled()) return;
+
+	// a token was tapped: show its hint (also replaces the text if already open)
+	if (mapParameter.find("Token") != mapParameter.end())
 	{
-		std::string senderType = *static_cast<std::string*>(mapParameter["Sender"]);
-		bFromToggle = (senderType == "CloseButton");
-		std::cout << senderType << std::endl;
-	}
-	// if object not enabled enable it based on name
-	if(!this->bEnabled)
-	{
-		std::string strName = *static_cast<std::string*>(mapParameter["TokenName"]);
-		PuzzleToken* t = dynamic_cast<PuzzleToken*>(GameObjectManager::getInstance()->findObjectByName(strName));
+		PuzzleToken* t = static_cast<PuzzleToken*>(mapParameter["Token"]);
 		if (t && !t->getHint().empty())
 		{
 			this->pText->setMessage(t->getHint());
 			this->setEnabled(true);
+			EventBroadcaster::getInstance()->disableOtherListenerExcept(this);   //block the board while open
 		}
+		return;
 	}
-	//do not change this handles the closing if separated any object that throws the event will close it
-	else if(this->bEnabled && bFromToggle)
+
+	// the Close button: hide
+	if (mapParameter.find("Sender") != mapParameter.end())
 	{
-		this->setEnabled(false);
-		EventBroadcaster::getInstance()->enableAllListeners();
+		std::string senderType = *static_cast<std::string*>(mapParameter["Sender"]);
+		if (senderType == "CloseButton")
+		{
+			this->setEnabled(false);
+			EventBroadcaster::getInstance()->enableAllListeners();
+		}
 	}
 }
 

@@ -252,12 +252,23 @@ void Runner::run()
 		else
 		{
 			Editor::EditorModule::getInstance()->updateObjectDragging(fDeltaTime);
+
+			// edit mode doesn't run update(): advance only the selected object's animation,
+			// so the Inspector's Play/Pause/Stop can be previewed
+			if (AGameObject* pSel = Editor::EditorModule::getInstance()->getSelectedObject())
+				for (AComponent* pAnim : pSel->getComponents(ComponentType::ANIMATOR))
+				{
+					pAnim->setDeltaTime(fDeltaTime);
+					pAnim->perform();
+				}
+
 			// Runner::update() is skipped in edit mode, so flush editor deletions here.
 			GameObjectManager::getInstance()->cleanUpDeletedObjects();
-		}
 
-		if (!Editor::EditorModule::getInstance()->isInteracting() && !ImGui::IsAnyItemActive())
-			LevelDataManager::getInstance()->recordEdit();
+			// only editor changes are undo steps (play mode changes are thrown away on Stop)
+			if (!Editor::EditorModule::getInstance()->isInteracting() && !ImGui::IsAnyItemActive())
+				LevelDataManager::getInstance()->recordEdit();
+		}
 #else
 		this->update(fDeltaTime);
 #endif

@@ -18,7 +18,7 @@ private:
     
     void clearSlot(int nSlot);
     std::vector<bool> vecCombinationCheck;
-
+    static constexpr float kSnapRadius = 150.0f;   //blanks are ~280 apart, tiles ~380
 public:
     void perform() override;
 
@@ -48,6 +48,7 @@ public:
     static SequenceGameManager* getInstance();
     static void initialize();
     static void destroy();
+    ~SequenceGameManager();
     /* * * * * * * * * * * * * * * * * * * * */
 };
 

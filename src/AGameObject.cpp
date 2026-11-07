@@ -288,12 +288,12 @@ void AGameObject::setEnabled(bool bEnabled)
     if (bEnabled)
     {
         this->onEnable();
-        std::cout << "[" << this->strName << "] enabled." << std::endl;
+        //std::cout << "[" << this->strName << "] enabled." << std::endl;
     }
     else
     {
         this->onDisable();
-        std::cout << "[" << this->strName << "] disabled." << std::endl;
+        //std::cout << "[" << this->strName << "] disabled." << std::endl;
     }
 }
 

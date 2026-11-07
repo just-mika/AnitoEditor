@@ -20,5 +20,11 @@ public:
 	void setFontSize(int nFontSize);
 	void setPivot(Vector2D fVecPivot);
 	void initialize() override;
+
+	const std::string& getFontName() const { return strFontName; }
+	void setFontName(const std::string& strFontName);
+
+	void setWrapWidth(int nWidth);
+	int getWrapWidth();
 };
 

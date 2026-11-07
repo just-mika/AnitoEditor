@@ -17,10 +17,15 @@
 #include <unordered_set>
 #include <algorithm>
 
+#include "Animation.h"
+#include "Gem.h"
 #include "GUIToggle.h"
 #include "Platform.h"
+#include "Player.h"
+#include "PlayerController.h"
 #include "PuzzleToken.h"
 #include "Sprite.h"
+#include "SpriteAnimator.h"
 
 using json = nlohmann::json;
 LevelDataManager::LevelDataManager() {
@@ -100,19 +105,35 @@ bool LevelDataManager::isSafeFileName(const std::string& name)
 json LevelDataManager::serializeScene() const
 {
 	json objs = json::array();
+	std::string strAfterTiles;   //the first saved object after the tiles (draw order)
+	bool bSeenTiles = false;
 
 	for (AGameObject* o : GameObjectManager::getInstance()->getAllObjects())
 	{
+		if (dynamic_cast<TileMap*>(o))
+		{
+			bSeenTiles = true;   //the tiles themselves are saved as a path, below
+			continue;
+		}
+
 		json oj = serializeObject(o);
 		if (!oj.is_null())
+		{
+			if (bSeenTiles && strAfterTiles.empty())
+				strAfterTiles = o->getName();
 			objs.push_back(std::move(oj));
+		}
 	}
 
 	json level;
 	level["version"] = 1;
 	level["objects"] = std::move(objs);
 	if (!tilemapPath.empty())
+	{
 		level["tilemap"] = tilemapPath;
+		if (!strAfterTiles.empty())
+			level["tilemapBefore"] = strAfterTiles;
+	}
 	return level;
 }
 
@@ -142,7 +163,10 @@ json LevelDataManager::serializeObject(AGameObject* o)
 	//serialize the sprite component, its color, flip state, and pivot location
 	if (SpriteRenderer* sr = spriteRendererOf(o))
 	{
-		j["texture"] = sr->getTextureKey();
+		//save the file a texture came from, not the scene's key for it
+		std::string key = sr->getTextureKey();
+		std::string path = TextureManager::getInstance()->getPathOfKey(key);
+		j["texture"] = path.empty() ? key : path;
 
 		SDL_Color c = sr->getColor();
 		j["color"] = json::array({ c.r, c.g, c.b, c.a });
@@ -157,6 +181,11 @@ json LevelDataManager::serializeObject(AGameObject* o)
 		SDL_Color c = t->getColor();
 		j["text"] = t->getMessage();
 		j["fontSize"] = t->getFontSize();
+
+		if (t->getWrapWidth() > 0) 
+			j["wrapWidth"] = t->getWrapWidth();
+
+		j["font"] = t->getFontName();
 		j["color"] = json::array({ c.r, c.g, c.b, c.a });
 	}
 
@@ -172,10 +201,35 @@ json LevelDataManager::serializeObject(AGameObject* o)
 	//serialize 
 	if (PuzzleToken* t = dynamic_cast<PuzzleToken*>(o))
 	{
-		if (t->hasTargetPos())
-			j["targetPosition"] = vecToJson(t->getTargetPos());
+		if (!t->getTargetName().empty())
+			j["target"] = t->getTargetName();
 		if (!t->getHint().empty())
 			j["hint"] = t->getHint();
+	}
+
+	if (Gem* g = dynamic_cast<Gem*>(o))
+	{
+		if (!g->getPickupTitle().empty())
+			j["pickupTitle"] = g->getPickupTitle();
+		if (!g->getPickupText().empty())
+			j["pickupText"] = g->getPickupText();
+	}
+
+	if (Player* p = dynamic_cast<Player*>(o))
+		if (PlayerController* pc = (PlayerController*)p->findComponentByName("PlayerController"))
+		{
+			j["moveSpeed"] = pc->getMoveSpeed();
+			j["jumpForce"] = pc->getJumpForce();
+		}
+
+	//animated sprites: frame rate and play mode of the current animation
+	if (SpriteAnimator* anim = (SpriteAnimator*)o->findComponentByName("SpriteAnimator"))
+	{
+		if (Animation* cur = anim->getCurrentAnimation())
+		{
+			j["frameRate"] = (int)cur->getFrameRate();
+			j["playMode"] = (int)cur->getType();
+		}
 	}
 
 	//serialize children recursively (if any)
@@ -337,7 +391,19 @@ bool LevelDataManager::buildFromJson(const json& level)
 	//load tilemap if a tilemap is found in the JSON
 	//JSON only stores the tilemap path.
 	if (level.contains("tilemap"))
+	{
 		loadTilemap(level["tilemap"].get<std::string>());
+
+		//put the tiles back where they were in the hierarchy, so the draw order is kept
+		if (level.contains("tilemapBefore"))
+		{
+			GameObjectManager* gom = GameObjectManager::getInstance();
+			AGameObject* pTiles = gom->findObjectByName("Tiles");
+			AGameObject* pNext = gom->findObjectByName(level["tilemapBefore"].get<std::string>());
+			if (pTiles && pNext)
+				gom->moveObject(pTiles, nullptr, gom->getSiblingIndex(pNext));
+		}
+	}
 	return true;
 }
 
@@ -377,8 +443,7 @@ void LevelDataManager::applyFields(AGameObject* o, const json& j)
 	{
 		if (SpriteRenderer* sr = spriteRendererOf(o))
 		{
-			if (j.contains("texture"))
-				sr->setTextureKey(j["texture"].get<std::string>());
+			setObjectTexture(o, j["texture"].get<std::string>());
 
 			if (j.contains("color"))
 			{
@@ -395,8 +460,12 @@ void LevelDataManager::applyFields(AGameObject* o, const json& j)
 
 	if (Text* t = dynamic_cast<Text*>(o))
 	{
+		if (j.contains("font")) 
+			t->setFontName(j["font"].get<std::string>());
 		if (j.contains("fontSize"))
 			t->setFontSize(j["fontSize"].get<int>());
+		if (j.contains("wrapWidth"))
+			t->setWrapWidth(j["wrapWidth"].get<int>());
 		if (j.contains("text"))
 			t->setMessage(j["text"].get<std::string>());
 		if (j.contains("color"))
@@ -409,9 +478,24 @@ void LevelDataManager::applyFields(AGameObject* o, const json& j)
 
 	if (PuzzleToken* t = dynamic_cast<PuzzleToken*>(o))
 	{
-		if (j.contains("targetPosition")) t->setTargetPos(jsonToVec(j["targetPosition"]));
+		if (j.contains("target")) t->setTargetName(j["target"].get<std::string>());
 		if (j.contains("hint"))           t->setHint(j["hint"].get<std::string>());
 	}
+
+	if (Gem* g = dynamic_cast<Gem*>(o))
+	{
+		if (j.contains("pickupTitle"))
+			g->setPickupTitle(j["pickupTitle"].get<std::string>());
+		if (j.contains("pickupText"))
+			g->setPickupText(j["pickupText"].get<std::string>());
+	}
+
+	if (Player* p = dynamic_cast<Player*>(o))
+		if (PlayerController* pc = (PlayerController*)p->findComponentByName("PlayerController"))
+		{
+			if (j.contains("moveSpeed")) pc->setMoveSpeed(j["moveSpeed"].get<float>());
+			if (j.contains("jumpForce")) pc->setJumpForce(j["jumpForce"].get<float>());
+		}
 
 	if (j.contains("onClick"))
 	{
@@ -423,6 +507,16 @@ void LevelDataManager::applyFields(AGameObject* o, const json& j)
 			else
 				o->attachComponent(new GUIToggle(key));
 		}
+	}
+
+	if (j.contains("frameRate") || j.contains("playMode"))
+	{
+		if (SpriteAnimator* anim = (SpriteAnimator*)o->findComponentByName("SpriteAnimator"))
+			if (Animation* cur = anim->getCurrentAnimation())
+			{
+				if (j.contains("frameRate")) cur->setFrameRate((Uint8)j["frameRate"].get<int>());
+				if (j.contains("playMode"))  cur->setType((AnimationType)j["playMode"].get<int>());
+			}
 	}
 
 	if (j.contains("enabled") && j["enabled"].get<bool>() != o->getEnabled())
@@ -502,16 +596,9 @@ void LevelDataManager::applyPending()
 #if EDITOR_MODE
 		if (!selName.empty())
 		{
-			for (AGameObject* root : GameObjectManager::getInstance()->getAllObjects())
-			{
-				std::vector<AGameObject*> tree = root->getChildrenRecursively();
-				tree.push_back(root);
-				for (AGameObject* o : tree)
-				{
-					if (o->getName() == selName)
-						Editor::EditorModule::getInstance()->setSelectedObject(o);
-				}
-			}
+			for (AGameObject* o : GameObjectManager::getInstance()->getAllObjectsRecursively())
+				if (o->getName() == selName)
+					Editor::EditorModule::getInstance()->setSelectedObject(o);
 		}
 #endif
 	}
@@ -587,15 +674,20 @@ void LevelDataManager::enterScene(LoadedScene* scene)
 	resetHistory();
 }
 
+
 void LevelDataManager::leaveScene(LoadedScene* scene)
 {
 	if (activeScene == scene) {
 		activeScene = nullptr;
 		pTileMap = nullptr; //remove tilemap
 		tilemapPath.clear();
+
+		//textures loaded from paths belong to this scene's levels
+		for (const std::string& key : pathTextures)
+			TextureManager::getInstance()->unload(key);
+		pathTextures.clear();
 	}
 }
-
 
 std::string LevelDataManager::writableDir()
 {
@@ -630,7 +722,7 @@ void LevelDataManager::clearScene()
 		if (!o->isSystemObject() && ObjectFactory::typeKeyOf(o))
 			gom->deleteObject(o);
 
-	if (AGameObject* pTiles = gom->findObjectByName("__Tiles"))
+	if (AGameObject* pTiles = gom->findObjectByName("Tiles"))
 		gom->deleteObject(pTiles);
 	tilemapPath.clear();
 	gom->cleanUpDeletedObjects();
@@ -717,14 +809,14 @@ void LevelDataManager::loadTilemap(const std::string& mapPath)
 {
 	GameObjectManager* gom = GameObjectManager::getInstance();
 
-	if (AGameObject* pOld = gom->findObjectByName("__Tiles"))
+	if (AGameObject* pOld = gom->findObjectByName("Tiles"))
 	{
 		gom->deleteObject(pOld);
 		gom->cleanUpDeletedObjects();
 	}
 	tilemapPath.clear();
 
-	TileMap* pTiles = new TileMap("__Tiles");
+	TileMap* pTiles = new TileMap("Tiles");
 	gom->addObject(pTiles); //attach TileMapRenderer
 	if (!importTiledMap(mapPath, pTiles))
 	{
@@ -772,6 +864,9 @@ void LevelDataManager::recordEdit()
 {
 	if (!activeScene)
 		return;
+	if (restorePending)
+		return;   //Stop was pressed: the scene is still in its played state until it's restored
+
 	json now = serializeScene();
 	if (now == lastState)
 		return; //nothing changes 
@@ -870,4 +965,55 @@ AGameObject* LevelDataManager::duplicateObject(AGameObject* pObject)
 	if (activeScene)
 		activeScene->rewire();   //connect it to the level's subsystems (e.g. a new puzzle token)
 	return pCopy;
+}
+
+std::string LevelDataManager::resolveTexture(const std::string& ref)
+{
+	TextureManager* tm = TextureManager::getInstance();
+
+	//a file or folder the scene already loaded under a key: reuse it (no double loading)
+	std::string key = tm->getKeyOfPath(ref);
+	if (!key.empty())
+		return key;
+
+	//already loaded under this exact name (an old-style key, or a path loaded on demand earlier)
+	if (tm->get(ref))
+		return ref;
+
+	std::string lower = ref;
+	for (char& c : lower) c = (char)SDL_tolower(c);
+	bool bImage = lower.size() > 4 &&
+		(lower.compare(lower.size() - 4, 4, ".png") == 0 || lower.compare(lower.size() - 4, 4, ".jpg") == 0);
+
+	if (bImage)
+		tm->load(ref, ref);              //a single image: the path is its key
+	else if (ref.find('/') != std::string::npos)
+		tm->loadFromFolder(ref, ref);    //a folder of animation frames
+	else
+		return "";                       //an old key the current scene doesn't load
+
+	if (!tm->get(ref))
+		return "";
+
+	getInstance()->pathTextures.push_back(ref);   //unloaded when the scene is left
+	return ref;
+}
+
+bool LevelDataManager::setObjectTexture(AGameObject* o, const std::string& ref)
+{
+	SpriteRenderer* sr = spriteRendererOf(o);
+	if (!sr) return false;
+
+	std::string key = resolveTexture(ref);
+	if (key.empty()) return false;
+
+	sr->setTextureKey(key);   //this is what gets saved (as its path)
+
+	//the animator replaces the renderer's texture every frame,
+	//so an animated sprite also needs the new frames
+	SpriteAnimator* anim = (SpriteAnimator*)o->findComponentByName("SpriteAnimator");
+	if (anim && anim->getCurrentAnimation())
+		anim->getCurrentAnimation()->setFrames(TextureManager::getInstance()->getTexture(key));
+
+	return true;
 }

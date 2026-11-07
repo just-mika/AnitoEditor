@@ -13,14 +13,23 @@ void SequenceGameManager::perform()
             pToken->setDropped(false);
             int nearPosIndex = this->getSlotIndex(pToken);
 
-            // Reassign the slot of the other token if the slot is occupied.
-            if (this->vecTokenHolder[nearPosIndex] != NULL)
+            // dropped too far from any slot: go back to where it was
+            float dist = (pToken->getPos() - this->vecPosition[nearPosIndex]).SqrMagnitude();
+            if (dist > kSnapRadius * kSnapRadius)
             {
-                PuzzleToken* pOther = this->vecTokenHolder[nearPosIndex];
-                this->assignTokenSlot(pOther, pToken->getSlot());
+                this->assignTokenSlot(pToken, pToken->getSlot());
+                continue;
             }
-            // Move the token to the slot.
-            this->clearSlot(pToken->getSlot());
+
+            // free the dragged token's old slot first...
+            int nOldSlot = pToken->getSlot();
+            this->clearSlot(nOldSlot);
+
+            // ...then if the new slot is taken, move that token into the freed slot (a swap)
+            PuzzleToken* pOther = this->vecTokenHolder[nearPosIndex];
+            if (pOther != nullptr)
+                this->assignTokenSlot(pOther, nOldSlot);
+
             this->assignTokenSlot(pToken, nearPosIndex);
         }
     }
@@ -150,6 +159,14 @@ void SequenceGameManager::initialize()
 void SequenceGameManager::destroy()
 {
     delete P_SHARED_INSTANCE->pOwner;
+}
+
+// the manager is deleted with its system object when the puzzle scene unloads:
+// forget it, so getInstance() reports that the puzzle subsystem is gone
+SequenceGameManager::~SequenceGameManager()
+{
+    if (P_SHARED_INSTANCE == this)
+        P_SHARED_INSTANCE = NULL;
 }
 
 SequenceGameManager* SequenceGameManager::getInstance()

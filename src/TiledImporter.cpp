@@ -152,14 +152,22 @@ bool importTiledMap(const std::string& mapPath, TileMap* pTileMap)
 			//Tiled counts rows down from the top, the game counts them up from the bottom
 			int c = i % width;
 			int r = height - 1 - i / width;
-			pTMR->addTile(c, r, it->second);
+
+			//Tiled draws a tile bigger than a cell from the cell's bottom-left corner,
+			//growing right and up; the renderer centers it on its cell instead.
+			//Move it by half the extra size so it lands where Tiled shows it.
+			SDL_Texture* tex = it->second;
+			c += (int)SDL_roundf((tex->w - tileW) / (2.0f * tileW));
+			r += (int)SDL_roundf((tex->h - tileH) / (2.0f * tileH));
+			if (c >= width || r >= height) continue;
+
+			pTMR->addTile(c, r, tex);
 			nTiles++;
 
 			if (!bCollision) continue;
 
-			SDL_Texture* tex = it->second;
 			if (tex->w == tileW && tex->h == tileH)
-				solid[c][r] = true; 
+				solid[c][r] = true;
 			else
 				//odd sized tile
 				addTileCollider(pTileMap, nColliders, (c + 0.5f) * cellW, (r + 0.5f) * cellH, (float)tex->w, (float)tex->h);

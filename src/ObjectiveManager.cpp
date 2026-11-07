@@ -11,6 +11,7 @@
 #include <string>
 #include <algorithm>
 #include <unordered_map>
+#include "Gate.h"
 
 // local PI constant
 constexpr float PI_F = 3.14159265358979323846f;
@@ -35,13 +36,10 @@ ObjectiveManager::~ObjectiveManager()
 void ObjectiveManager::initialize()
 {
     // attempt to resolve major objects
-    pPlayer = GameObjectManager::getInstance()->findObjectByName("Player");
-    pArrow = GameObjectManager::getInstance()->findObjectByName("Arrow");
-    pObjectivePanel = GameObjectManager::getInstance()->findObjectByName("ObjectivePanel");
-    pOptionalPanel = GameObjectManager::getInstance()->findObjectByName("OptionalPanel");
-
-    // only find the Objective button
-    pObjectiveButton = GameObjectManager::getInstance()->findObjectByName("Objective_Button");
+    pPlayer = GameObjectManager::getInstance()->findObjectInTree("Player");
+    pArrow = GameObjectManager::getInstance()->findObjectInTree("Arrow");
+    pObjectivePanel = GameObjectManager::getInstance()->findObjectInTree("ObjectivePanel");
+    pOptionalPanel = GameObjectManager::getInstance()->findObjectInTree("OptionalPanel");
 
     // register for toggle events (GUIToggle broadcasts)
     if (EventBroadcaster::getInstance())
@@ -52,7 +50,6 @@ void ObjectiveManager::initialize()
     std::cout << "  pPlayer: " << (pPlayer ? pPlayer->getName() : "NULL") << "\n";
     std::cout << "  pArrow: " << (pArrow ? pArrow->getName() : "NULL")
         << (pArrow ? (" pos=(" + std::to_string(pArrow->getPos().x) + "," + std::to_string(pArrow->getPos().y) + ")") : "") << "\n";
-    std::cout << "  pObjectiveButton: " << (pObjectiveButton ? pObjectiveButton->getName() : "NULL") << "\n";
     std::cout << "  pObjectivePanel: " << (pObjectivePanel ? pObjectivePanel->getName() : "NULL") << "\n";
     std::cout << "  listener EKey: " << static_cast<int>(this->EKey) << "\n";
 }
@@ -60,19 +57,16 @@ void ObjectiveManager::initialize()
 void ObjectiveManager::perform()
 {
     // lazy-find scene objects in case initialization ran before they were created
-    if (!pPlayer)           pPlayer = GameObjectManager::getInstance()->findObjectByName("Player");
-    if (!pArrow)            pArrow = GameObjectManager::getInstance()->findObjectByName("Arrow");
+    if (!pPlayer)           pPlayer = GameObjectManager::getInstance()->findObjectInTree("Player");
+    if (!pArrow)            pArrow = GameObjectManager::getInstance()->findObjectInTree("Arrow");
 
     // Panels can be noisy if not present — only try to find them once (flag-based)
     if (!bTriedFindPanels)
     {
-        pObjectivePanel = GameObjectManager::getInstance()->findObjectByName("ObjectivePanel");
-        pOptionalPanel = GameObjectManager::getInstance()->findObjectByName("OptionalPanel");
+        pObjectivePanel = GameObjectManager::getInstance()->findObjectInTree("ObjectivePanel");
+        pOptionalPanel = GameObjectManager::getInstance()->findObjectInTree("OptionalPanel");
         bTriedFindPanels = true;
     }
-
-    // Objective button still lazy-found each frame (it's expected and cheap)
-    if (!pObjectiveButton)  pObjectiveButton = GameObjectManager::getInstance()->findObjectByName("Objective_Button");
 
     //// debug heartbeat
     //static int dbgFrame = 0;
@@ -90,30 +84,6 @@ void ObjectiveManager::perform()
     if (gems.empty())
     {
         if (pOptionalPanel) pOptionalPanel->setEnabled(false);
-    }
-
-    // Single-button handling: Objective button click triggers findGems() else findDoor()
-    if (pObjectiveButton)
-    {
-        ButtonInput* b = findButtonInput(pObjectiveButton);
-        if (b && b->getClicked())
-        {
-            std::cout << "[ObjectiveManager] Direct ButtonInput click detected on Objective_Button\n";
-            auto gemsNow = collectActiveGems();
-            if (!gemsNow.empty())
-            {
-                findGems();
-            }
-            else
-            {
-                findDoor();
-            }
-
-            b->setClicked(false);
-        }
-        else {
-            //std::cout << "[ObjectiveManager] ButtonInput found (clicked=" << b->getClicked() << ")\n";
-        }
     }
 
     // Advance arrow tween if active
@@ -221,27 +191,18 @@ void ObjectiveManager::stopArrowPathfinding()
 std::vector<Vector2D> ObjectiveManager::collectActiveGems()
 {
     std::vector<Vector2D> out;
-    auto& all = GameObjectManager::getInstance()->getAllObjects();
-    for (AGameObject* obj : all)
-    {
-        Gem* g = dynamic_cast<Gem*>(obj);
-        if (g)
-        {
+    for (AGameObject* obj : GameObjectManager::getInstance()->getAllObjectsRecursively())
+        if (Gem* g = dynamic_cast<Gem*>(obj))
             out.push_back(g->getPos());
-        }
-    }
     return out;
 }
 
+
 AGameObject* ObjectiveManager::findDoorObject()
 {
-    auto& all = GameObjectManager::getInstance()->getAllObjects();
-    for (AGameObject* obj : all)
-    {
-        std::string n = obj->getName();
-        if (n.find("Door") != std::string::npos || n.find("door") != std::string::npos)
+    for (AGameObject* obj : GameObjectManager::getInstance()->getAllObjectsRecursively())
+        if (dynamic_cast<Gate*>(obj))
             return obj;
-    }
     return nullptr;
 }
 
@@ -310,43 +271,14 @@ ButtonInput* ObjectiveManager::findButtonInput(AGameObject* pObj)
 void ObjectiveManager::onEventTrigger(std::unordered_map<std::string, void*> mapParameter)
 {
     if (!this->bListenerEnabled) return;
-    if (mapParameter.find("Sender") == mapParameter.end()) return;
 
-    std::string* pStr = static_cast<std::string*>(mapParameter["Sender"]);
-    if (!pStr) return;
-    std::string sender = *pStr;
+    // any button set to "Find Objective" (the button's name doesn't matter)
+    if (isPathFinding) return;   //already pointing somewhere
 
-    //std::cout << "[ObjectiveManager] Event received from: " << sender
-    //    << " (isPathFinding=" << (isPathFinding ? "true" : "false") << ")\n";
-
-    // If the Objective button was toggled via GUIToggle, start the same action
-    // as a direct ButtonInput click: prefer finding gems, otherwise find door.
-    if (sender == "Objective_Button")
-    {
-        // If already tweening, ignore
-        if (isPathFinding)
-        {
-            std::cout << "[ObjectiveManager] Ignoring Objective_Button event: already pathfinding\n";
-            return;
-        }
-
-        auto gemsNow = collectActiveGems();
-        if (!gemsNow.empty())
-        {
-            std::cout << "[ObjectiveManager] Objective_Button -> findGems()\n";
-            findGems();
-        }
-        else
-        {
-            std::cout << "[ObjectiveManager] Objective_Button -> findDoor()\n";
-            findDoor();
-        }
-
-        // Optional: toggle the panel if you still want the button to open/close the ObjectivePanel
-        // toggleObjectivePanel();
-
-        return;
-    }
+    if (!collectActiveGems().empty())
+        findGems();
+    else
+        findDoor();
 }
 
 EventKey ObjectiveManager::getKey()
@@ -367,4 +299,17 @@ void ObjectiveManager::setListenerEnabled(bool b)
 std::string ObjectiveManager::getListenerOwnerName()
 {
     return this->strName;
+}
+
+// the level was rebuilt (load, undo, Play/Stop): the objects we pointed to are gone,
+// perform() finds the new ones
+void ObjectiveManager::resetSceneRefs()
+{
+    pPlayer = nullptr;
+    pArrow = nullptr;
+    pObjectivePanel = nullptr;
+    pOptionalPanel = nullptr;
+    bTriedFindPanels = false;
+    isPathFinding = false;
+    elapsed = 0.0f;
 }

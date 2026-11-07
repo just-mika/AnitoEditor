@@ -2,8 +2,10 @@
 #include "AGameObject.h"
 #include "AInteractable.h"
 #include "AudioManager.h"
+#include "EventBroadcaster.h"
 #include "InputManager.h"
 #include "GameObjectManager.h"
+#include "imgui.h"
 #include "InteractButtonController.h"
 
 PlayerController::PlayerController(PlayerInput* pInput, SpriteRenderer* pSprite, SpriteAnimator* pAnimator, RigidBody* pRigidBody)
@@ -34,10 +36,20 @@ void PlayerController::perform()
 {
     if (this->pInput == NULL || this->pSprite == NULL) return;
 
-    if (bMoving)
+    // a screen (objective intro, pause, story...) is open: drop this frame's
+	// movement, jump and interact, so the player stands still behind it
+    if (EventBroadcaster::getInstance()->isBlocking())
     {
         this->bMoving = false;
+        this->bJumped = false;
+        this->pInput->setInteracted(false);
+    }
 
+    bool bHasInput = this->bMoving && SDL_fabsf(this->fMoveDirection) > 0.01f;
+    this->bMoving = false;
+
+    if (bHasInput)
+    {
         // Preserve existing Y velocity (jump/gravity), only override X
         Vector2D currentVel = this->pRigidBody->getVelocity();
         this->pRigidBody->setVelocity(Vector2D(fMoveDirection * this->fMoveSpeed * this->fDeltaTime, currentVel.y));
@@ -45,9 +57,13 @@ void PlayerController::perform()
         this->pSprite->setFlipX(fMoveDirection < 0.0f);
         if (this->pRigidBody->getGrounded()) this->pAnimator->play("run");
     }
-    else if (this->pRigidBody->getGrounded())
+    else
     {
-        this->pAnimator->play("idle");
+        // no movement input this frame: stop sideways, keep falling/jumping speed
+        Vector2D currentVel = this->pRigidBody->getVelocity();
+        this->pRigidBody->setVelocity(Vector2D(0.0f, currentVel.y));
+
+        if (this->pRigidBody->getGrounded()) this->pAnimator->play("idle");
     }
 
     if (bJumped)
@@ -137,4 +153,11 @@ void PlayerController::setMoveSpeed(float fMoveSpeed)
 void PlayerController::setJumpForce(float fJumpForce)
 {
 	this->fJumpForce = fJumpForce;
+}
+
+// shown under the PlayerController component in the editor's Inspector
+void PlayerController::drawInspector()
+{
+    ImGui::DragFloat("Move Speed", &this->fMoveSpeed, 5.0f, 0.0f, 2000.0f);
+    ImGui::DragFloat("Jump Force", &this->fJumpForce, 1.0f, 0.0f, 1000.0f);
 }

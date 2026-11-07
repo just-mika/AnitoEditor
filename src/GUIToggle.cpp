@@ -7,9 +7,9 @@ const GUIToggle::ClickOption GUIToggle::OPTIONS[] = {
 	{ "Story", EventKey::STORY_SCREEN },
 	{ "Inventory", EventKey::INVENTORY_SCREEN },
 	{ "Objective", EventKey::OBJECTIVE_SCREEN },
-	{ "Gem Input", EventKey::GEM_INPUT_SCREEN }
+	{ "Gem Input", EventKey::GEM_INPUT_SCREEN },
+	{ "Find Objective", EventKey::OBJECTIVE_BUTTON }
 };
-
 const int GUIToggle::OPTION_COUNT = std::size(OPTIONS);
 
 GUIToggle::GUIToggle(EventKey EKey): AComponent("GUIToggle", ComponentType::SCRIPT)

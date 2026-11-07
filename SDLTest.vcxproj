@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AssetBrowserPanel.cpp" />
     <ClCompile Include="src\EditorToolbarScreen.cpp" />
     <ClCompile Include="src\HierarchyScreen.cpp" />
     <ClCompile Include="src\InteractButtonController.cpp" />
@@ -254,6 +255,7 @@
   <ItemGroup>
     <ClInclude Include="include\ADataAsset.h" />
     <ClInclude Include="include\AInteractable.h" />
+    <ClInclude Include="include\AssetBrowserPanel.h" />
     <ClInclude Include="include\AudioClip.h" />
     <ClInclude Include="include\AudioManager.h" />
     <ClInclude Include="include\AudioPlayer.h" />

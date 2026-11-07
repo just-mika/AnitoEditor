@@ -70,6 +70,8 @@ public:
     void toggleObjectivePanel();
     void toggleOptionalPanel();
 
+    void resetSceneRefs();   //the level was rebuilt: forget the old Player/Arrow/button
+
 private:
     // internal helpers
     void startArrowPathfinding(const Vector2D& target);

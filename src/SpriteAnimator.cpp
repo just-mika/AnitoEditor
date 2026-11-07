@@ -98,7 +98,7 @@ void SpriteAnimator::pause()
 	if (this->strState.empty() ||
 		this->mapAnims.empty()) return;
 
-	this->mapAnims[this->strState]->stop();
+	this->mapAnims[this->strState]->pause();
 }
 
 void SpriteAnimator::stop()

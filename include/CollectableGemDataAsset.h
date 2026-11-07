@@ -24,5 +24,6 @@ public:
 	std::string getGemTextBreak(std::string strGemName);
 	bool getGemPickedUp(std::string strGemName);
 	void setGemPickedUp(std::string strGemName, bool bPickedUp);
+	void setGemTexts(const std::string& strGemName, const std::string& strTitle, const std::string& strTextBreak);
 };
 

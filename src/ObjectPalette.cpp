@@ -71,6 +71,36 @@ static SDL_EnumerationResult enumerateTilemapFile(void* userdata, const char* di
     return SDL_ENUM_CONTINUE;
 }
 
+// Splits a label into lines (at spaces) so each line fits within maxWidth.
+// A single word longer than maxWidth stays on its own line.
+static std::string wrapLabel(const std::string& text, float maxWidth)
+{
+    std::string result;
+    std::string line;
+    size_t start = 0;
+
+    while (start <= text.size())
+    {
+        size_t space = text.find(' ', start);
+        if (space == std::string::npos)
+            space = text.size();
+        std::string word = text.substr(start, space - start);
+
+        std::string candidate = line.empty() ? word : line + " " + word;
+        if (!line.empty() && ImGui::CalcTextSize(candidate.c_str()).x > maxWidth)
+        {
+            result += line + "\n";   //word doesn't fit: start a new line with it
+            line = word;
+        }
+        else
+        {
+            line = candidate;
+        }
+        start = space + 1;
+    }
+    return result + line;
+}
+
 void ObjectPalette::draw()
 {
     ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -104,7 +134,28 @@ void ObjectPalette::draw()
 
     if (windowVisible) {
         const auto& registeredTypes = ObjectFactory::getRegisteredTypes();
-        const ImVec2 button_size(84.0f, 68.0f);
+        ImVec2 button_size(84.0f, 68.0f);
+
+        //widen every button so the longest single word fits ("Background", "Puzzle", ...)
+        const float padding = ImGui::GetStyle().FramePadding.x * 2.0f + 8.0f;
+        for (const auto& item : registeredTypes)
+        {
+            std::vector<std::string> labels = item.variants;
+            if (labels.empty()) labels.push_back(item.displayName);
+
+            for (const std::string& label : labels)
+            {
+                size_t start = 0;
+                while (start <= label.size())
+                {
+                    size_t space = label.find(' ', start);
+                    if (space == std::string::npos) space = label.size();
+                    std::string word = label.substr(start, space - start);
+                    button_size.x = SDL_max(button_size.x, ImGui::CalcTextSize(word.c_str()).x + padding);
+                    start = space + 1;
+                }
+            }
+        }
 
         float avail = ImGui::GetContentRegionAvail().x;
         int columns = std::max(1, static_cast<int>(avail / (button_size.x + 8.0f)));
@@ -143,7 +194,8 @@ void ObjectPalette::draw()
                     ImGui::PushID(i);
                     if (shown % columns != 0) ImGui::SameLine();
 
-                    if (ImGui::Button(item.displayName.c_str(), button_size))
+                    std::string label = wrapLabel(item.displayName, button_size.x - padding);
+                    if (ImGui::Button(label.c_str(), button_size))
                         spawnObject(item.typeKey, item.isScreenObject, "");
 
                     ImGui::PopID();
@@ -153,13 +205,25 @@ void ObjectPalette::draw()
                 {
                     for (const std::string& v : item.variants)
                     {
-                        if (GameObjectManager::getInstance()->findObjectByName(v))
-                            continue;                                   // already in the level
+                        // already in the level? (match the type too: the inventory's
+                        // buttons are also named Gem_Cyan etc.)
+                        bool bPlaced = false;
+                        for (AGameObject* o : GameObjectManager::getInstance()->getAllObjectsRecursively())
+                        {
+                            const char* key = ObjectFactory::typeKeyOf(o);
+                            if (key && item.typeKey == key && o->getName() == v)
+                            {
+                                bPlaced = true;
+                                break;
+                            }
+                        }
+                        if (bPlaced) continue; // already in the level
 
                         ImGui::PushID((i * 100) + (int)(&v - &item.variants[0]));
                         if (shown % columns != 0) ImGui::SameLine();
 
-                        if (ImGui::Button(v.c_str(), button_size))
+                        std::string label = wrapLabel(v, button_size.x - padding);
+                        if (ImGui::Button(label.c_str(), button_size))
                             spawnObject(item.typeKey, item.isScreenObject, v);
 
                         ImGui::PopID();

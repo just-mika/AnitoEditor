@@ -78,3 +78,26 @@ void Text::initialize()
 	TextRenderer* pTextRenderer = new TextRenderer();
 	this->attachComponent((AComponent*)pTextRenderer);
 }
+
+void Text::setFontName(const std::string& strFontName)
+{
+	this->strFontName = strFontName;
+	// setMessage() reloads the font and rebuilds the texture
+	if (!this->strMessage.empty() && this->findComponentByName("TextRenderer"))
+		this->setMessage(this->strMessage);
+}
+
+void Text::setWrapWidth(int nWidth)
+{
+	TextRenderer* pRenderer = (TextRenderer*)this->findComponentByName("TextRenderer");
+	if (!pRenderer) return;
+	pRenderer->setWrapWidth(nWidth);
+	if (!this->strMessage.empty())
+		this->setMessage(this->strMessage);   //re-render with the new width
+}
+
+int Text::getWrapWidth()
+{
+	TextRenderer* pRenderer = (TextRenderer*)this->findComponentByName("TextRenderer");
+	return pRenderer ? pRenderer->getWrapWidth() : 0;
+}

@@ -8,6 +8,7 @@
 #include "ButtonInput.h"
 #include "CollectableGemDataAsset.h"
 #include "Gate.h"
+#include "GemInputScreen.h"
 
 class GemInputManager : public AComponent
 {
@@ -24,7 +25,9 @@ private:
 	CollectableGemDataAsset* pDataAsset;
     Gate* pGate;
 
+    GemInputScreen* pScreen = nullptr;
 public:
+    void setScreen(GemInputScreen* p) { pScreen = p; }
     void perform() override;
 
     void addToken(GemInputToken* pToken);
@@ -43,6 +46,9 @@ public:
     bool checkWinCon();
 
     void reset();
+
+    void clearScreen();   //forget the registered screen pieces (keeps the gate)
+    GemInputScreen* getScreen() const { return pScreen; }
 
     /* * * * * * * * * * * * * * * * * * * * *
      *       SINGLETON-RELATED CONTENT       *

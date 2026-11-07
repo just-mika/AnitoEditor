@@ -22,6 +22,9 @@ private:
     bool bCropEnabled;
     float fScrollOffset;
     float fViewHeight;
+
+    int nWrapWidth = 0;
+
 public:
 	TextRenderer();
 	~TextRenderer();
@@ -42,6 +45,9 @@ public:
     void setViewHeight(float fViewHeight);
     float getViewHeight();
     void setColor(SDL_Color color) override;
+    Vector2D getTexSize() const { return texSize; }
 
+    void setWrapWidth(int nWidth) { nWrapWidth = nWidth; }
+    int getWrapWidth() const { return nWrapWidth; }
 };
 
