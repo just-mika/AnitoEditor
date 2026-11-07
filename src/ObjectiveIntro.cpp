@@ -107,3 +107,10 @@ void ObjectiveIntro::onDisable()
 {
 	EventBroadcaster::getInstance()->enableAllListeners();
 }
+
+// the intro blocked at creation, but listeners created after it weren't affected;
+// the scene calls this once everything (including scene-made listeners) exists
+void ObjectiveIntro::blockOthers()
+{
+	EventBroadcaster::getInstance()->disableOtherListenerExcept(this);
+}

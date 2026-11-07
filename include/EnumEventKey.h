@@ -16,6 +16,7 @@ enum class EventKey : int {
     GEM_INPUT_SCREEN,
 	GEM_INPUT_PREVIEW,
     END_LEVEL,
+    TOGGLE_OBJECTIVE
 };
 
 #endif

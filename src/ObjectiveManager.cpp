@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <unordered_map>
 #include "Gate.h"
+#include "ObjectiveButton_Controller.h"
+#include "PlayerManager.h"
 
 // local PI constant
 constexpr float PI_F = 3.14159265358979323846f;
@@ -36,7 +38,7 @@ ObjectiveManager::~ObjectiveManager()
 void ObjectiveManager::initialize()
 {
     // attempt to resolve major objects
-    pPlayer = GameObjectManager::getInstance()->findObjectInTree("Player");
+	pPlayer = PlayerManager::getInstance()->getPlayer();
     pArrow = GameObjectManager::getInstance()->findObjectInTree("Arrow");
     pObjectivePanel = GameObjectManager::getInstance()->findObjectInTree("ObjectivePanel");
     pOptionalPanel = GameObjectManager::getInstance()->findObjectInTree("OptionalPanel");
@@ -57,7 +59,7 @@ void ObjectiveManager::initialize()
 void ObjectiveManager::perform()
 {
     // lazy-find scene objects in case initialization ran before they were created
-    if (!pPlayer)           pPlayer = GameObjectManager::getInstance()->findObjectInTree("Player");
+    if (!pPlayer)           pPlayer = PlayerManager::getInstance()->getPlayer();
     if (!pArrow)            pArrow = GameObjectManager::getInstance()->findObjectInTree("Arrow");
 
     // Panels can be noisy if not present — only try to find them once (flag-based)
@@ -272,9 +274,8 @@ void ObjectiveManager::onEventTrigger(std::unordered_map<std::string, void*> map
 {
     if (!this->bListenerEnabled) return;
 
-    // any button set to "Find Objective" (the button's name doesn't matter)
-    if (isPathFinding) return;   //already pointing somewhere
-
+    // point the arrow at the next goal
+    if (isPathFinding) return;
     if (!collectActiveGems().empty())
         findGems();
     else
@@ -309,6 +310,7 @@ void ObjectiveManager::resetSceneRefs()
     pArrow = nullptr;
     pObjectivePanel = nullptr;
     pOptionalPanel = nullptr;
+    pObjectiveButton = nullptr;
     bTriedFindPanels = false;
     isPathFinding = false;
     elapsed = 0.0f;
