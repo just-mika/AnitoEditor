@@ -67,6 +67,11 @@ public:
     void moveObject(AGameObject* pObject, AGameObject* pNewParent, int nIndex);
     bool reparentObject(AGameObject* pObject, AGameObject* pNewParent);
 
+    // like findObjectByName, but also searches inside groups (the name map only holds roots)
+    AGameObject* findObjectInTree(const std::string& strName) const;
+
+    std::vector<AGameObject*> getAllObjectsRecursively() const;
+
     /* * * * * * * * * * * * * * * * * * * * *
      *       SINGLETON-RELATED CONTENT       *
      * * * * * * * * * * * * * * * * * * * * */

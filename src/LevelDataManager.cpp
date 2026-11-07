@@ -18,8 +18,11 @@
 #include <algorithm>
 
 #include "Animation.h"
+#include "Gem.h"
 #include "GUIToggle.h"
 #include "Platform.h"
+#include "Player.h"
+#include "PlayerController.h"
 #include "PuzzleToken.h"
 #include "Sprite.h"
 #include "SpriteAnimator.h"
@@ -102,19 +105,35 @@ bool LevelDataManager::isSafeFileName(const std::string& name)
 json LevelDataManager::serializeScene() const
 {
 	json objs = json::array();
+	std::string strAfterTiles;   //the first saved object after the tiles (draw order)
+	bool bSeenTiles = false;
 
 	for (AGameObject* o : GameObjectManager::getInstance()->getAllObjects())
 	{
+		if (dynamic_cast<TileMap*>(o))
+		{
+			bSeenTiles = true;   //the tiles themselves are saved as a path, below
+			continue;
+		}
+
 		json oj = serializeObject(o);
 		if (!oj.is_null())
+		{
+			if (bSeenTiles && strAfterTiles.empty())
+				strAfterTiles = o->getName();
 			objs.push_back(std::move(oj));
+		}
 	}
 
 	json level;
 	level["version"] = 1;
 	level["objects"] = std::move(objs);
 	if (!tilemapPath.empty())
+	{
 		level["tilemap"] = tilemapPath;
+		if (!strAfterTiles.empty())
+			level["tilemapBefore"] = strAfterTiles;
+	}
 	return level;
 }
 
@@ -162,6 +181,10 @@ json LevelDataManager::serializeObject(AGameObject* o)
 		SDL_Color c = t->getColor();
 		j["text"] = t->getMessage();
 		j["fontSize"] = t->getFontSize();
+
+		if (t->getWrapWidth() > 0) 
+			j["wrapWidth"] = t->getWrapWidth();
+
 		j["font"] = t->getFontName();
 		j["color"] = json::array({ c.r, c.g, c.b, c.a });
 	}
@@ -183,6 +206,21 @@ json LevelDataManager::serializeObject(AGameObject* o)
 		if (!t->getHint().empty())
 			j["hint"] = t->getHint();
 	}
+
+	if (Gem* g = dynamic_cast<Gem*>(o))
+	{
+		if (!g->getPickupTitle().empty())
+			j["pickupTitle"] = g->getPickupTitle();
+		if (!g->getPickupText().empty())
+			j["pickupText"] = g->getPickupText();
+	}
+
+	if (Player* p = dynamic_cast<Player*>(o))
+		if (PlayerController* pc = (PlayerController*)p->findComponentByName("PlayerController"))
+		{
+			j["moveSpeed"] = pc->getMoveSpeed();
+			j["jumpForce"] = pc->getJumpForce();
+		}
 
 	//animated sprites: frame rate and play mode of the current animation
 	if (SpriteAnimator* anim = (SpriteAnimator*)o->findComponentByName("SpriteAnimator"))
@@ -353,7 +391,19 @@ bool LevelDataManager::buildFromJson(const json& level)
 	//load tilemap if a tilemap is found in the JSON
 	//JSON only stores the tilemap path.
 	if (level.contains("tilemap"))
+	{
 		loadTilemap(level["tilemap"].get<std::string>());
+
+		//put the tiles back where they were in the hierarchy, so the draw order is kept
+		if (level.contains("tilemapBefore"))
+		{
+			GameObjectManager* gom = GameObjectManager::getInstance();
+			AGameObject* pTiles = gom->findObjectByName("Tiles");
+			AGameObject* pNext = gom->findObjectByName(level["tilemapBefore"].get<std::string>());
+			if (pTiles && pNext)
+				gom->moveObject(pTiles, nullptr, gom->getSiblingIndex(pNext));
+		}
+	}
 	return true;
 }
 
@@ -414,6 +464,8 @@ void LevelDataManager::applyFields(AGameObject* o, const json& j)
 			t->setFontName(j["font"].get<std::string>());
 		if (j.contains("fontSize"))
 			t->setFontSize(j["fontSize"].get<int>());
+		if (j.contains("wrapWidth"))
+			t->setWrapWidth(j["wrapWidth"].get<int>());
 		if (j.contains("text"))
 			t->setMessage(j["text"].get<std::string>());
 		if (j.contains("color"))
@@ -429,6 +481,21 @@ void LevelDataManager::applyFields(AGameObject* o, const json& j)
 		if (j.contains("target")) t->setTargetName(j["target"].get<std::string>());
 		if (j.contains("hint"))           t->setHint(j["hint"].get<std::string>());
 	}
+
+	if (Gem* g = dynamic_cast<Gem*>(o))
+	{
+		if (j.contains("pickupTitle"))
+			g->setPickupTitle(j["pickupTitle"].get<std::string>());
+		if (j.contains("pickupText"))
+			g->setPickupText(j["pickupText"].get<std::string>());
+	}
+
+	if (Player* p = dynamic_cast<Player*>(o))
+		if (PlayerController* pc = (PlayerController*)p->findComponentByName("PlayerController"))
+		{
+			if (j.contains("moveSpeed")) pc->setMoveSpeed(j["moveSpeed"].get<float>());
+			if (j.contains("jumpForce")) pc->setJumpForce(j["jumpForce"].get<float>());
+		}
 
 	if (j.contains("onClick"))
 	{
@@ -529,16 +596,9 @@ void LevelDataManager::applyPending()
 #if EDITOR_MODE
 		if (!selName.empty())
 		{
-			for (AGameObject* root : GameObjectManager::getInstance()->getAllObjects())
-			{
-				std::vector<AGameObject*> tree = root->getChildrenRecursively();
-				tree.push_back(root);
-				for (AGameObject* o : tree)
-				{
-					if (o->getName() == selName)
-						Editor::EditorModule::getInstance()->setSelectedObject(o);
-				}
-			}
+			for (AGameObject* o : GameObjectManager::getInstance()->getAllObjectsRecursively())
+				if (o->getName() == selName)
+					Editor::EditorModule::getInstance()->setSelectedObject(o);
 		}
 #endif
 	}
@@ -662,7 +722,7 @@ void LevelDataManager::clearScene()
 		if (!o->isSystemObject() && ObjectFactory::typeKeyOf(o))
 			gom->deleteObject(o);
 
-	if (AGameObject* pTiles = gom->findObjectByName("__Tiles"))
+	if (AGameObject* pTiles = gom->findObjectByName("Tiles"))
 		gom->deleteObject(pTiles);
 	tilemapPath.clear();
 	gom->cleanUpDeletedObjects();
@@ -749,14 +809,14 @@ void LevelDataManager::loadTilemap(const std::string& mapPath)
 {
 	GameObjectManager* gom = GameObjectManager::getInstance();
 
-	if (AGameObject* pOld = gom->findObjectByName("__Tiles"))
+	if (AGameObject* pOld = gom->findObjectByName("Tiles"))
 	{
 		gom->deleteObject(pOld);
 		gom->cleanUpDeletedObjects();
 	}
 	tilemapPath.clear();
 
-	TileMap* pTiles = new TileMap("__Tiles");
+	TileMap* pTiles = new TileMap("Tiles");
 	gom->addObject(pTiles); //attach TileMapRenderer
 	if (!importTiledMap(mapPath, pTiles))
 	{

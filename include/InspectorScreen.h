@@ -17,6 +17,9 @@ private:
     AssetBrowserPanel assetBrowser;
     Text* pEditingText = nullptr;
 
+    char gemTitleBuf[128] = {};
+    char gemTextBuf[1024] = {};
+
 public:
     void setMousePos(Vector2D mousePos);
 

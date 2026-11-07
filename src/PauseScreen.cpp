@@ -106,6 +106,9 @@ void PauseScreen::initialize()
 
 void PauseScreen::onEventTrigger(std::unordered_map<std::string, void*> mapParameter)
 {
+	// switched off in the level (or inside a disabled group): this screen isn't in play
+	if (!this->isGloballyEnabled()) return;
+
 	AGameObject* pMenu = this->findChildByName("Menu");
 	AnimatedSprite* pAnimSprite = (AnimatedSprite*)this->findChildByName("PauseAnim");
 	SpriteAnimator* pAnimator = (SpriteAnimator*)pAnimSprite->findComponentByName("SpriteAnimator");

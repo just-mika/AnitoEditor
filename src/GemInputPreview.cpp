@@ -7,6 +7,7 @@
 #include "GUIToggle.h"
 #include "DataAssetManager.h"
 #include "GUIUtils.h"
+#include "TextureManager.h"
 
 GemInputPreview::GemInputPreview(const std::string& name) : AGameObject(name)
 {
@@ -24,61 +25,63 @@ void GemInputPreview::setPreviewText(std::string strGemName)
 
 void GemInputPreview::initialize()
 {
-	Sprite* pPreviewBG = new Sprite("GemInput_PreviewWindow", "Square");
-	pPreviewBG->setIsScreenObject(true);
+	TextureManager::getInstance()->load("GUI/Panel.png", "PreviewPanel");
+
+	Sprite* pPreviewBG = new Sprite("GemInput_PreviewWindow", "PreviewPanel");
 	this->attachChild(pPreviewBG);
-	pPreviewBG->setColor({ 255, 225, 170, 255 });
-	pPreviewBG->setPos(Vector2D(510, 590));
+	pPreviewBG->setIsScreenObject(true);
+	pPreviewBG->setLocalPos(Vector2D(-536, 50));
+	pPreviewBG->setLocalScale(Vector2D(0.1f, 0.17f));
 
 	Text* pPreviewText = new Text("GemInput_PreviewText", "JainiPurva-Regular.ttf", 60, 0.f, false);
-	pPreviewText->setIsScreenObject(true);
 	this->attachChild(pPreviewText);
+	pPreviewText->setIsScreenObject(true);
 	pPreviewText->setMessage("Preview \n Text");
-	pPreviewText->setPos(Vector2D(510, 540));
+	pPreviewText->setLocalPos(Vector2D(-536, 0));
+	pPreviewText->setColor({ 0, 0, 0, 255 });
+	pPreviewText->setWrapWidth(400); 
 
 	GUIButton* pClosePreview = new GUIButton("GemInput_ClosePreview", "Close_Button");
-	GUIToggle* pCloseToggle = new GUIToggle(EventKey::GEM_INPUT_PREVIEW);
-	pClosePreview->attachComponent(pCloseToggle);
-	pClosePreview->setIsScreenObject(true);
 	this->attachChild(pClosePreview);
-	pClosePreview->setPos(Vector2D(510, 790));
-	pClosePreview->setScale(Vector2D(0.1f));
-
+	pClosePreview->setIsScreenObject(true);
+	pClosePreview->attachComponent(new GUIToggle(EventKey::GEM_INPUT_PREVIEW));
+	pClosePreview->setLocalPos(Vector2D(-536, 232));
+	pClosePreview->setLocalScale(Vector2D(0.1f, 0.1f));
 
 	Text* pClosePreviewText = new Text("GemInput_ClosePreviewText", "JainiPurva-Regular.ttf", 50, 0.f, false);
-	pClosePreviewText->setIsScreenObject(true);
 	this->attachChild(pClosePreviewText);
+	pClosePreviewText->setIsScreenObject(true);
 	pClosePreviewText->setMessage("Close");
+	pClosePreviewText->setLocalPos(Vector2D(-536, 231));
 	pClosePreviewText->setColor({ 180, 20, 20, 255 });
-	pClosePreviewText->setPos(Vector2D(510, 785));
 
 	EventBroadcaster::getInstance()->registerListener(this);
 	this->setEnabled(false);
-
 }
 
 void GemInputPreview::onEventTrigger(std::unordered_map<std::string, void*> mapParameter)
 {
+	// inside a disabled group: not in play (its own enabled flag just means open/closed)
+	if (this->getParent() && !this->getParent()->isGloballyEnabled()) return;
+
 	bool bFromToggle = false;
-	std::cout << "Enter" << std::endl;
 	if (mapParameter.find("Sender") != mapParameter.end())
 	{
 		std::string senderType = *static_cast<std::string*>(mapParameter["Sender"]);
 		bFromToggle = (senderType == "GemInput_ClosePreview");
-		std::cout << senderType << std::endl;
 	}
-	// if object not enabled enable it based on name
-	if (!this->bEnabled)
+
+	// a gem was tapped: show its text (also replaces the text if already open)
+	if (mapParameter.find("GemName") != mapParameter.end())
 	{
 		std::string strGemName = *static_cast<std::string*>(mapParameter["GemName"]);
-		this->setEnabled(true);
 		this->setPreviewText(strGemName);
+		this->setEnabled(true);
 	}
-	//do not change this handles the closing if separated any object that throws the event will close it
+	// the Close button
 	else if (this->bEnabled && bFromToggle)
 	{
 		this->setEnabled(false);
-		EventBroadcaster::getInstance()->enableAllListeners();
 	}
 }
 
@@ -100,4 +103,9 @@ void GemInputPreview::setListenerEnabled(bool bListenerEnabled)
 std::string GemInputPreview::getListenerOwnerName()
 {
 	return this->strName;
+}
+
+GemInputPreview::~GemInputPreview()
+{
+	TextureManager::getInstance()->unload("PreviewPanel");
 }

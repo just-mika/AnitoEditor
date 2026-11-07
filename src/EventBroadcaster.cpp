@@ -100,6 +100,28 @@ bool EventBroadcaster::isBlocking()
     return false;
 }
 
+void EventBroadcaster::enableListenersWithKey(EventKey key)
+{
+    for (EventListener* pListener : this->mapListener[key])
+        pListener->setListenerEnabled(true);
+}
+
+std::vector<EventListener*> EventBroadcaster::getEnabledListeners()
+{
+    std::vector<EventListener*> vecEnabled;
+    for (EventListener* pListener : this->vecListener)
+        if (pListener->isListenerEnabled())
+            vecEnabled.push_back(pListener);
+    return vecEnabled;
+}
+
+// only compares pointers, so a saved listener that was deleted since is simply skipped
+void EventBroadcaster::restoreEnabledListeners(const std::vector<EventListener*>& vecEnabled)
+{
+    for (EventListener* pListener : this->vecListener)
+        pListener->setListenerEnabled(std::find(vecEnabled.begin(), vecEnabled.end(), pListener) != vecEnabled.end());
+}
+
 // every listener (PauseScreen, ObjectiveIntro, StoryWindow...) runs this when deleted
 EventListener::~EventListener()
 {

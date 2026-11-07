@@ -36,5 +36,7 @@ public:
 
 	std::string getListenerOwnerName() override;
 
+	void onDisable() override;
+
 };
 

@@ -86,3 +86,18 @@ void Text::setFontName(const std::string& strFontName)
 	if (!this->strMessage.empty() && this->findComponentByName("TextRenderer"))
 		this->setMessage(this->strMessage);
 }
+
+void Text::setWrapWidth(int nWidth)
+{
+	TextRenderer* pRenderer = (TextRenderer*)this->findComponentByName("TextRenderer");
+	if (!pRenderer) return;
+	pRenderer->setWrapWidth(nWidth);
+	if (!this->strMessage.empty())
+		this->setMessage(this->strMessage);   //re-render with the new width
+}
+
+int Text::getWrapWidth()
+{
+	TextRenderer* pRenderer = (TextRenderer*)this->findComponentByName("TextRenderer");
+	return pRenderer ? pRenderer->getWrapWidth() : 0;
+}

@@ -1,6 +1,7 @@
 #pragma once
 #include "LoadedScene.h"
 #include "EnumEventKey.h"
+#include "ObjectiveManager.h"
 
 class PlatformerLoadedScene : public LoadedScene
 {
@@ -20,4 +21,6 @@ protected:
 
 private:
     void attachToggle(const char* name, EventKey key);
+    std::vector<AGameObject*> vecHUD;          //made by the scene, drawn on top of the level
+    ObjectiveManager* pObjectiveManager = nullptr;
 };

@@ -64,13 +64,7 @@ void PuzzleLoadedScene::rewire()
     GameObjectManager* gom = GameObjectManager::getInstance();
 
     // every object, including children (getAllObjects only returns roots)
-    std::vector<AGameObject*> all;
-    for (AGameObject* root : gom->getAllObjects())
-    {
-        all.push_back(root);
-        std::vector<AGameObject*> tree = root->getChildrenRecursively();
-        all.insert(all.end(), tree.begin(), tree.end());
-    }
+    std::vector<AGameObject*> all = gom->getAllObjectsRecursively();
 
     std::vector<PuzzleToken*> tokens;
     AGameObject* pDragon = nullptr;

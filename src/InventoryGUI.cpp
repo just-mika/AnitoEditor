@@ -9,6 +9,7 @@
 #include "Text.h"
 #include "GUIToggle.h"
 #include "DataAssetManager.h"
+#include "EmptyObject.h"
 
 InventoryGUI::InventoryGUI(std::string strName):AGameObject(strName)
 {
@@ -22,190 +23,207 @@ InventoryGUI::InventoryGUI(std::string strName):AGameObject(strName)
 
 InventoryGUI::~InventoryGUI()
 {
+	TextureManager::getInstance()->unload("InventoryPanel");
+	TextureManager::getInstance()->unload("GemHighlight");
 }
 
+// Layout copied from the editor (all values are LOCAL, same as the save file)
 void InventoryGUI::initialize()
 {
-	Background* pTransBack = new Background("TransparentBG", "Square", Vector2D(5.f));
+	TextureManager::getInstance()->load("GUI/Panel.png", "InventoryPanel");
+	TextureManager::getInstance()->load("gems/gem_highlight.png", "GemHighlight");
+
+	Background* pTransBack = new Background("TransparentBG", "InventoryPanel", Vector2D(1.0f));
 	this->attachChild(pTransBack);
+	pTransBack->setLocalPos(Vector2D(-6, -10));
+	pTransBack->setLocalScale(Vector2D(0.39f, 0.37f));
 	SpriteRenderer* pTransBGR = (SpriteRenderer*)pTransBack->findComponentByName("SpriteRenderer");
-	pTransBGR->setColor({ 250, 227, 150, 127 });
+	pTransBGR->setColor({ 255, 255, 255, 179 });
 
-	AnimatedSprite* pAnimatedCharacter = new AnimatedSprite("InventoryAnim", "Inventory", Vector2D(0), Vector2D(1.f), 0, 8);
-	pAnimatedCharacter->setIsScreenObject(true);
-	this->attachChild(pAnimatedCharacter);
-	SpriteAnimator* pAnimator = (SpriteAnimator*)pAnimatedCharacter->findComponentByName("SpriteAnimator");
-	SpriteRenderer* pSpriteRenderer = (SpriteRenderer*)pAnimatedCharacter->findComponentByName("SpriteRenderer");
-	pSpriteRenderer->setPivot(Vector2D(0, 0));
-	pAnimator->getCurrentAnimation()->setType(AnimationType::ONCE);
-	pAnimator->getCurrentAnimation()->setOnAnimFinished(OnAnimFinished::FUNC);
-
-	Sprite* pGemInfo = new Sprite("InfoGem", "Gem_Colorless_Inventory", Vector2D(0), Vector2D(.9f), 0, false);
-	pGemInfo->setIsScreenObject(true);
-	this->attachChild(pGemInfo);
-	pGemInfo->setPos(Vector2D(1000, 550));
-
-	Text* pTitle = new Text("Title", "JainiPurva-Regular.ttf", 90, 0, false);
-	pTitle->setIsScreenObject(true);
-	pGemInfo->attachChild(pTitle);
-	pTitle->setMessage("No Gem");
-	pTitle->setPos(Vector2D(1050, 250));
-	pTitle->setScale(Vector2D(1, 1));
-	pTitle->setRot(-14);
-
-	Text* pText = new Text("Text", "JainiPurva-Regular.ttf", 45, 0, false);
-	pText->setIsScreenObject(true);
-	pGemInfo->attachChild(pText);
-	pText->setMessage("Please Select a Gem");
-	pText->setPos(Vector2D(1000, 450));
-	pText->setScale(Vector2D(1, 1));
-	pText->setRot(-14);
-
-	Sprite* pInventoryBG = new Sprite("InventoryBG", "Tablet", Vector2D(0), Vector2D(1.f), 0, false);
+	// the tablet on the right, turned on its side, holding the gem buttons
+	Sprite* pInventoryBG = new Sprite("InventoryBG", "Tablet");
+	this->attachChild(pInventoryBG);
 	pInventoryBG->setIsScreenObject(true);
-	pTransBack->attachChild(pInventoryBG);
-	pInventoryBG->setScale(Vector2D(.4, 1.25));
-	pInventoryBG->setPos(Vector2D(2000,550));
+	pInventoryBG->setLocalPos(Vector2D(1897, 568));
+	pInventoryBG->setLocalScale(Vector2D(0.8f, 0.8f));
+	pInventoryBG->setLocalRot(-90);
 
+	EmptyObject* pGemButtons = new EmptyObject("Gem_Buttons");
+	pInventoryBG->attachChild(pGemButtons);
+	pGemButtons->setIsScreenObject(true);
+	pGemButtons->setLocalPos(Vector2D(-376.55f, 149.04f));
+	pGemButtons->setLocalScale(Vector2D(1.25f, 1.25f));
+	pGemButtons->setLocalRot(90);   //undoes the tablet's -90, so the gems stand upright
+
+	// outline behind the selected gem (moved onto the clicked button)
+	Sprite* pHighlight = new Sprite("Gem_Highlight", "GemHighlight");
+	pGemButtons->attachChild(pHighlight);
+	pHighlight->setIsScreenObject(true);
+	pHighlight->setLocalPos(Vector2D(-15.77f, -118.76f));
+	pHighlight->setLocalScale(Vector2D(0.57f, 0.57f));
+
+	// one button per gem color, top to bottom; shown only if that gem was collected
+	static const char* kGems[] = { "Gem_Cyan", "Gem_Green", "Gem_Orange", "Gem_Purple", "Gem_Red" };
+	static const float kGemY[] = { -120.76f, 87.24f, 302.24f, 505.24f, 711.24f };
+	this->vecGems.clear();
+	for (int i = 0; i < 5; i++)
+	{
+		std::string strGem = kGems[i];
+		GUIButton* pButton = new GUIButton(strGem + "_Button", strGem, false);
+		pGemButtons->attachChild(pButton);
+		pButton->setIsScreenObject(true);
+		pButton->attachComponent(new GUIToggle(EventKey::INVENTORY_SCREEN));
+		pButton->setLocalPos(Vector2D(-15.77f, kGemY[i]));
+		pButton->setLocalScale(Vector2D(0.49f, 0.49f));
+		this->vecGems.push_back(pButton);
+	}
 
 	GUIButton* pReturn = new GUIButton("ReturnButton", "Return", false);
+	this->attachChild(pReturn);
 	pReturn->setIsScreenObject(true);
-	pTransBack->attachChild(pReturn);
-	GUIToggle* pToggle = new GUIToggle(EventKey::INVENTORY_SCREEN);
-	pReturn->attachComponent(pToggle);
-	pReturn->setScale(Vector2D(.075f));
-	pReturn->setPos(Vector2D(100, 100));
+	pReturn->attachComponent(new GUIToggle(EventKey::INVENTORY_SCREEN));
+	pReturn->setLocalPos(Vector2D(127, 122));
+	pReturn->setLocalScale(Vector2D(0.09f, 0.09f));
 
-	SpriteRenderer* pGRenderer;
-	GUIButton* pCyanGem = new GUIButton("Gem_Cyan", "Gem_Cyan", false);
-	pCyanGem->setIsScreenObject(true);
-	pTransBack->attachChild(pCyanGem);
-	this->vecGems.push_back(pCyanGem);
-	GUIToggle* pCyanToggle = new GUIToggle(EventKey::INVENTORY_SCREEN);
-	pCyanGem->attachComponent(pCyanToggle);
-	pCyanGem->setScale(Vector2D(.35f));
-	pCyanGem->setPos(Vector2D(1825, 225));
-	pGRenderer = (SpriteRenderer*)pCyanGem->findComponentByName("SpriteRenderer");
-	pGRenderer->setCropRect(SDL_FRect(.175, .1, .65, .7));
-
-	GUIButton* pGreenGem = new GUIButton("Gem_Green", "Gem_Green", false);
-	pGreenGem->setIsScreenObject(true);
-	pTransBack->attachChild(pGreenGem);
-	this->vecGems.push_back(pGreenGem);
-	GUIToggle* pGreenToggle = new GUIToggle(EventKey::INVENTORY_SCREEN);
-	pGreenGem->attachComponent(pGreenToggle);
-	pGreenGem->setScale(Vector2D(.35f));
-	pGreenGem->setPos(Vector2D(1825, 375));
-	pGRenderer = (SpriteRenderer*)pGreenGem->findComponentByName("SpriteRenderer");
-	pGRenderer->setCropRect(SDL_FRect(.175, .1, .65, .7));
-
-	GUIButton* pOrangeGem = new GUIButton("Gem_Orange", "Gem_Orange", false);
-	pOrangeGem->setIsScreenObject(true);
-	pTransBack->attachChild(pOrangeGem);
-	this->vecGems.push_back(pOrangeGem);
-	GUIToggle* pOrangeToggle = new GUIToggle(EventKey::INVENTORY_SCREEN);
-	pOrangeGem->attachComponent(pOrangeToggle);
-	pOrangeGem->setScale(Vector2D(.35f));
-	pOrangeGem->setPos(Vector2D(1825, 525));
-	pGRenderer = (SpriteRenderer*)pOrangeGem->findComponentByName("SpriteRenderer");
-	pGRenderer->setCropRect(SDL_FRect(.175, .1, .65, .7));
-
-
-	GUIButton* pPurpleGem = new GUIButton("Gem_Purple", "Gem_Purple", false);
-	pPurpleGem->setIsScreenObject(true);
-	pTransBack->attachChild(pPurpleGem);
-	this->vecGems.push_back(pPurpleGem);
-	GUIToggle* pPurpleToggle = new GUIToggle(EventKey::INVENTORY_SCREEN);
-	pPurpleGem->attachComponent(pPurpleToggle);
-	pPurpleGem->setScale(Vector2D(.35f));
-	pPurpleGem->setPos(Vector2D(1825, 675));
-	pGRenderer = (SpriteRenderer*)pPurpleGem->findComponentByName("SpriteRenderer");
-	pGRenderer->setCropRect(SDL_FRect(.175, .1, .65, .7));
-
-	GUIButton* pRedGem = new GUIButton("Gem_Red", "Gem_Red", false);
-	pRedGem->setIsScreenObject(true);
-	pTransBack->attachChild(pRedGem);
-	this->vecGems.push_back(pRedGem);
-	GUIToggle* pRedToggle = new GUIToggle(EventKey::INVENTORY_SCREEN);
-	pRedGem->attachComponent(pRedToggle);
-	pRedGem->setScale(Vector2D(.35f));
-	pRedGem->setPos(Vector2D(1825, 825));
-	pGRenderer = (SpriteRenderer*)pRedGem->findComponentByName("SpriteRenderer");
-	pGRenderer->setCropRect(SDL_FRect(.175, .1, .65, .7));
-
-	pTransBack->setEnabled(false);
-	pAnimatedCharacter->setEnabled(false);
-	pGemInfo->setEnabled(false);
-
+	// plays first, stays on its last frame while the inventory is open
+	AnimatedSprite* pAnimatedCharacter = new AnimatedSprite("InventoryAnim", "Inventory", Vector2D(0.0f), Vector2D(1.0f), 0.0f, 8);
+	this->attachChild(pAnimatedCharacter);
+	pAnimatedCharacter->setIsScreenObject(true);
+	pAnimatedCharacter->setLocalPos(Vector2D(0, -24));
+	pAnimatedCharacter->setLocalScale(Vector2D(0.92f, 0.92f));
+	SpriteRenderer* pAnimR = (SpriteRenderer*)pAnimatedCharacter->findComponentByName("SpriteRenderer");
+	pAnimR->setPivot(Vector2D(0, 0));
+	SpriteAnimator* pAnimator = (SpriteAnimator*)pAnimatedCharacter->findComponentByName("SpriteAnimator");
+	pAnimator->getCurrentAnimation()->setType(AnimationType::ONCE);
+	pAnimator->getCurrentAnimation()->setOnAnimFinished(OnAnimFinished::FUNC);
 	pAnimator->addListener(this);
+
+	// the selected gem's big picture, title and text (scale undoes the gem's 0.89)
+	Sprite* pGemInfo = new Sprite("InfoGem", "Gem_Colorless_Inventory");
+	this->attachChild(pGemInfo);
+	pGemInfo->setIsScreenObject(true);
+	pGemInfo->setLocalPos(Vector2D(919, 529));
+	pGemInfo->setLocalScale(Vector2D(0.89f, 0.89f));
+
+	Text* pTitle = new Text("Title", "JainiPurva-Regular.ttf", 90, 0, false);
+	pGemInfo->attachChild(pTitle);
+	pTitle->setIsScreenObject(true);
+	pTitle->setMessage("No Gem");
+	pTitle->setLocalPos(Vector2D(55.56f, -333.33f));
+	pTitle->setLocalScale(Vector2D(1 / 0.89f, 1 / 0.89f));
+	pTitle->setLocalRot(-14);
+	pTitle->setColor(SDL_Color(0, 0, 0, 255));
+
+	Text* pText = new Text("Text", "JainiPurva-Regular.ttf", 45, 0, false);
+	pGemInfo->attachChild(pText);
+	pText->setIsScreenObject(true);
+	pText->setMessage("No gem collected yet!");
+	pText->setLocalPos(Vector2D(0, -111.11f));
+	pText->setLocalScale(Vector2D(1 / 0.89f, 1 / 0.89f));
+	pText->setLocalRot(-14);
+	pText->setColor(SDL_Color(0, 0, 0, 255));
+
+	this->setPanelVisible(false);
+	pAnimatedCharacter->setEnabled(false);
 	EventBroadcaster::getInstance()->registerListener(this);
 }
+
+// the parts that appear after the animation (the animation itself is handled separately)
+void InventoryGUI::setPanelVisible(bool bVisible)
+{
+	this->findChildByName("TransparentBG")->setEnabled(bVisible);
+	this->findChildByName("InventoryBG")->setEnabled(bVisible);
+	this->findChildByName("ReturnButton")->setEnabled(bVisible);
+	this->findChildByName("InfoGem")->setEnabled(bVisible);
+}
+
+std::string InventoryGUI::gemOfButton(const std::string& strButton)
+{
+	const std::string suffix = "_Button";
+	if (strButton.size() <= suffix.size() || strButton.compare(0, 4, "Gem_") != 0 ||
+		strButton.compare(strButton.size() - suffix.size(), suffix.size(), suffix) != 0)
+		return "";
+	return strButton.substr(0, strButton.size() - suffix.size());
+}
+
 void InventoryGUI::changeGem(std::string strGemName)
 {
-	Background* pTransBack = (Background*)this->findChildByName("TransparentBG");
 	SpriteRenderer* pRenderer = (SpriteRenderer*)this->findChildByName("InfoGem")->findComponentByName("SpriteRenderer");
-	SDL_Texture* pTex = TextureManager::getInstance()->getTexture(strGemName)[0];
-	pRenderer->setTexture(pTex);
+	std::vector<SDL_Texture*> vecTex = TextureManager::getInstance()->getTexture(strGemName);
+	if (!vecTex.empty())
+		pRenderer->setTexture(vecTex[0]);
 }
 void InventoryGUI::onEventTrigger(std::unordered_map<std::string, void*> mapParameter)
 {
-	Background* pTransBack = (Background*)this->findChildByName("TransparentBG");
+	// switched off in the level (or inside a disabled group): this screen isn't in play
+	if (!this->isGloballyEnabled()) return;
+
 	AnimatedSprite* pAnimSprite = (AnimatedSprite*)this->findChildByName("InventoryAnim");
-	Sprite* pGem = (Sprite*)this->findChildByName("InfoGem");
-	Text* pTitle = (Text*)pGem->findChildByName("Title");
-	Text* pText = (Text*)pGem->findChildByName("Text");
 	SpriteAnimator* pAnimator = (SpriteAnimator*)pAnimSprite->findComponentByName("SpriteAnimator");
+	AGameObject* pGemInfo = this->findChildByName("InfoGem");
+	Text* pTitle = (Text*)pGemInfo->findChildByName("Title");
+	Text* pText = (Text*)pGemInfo->findChildByName("Text");
+	AGameObject* pGemButtons = this->findChildByName("InventoryBG")->findChildByName("Gem_Buttons");
+	AGameObject* pHighlight = pGemButtons->findChildByName("Gem_Highlight");
 
-	bool bFromToggle = false;
+	std::string strSender;
 	if (mapParameter.find("Sender") != mapParameter.end())
-	{
-		std::string senderType = *static_cast<std::string*>(mapParameter["Sender"]);
-		bFromToggle = (senderType == "ReturnButton");
+		strSender = *static_cast<std::string*>(mapParameter["Sender"]);
 
-	}
-	if (!pTransBack->getEnabled())
+	std::string strSelect;   //the gem button to select this time ("" = none)
+
+	if (!pAnimSprite->getEnabled())
 	{
+		// closed: open it. Start clean whatever the level saved; only the animation shows until it ends
+		this->setPanelVisible(false);
 		pAnimSprite->setEnabled(true);
 		EventBroadcaster::getInstance()->disableOtherListenerExcept(this);
 		pAnimator->getCurrentAnimation()->stop();
 		pAnimator->getCurrentAnimation()->play();
-		for (GUIButton* pGem : this->vecGems)
-		{
-			if (!this->pDataAsset->getGemPickedUp(pGem->getName()))
-			{
-				pGem->setEnabled(false);
-			}
-			else
-			{
-				pGem->setEnabled(true);
-			}
-		}
-	}
-	else if (pTransBack->getEnabled() )
-	{
-		if(bFromToggle)
-		{
-			pTransBack->setEnabled(false);
-			pAnimSprite->setEnabled(false);
-			pGem->setEnabled(false);
-			pTitle->setMessage("No Gem");
-			pText->setMessage("Please Select a Gem");
-			this->changeGem("Gem_Colorless_Inventory");
-			EventBroadcaster::getInstance()->enableAllListeners();
-		}
-		else
-		{
-			std::string senderType = *static_cast<std::string*>(mapParameter["Sender"]);
-			if (senderType.find("Gem", 0) != std::string::npos)
-			{
-				pTitle->setMessage(this->pDataAsset->getGemTitle(senderType));
-				pText->setMessage(this->pDataAsset->getGemTextBreak(senderType));
-				this->changeGem(senderType + "_Inventory");
-			}
-			
 
+		// only the collected gems get a button; the first one (top to bottom) starts selected
+		for (GUIButton* pButton : this->vecGems)
+		{
+			bool bCollected = this->pDataAsset->getGemPickedUp(gemOfButton(pButton->getName()));
+			pButton->setEnabled(bCollected);
+			if (bCollected && strSelect.empty())
+				strSelect = pButton->getName();
+		}
+
+		// nothing collected: empty info panel
+		if (strSelect.empty())
+		{
+			pHighlight->setEnabled(false);
+			pTitle->setMessage("No Gem");
+			pText->setMessage("No gem collected yet!");
+			this->changeGem("Gem_Colorless_Inventory");
 		}
 	}
+	else if (strSender == "ReturnButton")
+	{
+		// open: Return closes everything
+		this->setPanelVisible(false);
+		pAnimSprite->setEnabled(false);
+		EventBroadcaster::getInstance()->enableAllListeners();
+		return;
+	}
+	else
+	{
+		// open: a gem button was clicked
+		strSelect = strSender;
+	}
+
+	// show the selected gem and move the highlight onto its button
+	std::string strGem = gemOfButton(strSelect);
+	if (strGem.empty()) return;
+
+	pTitle->setMessage(this->pDataAsset->getGemTitle(strGem));
+	pText->setMessage(this->pDataAsset->getGemTextBreak(strGem));
+	this->changeGem(strGem + "_Inventory");
+
+	AGameObject* pButton = pGemButtons->findChildByName(strSelect);
+	pHighlight->setLocalPos(pButton->getLocalPos() + Vector2D(0, 2));   //sits 2 below each button in the layout
+	pHighlight->setEnabled(true);
 }
 
 EventKey InventoryGUI::getKey()
@@ -230,10 +248,5 @@ std::string InventoryGUI::getListenerOwnerName()
 
 void InventoryGUI::onAnimationFinished()
 {
-	Background* pTransBack = (Background*)this->findChildByName("TransparentBG");
-	Sprite* pGem = (Sprite*)this->findChildByName("InfoGem");
-	pTransBack->setEnabled(true);
-	pGem->setEnabled(true);
-
-
+	this->setPanelVisible(true);
 }

@@ -18,5 +18,7 @@ public:
 	bool isListenerEnabled() override;
 	void setListenerEnabled(bool bListenerEnabled) override;
 	std::string getListenerOwnerName() override;
+
+	~GemInputScreen();
 };
 

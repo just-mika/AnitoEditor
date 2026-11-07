@@ -23,5 +23,8 @@ public:
 
 	const std::string& getFontName() const { return strFontName; }
 	void setFontName(const std::string& strFontName);
+
+	void setWrapWidth(int nWidth);
+	int getWrapWidth();
 };
 

@@ -161,6 +161,14 @@ void SequenceGameManager::destroy()
     delete P_SHARED_INSTANCE->pOwner;
 }
 
+// the manager is deleted with its system object when the puzzle scene unloads:
+// forget it, so getInstance() reports that the puzzle subsystem is gone
+SequenceGameManager::~SequenceGameManager()
+{
+    if (P_SHARED_INSTANCE == this)
+        P_SHARED_INSTANCE = NULL;
+}
+
 SequenceGameManager* SequenceGameManager::getInstance()
 {
     return P_SHARED_INSTANCE;

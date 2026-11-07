@@ -22,9 +22,11 @@
 #include <cstring>
 #include <cstdio>
 
+#include "Gem.h"
 #include "LevelDataManager.h"
 #include "MetricsManager.h"
 #include "Settings.h"
+#include "TileMap.h"
 
 
 void InspectorScreen::setMousePos(Vector2D mousePos)
@@ -83,10 +85,29 @@ void InspectorScreen::draw()
         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
 
     // Name + Enabled
+	// these objects are identified by their name, so renaming them would break them:
+	// the tilemap (found by name, saved as a path), gems and statues (name = which gem/statue)
+    const char* nameKey = ObjectFactory::typeKeyOf(selectedObject);
+    bool bLockName = dynamic_cast<TileMap*>(selectedObject) != nullptr ||
+        (nameKey && (std::string(nameKey) == "gem" || std::string(nameKey) == "statue"));
+
+    ImGui::BeginDisabled(bLockName);
     ImGui::SetNextItemWidth(190.0f);
     bool commit = ImGui::InputText("##name", nameBuf, sizeof(nameBuf),
-                                   ImGuiInputTextFlags_EnterReturnsTrue);
+        ImGuiInputTextFlags_EnterReturnsTrue);
     commit |= ImGui::IsItemDeactivatedAfterEdit();
+
+    // explain why the name is locked
+    // (disabled items don't report hovering unless AllowWhenDisabled is passed)
+    if (bLockName && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+    {
+        if (dynamic_cast<TileMap*>(selectedObject))
+            ImGui::SetTooltip("The tilemap is found by this name, so it can't be renamed.");
+        else
+            ImGui::SetTooltip("This name decides which %s this is (e.g. %s), so it can't be renamed.",
+                nameKey, selectedObject->getName().c_str());
+    }
+    ImGui::EndDisabled();
     if (commit) applyName();
 
     ImGui::SameLine();
@@ -167,6 +188,9 @@ void InspectorScreen::syncBuffers()
 {
     memset(nameBuf, 0, sizeof(nameBuf));
     memset(textBuf, 0, sizeof(textBuf));
+    memset(gemTitleBuf, 0, sizeof(gemTitleBuf));
+    memset(gemTextBuf, 0, sizeof(gemTextBuf));
+
     if (!selectedObject) return;
 
     strncpy_s(nameBuf, selectedObject->getName().c_str(), sizeof(nameBuf) - 1);
@@ -174,6 +198,11 @@ void InspectorScreen::syncBuffers()
     {
         strncpy_s(textBuf, t->getMessage().c_str(), sizeof(textBuf) - 1);
         fontSizeBuf = t->getFontSize();
+    }
+    if (Gem* g = dynamic_cast<Gem*>(selectedObject))
+    {
+        strncpy_s(gemTitleBuf, g->getPickupTitle().c_str(), sizeof(gemTitleBuf) - 1);
+        strncpy_s(gemTextBuf, g->getPickupText().c_str(), sizeof(gemTextBuf) - 1);
     }
 }
 
@@ -360,6 +389,12 @@ void InspectorScreen::showTypeSpecific()
         if (ImGui::IsItemDeactivatedAfterEdit())
             t->setFontSize(fontSizeBuf);
 
+        int wrap = t->getWrapWidth();
+        ImGui::DragInt("Wrap Width", &wrap, 5.0f, 0, 4000);
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Break lines wider than this (0 = only at line breaks)");
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            t->setWrapWidth(wrap);
+
         // the fonts in Assets/Fonts
         static const char* kFonts[] = { "JainiPurva-Regular.ttf", "Maragsa.otf" };
         if (ImGui::BeginCombo("Font", t->getFontName().c_str()))
@@ -411,18 +446,14 @@ void InspectorScreen::showTypeSpecific()
             if (ImGui::Selectable("(none)", current.empty()))
                 t->setTargetName("");
 
-            for (AGameObject* root : GameObjectManager::getInstance()->getAllObjects())
+            for (AGameObject* o : GameObjectManager::getInstance()->getAllObjectsRecursively())
             {
-                std::vector<AGameObject*> tree = root->getChildrenRecursively();
-                tree.push_back(root);
-                for (AGameObject* o : tree)
-                {
-                    const char* key = ObjectFactory::typeKeyOf(o);
-                    if (!key || (std::string(key) != "sprite" && std::string(key) != "empty")) continue;
-                    if (ImGui::Selectable(o->getName().c_str(), o->getName() == current))
-                        t->setTargetName(o->getName());
-                }
+                const char* key = ObjectFactory::typeKeyOf(o);
+                if (!key || (std::string(key) != "sprite" && std::string(key) != "empty")) continue;
+                if (ImGui::Selectable(o->getName().c_str(), o->getName() == current))
+                    t->setTargetName(o->getName());
             }
+
             ImGui::EndCombo();
         }
 
@@ -437,10 +468,22 @@ void InspectorScreen::showTypeSpecific()
         if (ImGui::Checkbox("Dropped", &dropped)) t->setDropped(dropped);
         ImGui::TextWrapped("Name is also this token's texture key.");
     }
-    else if (k == "gem" || k == "statue")
+    else if (k == "gem")
     {
-        ImGui::TextWrapped("Name is also this object's texture key (e.g. Gem_Cyan). "
-                           "Pickup area is under the collectable/pickup component below.");
+        Gem* g = static_cast<Gem*>(selectedObject);
+        ImGui::TextDisabled("Shown when picked up (empty = default)");
+
+        // filled from the gem every frame, like the token's Hint box above;
+        // plain strings (no texture to rebuild), so apply on every keystroke
+        char titleBuf[128];
+        snprintf(titleBuf, sizeof(titleBuf), "%s", g->getPickupTitle().c_str());
+        if (ImGui::InputText("Title", titleBuf, sizeof(titleBuf)))
+            g->setPickupTitle(titleBuf);
+
+        char textBuf[1024];
+        snprintf(textBuf, sizeof(textBuf), "%s", g->getPickupText().c_str());
+        if (ImGui::InputTextMultiline("Pickup Text", textBuf, sizeof(textBuf), ImVec2(-FLT_MIN, 80)))
+            g->setPickupText(textBuf);
     }
     else if (k == "platform")
     {

@@ -63,6 +63,9 @@ void PuzzleHint::initialize()
 
 void PuzzleHint::onEventTrigger(std::unordered_map<std::string, void*> mapParameter)
 {
+	// inside a disabled group: not in play (its own enabled flag just means open/closed)
+	if (this->getParent() && !this->getParent()->isGloballyEnabled()) return;
+
 	// a token was tapped: show its hint (also replaces the text if already open)
 	if (mapParameter.find("Token") != mapParameter.end())
 	{

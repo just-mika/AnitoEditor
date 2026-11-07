@@ -200,9 +200,9 @@ void TextRenderer::loadFromText(std::string fontType, int nFontSize, std::string
         return;
     }
 
-    int wrapWidth = 0; // pixel width for wrapping; 0 = no wrapping (only newline)
-    // note: signature requires length BEFORE color
-    SDL_Surface* textSurface = TTF_RenderText_Blended_Wrapped(font, strText.c_str(), strText.size(), textColor, wrapWidth);
+    // break lines that are wider than this many pixels (in font pixels, before scaling); 0 = only at \n
+    SDL_Surface* textSurface = TTF_RenderText_Blended_Wrapped(font, strText.c_str(), strText.size(), textColor, this->nWrapWidth);
+
     if (!textSurface) {
         const char* err = nullptr;
 #ifdef TTF_GetError

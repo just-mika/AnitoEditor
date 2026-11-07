@@ -11,7 +11,7 @@ enum class ObjectCategory {
     UI
 };
 
-enum class Dependency { Physics, GemInputManager, GemDataAsset };
+enum class Dependency { Physics, GemInputManager, GemDataAsset, SequenceGame };
 
 struct ObjectTypeInfo {
     std::string typeKey;

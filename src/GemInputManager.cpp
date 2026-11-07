@@ -6,7 +6,16 @@
 #include "EventBroadcaster.h"
 void GemInputManager::perform()
 {
-    // Checks for dropped tokens (occurs when the token had been clicked and dragged).
+    // another screen is on top (the story, opened with Recall): ignore clicks and drops meant for it
+    if (this->pScreen && !this->pScreen->isListenerEnabled())
+    {
+        for (GemInputToken* pToken : this->vecToken) pToken->setDropped(false);
+        for (ButtonInput* pUndo : this->vecUndo) pUndo->setClicked(false);
+        if (this->pSubmit) this->pSubmit->setClicked(false);
+        return;
+    }
+	
+	// Checks for dropped tokens (occurs when the token had been clicked and dragged).
     for (int i = 0; i < this->vecToken.size(); i++)
     {
         if (this->vecToken[i]->getDropped())
@@ -45,7 +54,7 @@ void GemInputManager::perform()
             else
             {
                 // Reset token if it does not intersect.
-                this->vecToken[i]->setPos(this->vecPosition[i]);
+                this->vecToken[i]->setLocalPos(this->vecPosition[i]);
                 //this->resetText(nullptr);
             }
         }
@@ -76,7 +85,7 @@ void GemInputManager::perform()
 
 void GemInputManager::addToken(GemInputToken* pToken)
 {
-	this->vecPosition.push_back(pToken->getPos());
+    this->vecPosition.push_back(pToken->getLocalPos());
     this->vecToken.push_back(pToken);
 }
 
@@ -144,7 +153,7 @@ void GemInputManager::resetText(int nTextIndex)
 	if (nTokenIndex < 0) return;
 
     this->vecToken[nTokenIndex]->setEnabled(true);
-	this->vecToken[nTokenIndex]->setPos(this->vecPosition[nTokenIndex]);
+	this->vecToken[nTokenIndex]->setLocalPos(this->vecPosition[nTokenIndex]);
     this->vecText[nTextIndex]->setMessage(this->vecTextPlaceholder[nTextIndex]);
     this->vecText[nTextIndex]->setColor({ 255, 255, 255, 127 });
     this->vecTextAssigned[nTextIndex] = -1;
@@ -196,10 +205,18 @@ GemInputManager* GemInputManager::getInstance()
     return P_SHARED_INSTANCE;
 }
 
-void GemInputManager::reset()
+// forgets everything a Gem Input Screen registered (its pieces are about to be replaced or deleted)
+void GemInputManager::clearScreen()
 {
     vecToken.clear(); vecTextBox.clear(); vecText.clear(); vecTextPlaceholder.clear();
     vecUndo.clear(); vecTextAssigned.clear(); vecWinCon.clear(); vecPosition.clear();
     pSubmit = nullptr;
+    pScreen = nullptr;
+}
+
+void GemInputManager::reset()
+{
+    this->clearScreen();
     pGate = nullptr;
+    pScreen = nullptr;
 }

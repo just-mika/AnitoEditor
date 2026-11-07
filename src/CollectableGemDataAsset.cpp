@@ -82,3 +82,26 @@ void CollectableGemDataAsset::setGemPickedUp(std::string strGemName, bool bPicke
 {
 	this->mapGemData[strGemName].bPickedUp = bPickedUp;
 }
+
+void CollectableGemDataAsset::setGemTexts(const std::string& strGemName, const std::string& strTitle, const std::string& strTextBreak)
+{
+	auto it = this->mapGemData.find(strGemName);
+	if (it == this->mapGemData.end())
+		return;
+
+	std::string oneLine;
+	for (char c : strTextBreak)
+	{
+		if (c == '\n')
+		{
+			if (!oneLine.empty() && oneLine.back() != ' ')
+				oneLine += ' ';
+		}
+		else if (!(c == ' ' && !oneLine.empty() && oneLine.back() == ' '))
+			oneLine += c;
+	}
+
+	it->second.strTitle = strTitle;
+	it->second.strTextBreak = strTextBreak;
+	it->second.strText = oneLine;
+}

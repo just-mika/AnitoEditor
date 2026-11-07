@@ -48,6 +48,7 @@ public:
     static SequenceGameManager* getInstance();
     static void initialize();
     static void destroy();
+    ~SequenceGameManager();
     /* * * * * * * * * * * * * * * * * * * * */
 };
 

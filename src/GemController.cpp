@@ -17,34 +17,52 @@ void GemController::onAttach()
 
 void GemController::perform()
 {
-	if (this->pInput->getClicked())
+	if (this->pInput->getDragging())
 	{
-		this->pInput->setClicked(false);
-		if (this->pInput->isLeftClick())
+		Vector2D mouse = this->pInput->getMousePos();
+
+		// the press just started: remember where
+		if (!this->bPickedup)
 		{
-			this->pInput->setLeftClick(false);
+			this->bPickedup = true;
+			this->bMoved = false;
+			this->pressPos = mouse;
 		}
-		else if (this->pInput->isRightClick())
+
+		// only a drag once the pointer moved far enough, so a tap doesn't move or shrink the gem
+		if (!this->bMoved && (mouse - this->pressPos).SqrMagnitude() > kTapRadius * kTapRadius)
+			this->bMoved = true;
+
+		if (this->bMoved)
 		{
+			this->pOwner->setPos(mouse);
+			this->pOwner->setScale(this->holdingScale);
+		}
+	}
+	// the press ended: either we saw it held, or down and up landed in the same frame
+	else if (this->bPickedup || this->pInput->getClicked())
+	{
+		bool bDrag = this->bPickedup && this->bMoved;
+		this->bPickedup = false;
+
+		if (bDrag)
+		{
+			// a drag: GemInputManager checks which row it was dropped on
+			((GemInputToken*)this->pOwner)->setDropped(true);
+			this->pOwner->setScale(this->initialScale);
+		}
+		else
+		{
+			// a tap: show this gem's text (mouse and touch)
 			std::unordered_map <std::string, void*> mapParam;
 			std::string strName = pOwner->getName();
 			mapParam["GemName"] = static_cast<void*>(&strName);
 			EventBroadcaster::getInstance()->broadcast(EventKey::GEM_INPUT_PREVIEW, mapParam);
-			this->pInput->setRightClick(false);
-
 		}
 	}
 
-	if (this->pInput->getDragging())
-	{
-		this->bPickedup = true;
-		this->pOwner->setPos(this->pInput->getMousePos());
-		this->pOwner->setScale(this->holdingScale);
-	}
-	else if (this->bPickedup)
-	{
-		this->bPickedup = false;
-		((GemInputToken*)this->pOwner)->setDropped(true);
-		this->pOwner->setScale(this->initialScale);
-	}
+	// clicks are decided above; clear the flags so they don't carry over
+	this->pInput->setClicked(false);
+	this->pInput->setLeftClick(false);
+	this->pInput->setRightClick(false);
 }

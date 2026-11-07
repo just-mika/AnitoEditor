@@ -10,7 +10,20 @@
 #include "GemInputManager.h"
 #include "Player.h"
 #include "Gate.h"
+#include "Gem.h"
 #include "GUIToggle.h"
+#include "EmptyObject.h"
+#include "Sprite.h"
+#include "Text.h"
+#include "GUIButton.h"
+#include "ButtonInput.h"
+#include "SpriteRenderer.h"
+#include "ObjectiveManager.h"
+#include "ObjectiveButton_Controller.h"
+#include "JumpButtonController.h"
+#include "InteractButtonController.h"
+#include "VirtualJoystick.h"
+#include "AudioPlayer.h"
 
 PlatformerLoadedScene::PlatformerLoadedScene() : LoadedScene(SceneTag::PLATFORMER_LOADED_SCENE) {}
 PlatformerLoadedScene::~PlatformerLoadedScene() {}
@@ -19,6 +32,7 @@ void PlatformerLoadedScene::onLoadResources()
 {
     TextureManager* tm = TextureManager::getInstance();
 
+    tm->loadFromFolder("animations/level_intro", "Intro");
     tm->loadFromFolder("animations/player_idle", "player_idle");
     tm->loadFromFolder("animations/player_run", "player_run");
     tm->loadFromFolder("animations/player_jump", "player_jump");
@@ -53,10 +67,11 @@ void PlatformerLoadedScene::onLoadResources()
     tm->load("gems/gem_purple.png", "Gem_Purple");
     tm->load("gems/gem_red.png", "Gem_Red");
     tm->load("gems/blue_grab_gem.png", "Gem_Cyan_Grab");
-    tm->load("gems/green_grab_gem.png", "Gem_Green_grab");
+    tm->load("gems/green_grab_gem.png", "Gem_Green_Grab");
     tm->load("gems/orange_grab_gem.png", "Gem_Orange_Grab");
-    tm->load("gems/purple_grab_gem.png", "Gem_Purple_grab");
+    tm->load("gems/purple_grab_gem.png", "Gem_Purple_Grab");
     tm->load("gems/red_grab_gem.png", "Gem_Red_Grab");
+    tm->load("gems/colorless_grab_gem.png", "Gem_Colorless_Grab");
     tm->load("gems/blue_inventory_gem.png", "Gem_Cyan_Inventory");
     tm->load("gems/green_inventory_gem.png", "Gem_Green_Inventory");
     tm->load("gems/orange_inventory_gem.png", "Gem_Orange_Inventory");
@@ -133,6 +148,60 @@ void PlatformerLoadedScene::setUpSubsystems()
     PhysicsSystem::initialize();
     PlayerManager::initialize();
     GemInputManager::initialize();
+
+    GameObjectManager* gom = GameObjectManager::getInstance();
+    this->vecHUD.clear();   //last load's objects were deleted with that scene
+
+    // ---- objective: manager, world arrow, HUD button (scene-made, not level data) ----
+    EmptyObject* pObjectiveObj = new EmptyObject("ObjectiveManager_Object");
+    this->pObjectiveManager = new ObjectiveManager();
+    pObjectiveObj->attachComponent(this->pObjectiveManager);
+    pObjectiveObj->setIsSystemObject(true);
+    gom->addObject(pObjectiveObj);
+    this->pObjectiveManager->initialize();   //registers for OBJECTIVE_BUTTON
+
+    Sprite* pArrow = new Sprite("Arrow", "Arrow", Vector2D(1077.777f, 463.686f), 1.0f);
+    pArrow->setScale(Vector2D(.8f));
+    pArrow->setIsSystemObject(true);
+    gom->addObject(pArrow);
+    pArrow->setEnabled(false);   //shown while it points somewhere
+    this->vecHUD.push_back(pArrow);
+
+    // ---- mobile controls (touch only) ----
+#if defined(SDL_PLATFORM_ANDROID)
+    GUIButton* pJumpBtn = new GUIButton("JumpBtn", "jump_button");
+    pJumpBtn->setIsScreenObject(true);
+    pJumpBtn->setIsSystemObject(true);
+    gom->addObject(pJumpBtn);
+    pJumpBtn->setPos(Vector2D(1750, 900));
+    pJumpBtn->setScale(Vector2D(.15f));
+    pJumpBtn->attachComponent(new JumpButtonController());
+    this->vecHUD.push_back(pJumpBtn);
+
+    // PlayerController finds this by name ("InteractBtn") and shows it near interactables
+    GUIButton* pInteractBtn = new GUIButton("InteractBtn", "interact_button");
+    pInteractBtn->setIsScreenObject(true);
+    pInteractBtn->setIsSystemObject(true);
+    gom->addObject(pInteractBtn);
+    pInteractBtn->setPos(Vector2D(1550, 900));
+    pInteractBtn->setScale(Vector2D(.15f));
+    pInteractBtn->attachComponent(new InteractButtonController());
+    pInteractBtn->setEnabled(false);
+    this->vecHUD.push_back(pInteractBtn);
+
+    Sprite* pJoyBase = new Sprite("VirtualJoystickBase", "joystick_base", Vector2D(200.0f, 900.0f), Vector2D(0.25f));
+    pJoyBase->setIsScreenObject(true);
+    pJoyBase->setIsSystemObject(true);
+    Sprite* pJoyThumb = new Sprite("VirtualJoystickThumb", "joystick", Vector2D(0.0f, 0.0f), Vector2D(0.5f));
+    pJoyThumb->setIsScreenObject(true);
+    pJoyBase->attachChild(pJoyThumb);
+    gom->addObject(pJoyBase);
+    pJoyBase->attachComponent(new VirtualJoystick(150.0f));
+    this->vecHUD.push_back(pJoyBase);
+#endif
+
+    // ---- music (the editor keeps it muted until Play) ----
+    AudioManager::getInstance()->play(new AudioPlayer("Jungle", "BGM", AudioGroupTag::MUSIC, OnAudioFinished::LOOP));
 }
 
 // Called after clearScene() and BEFORE the level's objects are built.
@@ -147,23 +216,26 @@ void PlatformerLoadedScene::resetSubsystems()
     CollectableGemDataAsset* da = (CollectableGemDataAsset*)
         DataAssetManager::getInstance()->getDataAsset("CollectableGemDataAsset");
     if (da)
-        for (const char* g : { "Gem_Cyan", "Gem_Green", "Gem_Orange", "Gem_Purple", "Gem_Red" })
-            da->setGemPickedUp(g, false);
+        da->initialize();
 }
 
 void PlatformerLoadedScene::rewire()
 {
     GameObjectManager* gom = GameObjectManager::getInstance();
 
+    std::vector<AGameObject*> all = gom->getAllObjectsRecursively();
+
+    CollectableGemDataAsset* da = (CollectableGemDataAsset*)
+        DataAssetManager::getInstance()->getDataAsset("CollectableGemDataAsset");
+
     bool havePlayer = false, haveGate = false;
-    for (AGameObject* o : gom->getAllObjects())
+    for (AGameObject* o : all)
     {
         if (!havePlayer)
             if (Player* p = dynamic_cast<Player*>(o))
             {
                 PlayerManager::getInstance()->setPlayer(p);
                 havePlayer = true;
-                continue;
             }
         if (!haveGate)
             if (Gate* g = dynamic_cast<Gate*>(o))
@@ -171,5 +243,9 @@ void PlatformerLoadedScene::rewire()
                 GemInputManager::getInstance()->addGate(g);
                 haveGate = true;
             }
+
+        if (Gem* gem = dynamic_cast<Gem*>(o))
+            if (da && (!gem->getPickupText().empty() || !gem->getPickupText().empty()))
+                da->setGemTexts(gem->getName(), gem->getPickupTitle(), gem->getPickupText());
     }
 }

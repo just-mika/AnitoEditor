@@ -101,3 +101,9 @@ std::string ObjectiveIntro::getListenerOwnerName()
 {
 	return this->strName;
 }
+
+// hidden (dismissed, or disabled in the level): give the other screens their input back
+void ObjectiveIntro::onDisable()
+{
+	EventBroadcaster::getInstance()->enableAllListeners();
+}

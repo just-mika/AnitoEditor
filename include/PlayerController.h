@@ -35,5 +35,9 @@ public:
 
 	void setMoveSpeed(float fMoveSpeed);
 	void setJumpForce(float fJumpForce);
+
+	float getMoveSpeed() const { return fMoveSpeed; }
+	float getJumpForce() const { return fJumpForce; }
+	void drawInspector() override;
 };
 

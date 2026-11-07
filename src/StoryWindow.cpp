@@ -95,6 +95,9 @@ Text* StoryWindow::getTitleText()
 
 void StoryWindow::onEventTrigger(std::unordered_map<std::string, void*> mapParameter)
 {
+	// inside a disabled group: not in play (its own enabled flag just means open/closed)
+	if (this->getParent() && !this->getParent()->isGloballyEnabled()) return;
+
 	bool bFromToggle = false;
 	Text* pText = (Text*)this->findChildByName("ParentBG")->findChildByName("Message");
 	if (mapParameter.find("Sender") != mapParameter.end())
@@ -106,15 +109,16 @@ void StoryWindow::onEventTrigger(std::unordered_map<std::string, void*> mapParam
 
 	if (!this->bEnabled)
 	{
-		textStartPos = pText->getLocalPos();   //remember the editor-placed position
+		textStartPos = pText->getLocalPos();
+		this->vecRestore = EventBroadcaster::getInstance()->getEnabledListeners();   //remember who was active
 		EventBroadcaster::getInstance()->disableOtherListenerExcept(this);
 		this->setEnabled(true);
 	}
 	else if (this->bEnabled && bFromToggle)
 	{
 		this->setEnabled(false);
-		pText->setLocalPos(textStartPos);      //undo the scrolling
-		EventBroadcaster::getInstance()->enableAllListeners();
+		pText->setLocalPos(textStartPos);
+		EventBroadcaster::getInstance()->restoreEnabledListeners(this->vecRestore);   //back to how it was
 	}
 }
 

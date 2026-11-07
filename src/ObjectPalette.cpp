@@ -205,8 +205,19 @@ void ObjectPalette::draw()
                 {
                     for (const std::string& v : item.variants)
                     {
-                        if (GameObjectManager::getInstance()->findObjectByName(v))
-                            continue;                                   // already in the level
+                        // already in the level? (match the type too: the inventory's
+                        // buttons are also named Gem_Cyan etc.)
+                        bool bPlaced = false;
+                        for (AGameObject* o : GameObjectManager::getInstance()->getAllObjectsRecursively())
+                        {
+                            const char* key = ObjectFactory::typeKeyOf(o);
+                            if (key && item.typeKey == key && o->getName() == v)
+                            {
+                                bPlaced = true;
+                                break;
+                            }
+                        }
+                        if (bPlaced) continue; // already in the level
 
                         ImGui::PushID((i * 100) + (int)(&v - &item.variants[0]));
                         if (shown % columns != 0) ImGui::SameLine();
