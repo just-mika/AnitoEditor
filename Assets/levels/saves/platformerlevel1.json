@@ -153,7 +153,7 @@
             0.5
           ],
           "position": [
-            7161.55078125,
+            7066.55078125,
             106.56112670898438
           ],
           "rotation": 0.0,
@@ -389,6 +389,324 @@
     },
     {
       "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "color": [
+                    0,
+                    0,
+                    0,
+                    255
+                  ],
+                  "enabled": true,
+                  "font": "JainiPurva-Regular.ttf",
+                  "fontSize": 35,
+                  "isScreenObject": true,
+                  "name": "ObjectiveLabelText",
+                  "position": [
+                    12.499999046325684,
+                    -25.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    1.3888887166976929,
+                    5.0
+                  ],
+                  "text": "Objective: Go through door\n",
+                  "type": "text"
+                }
+              ],
+              "color": [
+                238,
+                202,
+                161,
+                160
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "ObjectiveBtn",
+              "onClick": "Find Objective",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                73.7752685546875,
+                106.74783325195313
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.7200000286102295,
+                0.20000000298023224
+              ],
+              "texture": "Square.png",
+              "type": "gui_button"
+            },
+            {
+              "children": [
+                {
+                  "color": [
+                    90,
+                    51,
+                    43,
+                    255
+                  ],
+                  "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "ObjectiveArrow",
+                  "pivot": [
+                    0.5,
+                    0.5
+                  ],
+                  "position": [
+                    20.689655303955078,
+                    0.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    0.9310345649719238,
+                    0.9523810148239136
+                  ],
+                  "texture": "Square.png",
+                  "type": "sprite"
+                },
+                {
+                  "color": [
+                    238,
+                    202,
+                    161,
+                    255
+                  ],
+                  "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "ObjectiveLabelBG",
+                  "pivot": [
+                    0.5,
+                    0.5
+                  ],
+                  "position": [
+                    144.8275909423828,
+                    -4.761904716491699
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    0.3448275923728943,
+                    0.4761905074119568
+                  ],
+                  "texture": "GUI/ArrowVector.png",
+                  "type": "sprite"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                0
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "ObjectiveHide",
+              "onClick": "Show/Hide Objective",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -184.2247314453125,
+                106.74783325195313
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.28999999165534973,
+                0.20999999344348907
+              ],
+              "texture": "Square.png",
+              "type": "gui_button"
+            }
+          ],
+          "enabled": true,
+          "isScreenObject": true,
+          "name": "ObjectiveBar",
+          "position": [
+            -1617.25927734375,
+            200.23599243164063
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "type": "empty"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "color": [
+                    0,
+                    0,
+                    0,
+                    255
+                  ],
+                  "enabled": true,
+                  "font": "JainiPurva-Regular.ttf",
+                  "fontSize": 35,
+                  "isScreenObject": true,
+                  "name": "ObjectiveLabelText",
+                  "position": [
+                    -45.52120590209961,
+                    -23.739166259765625
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    1.3888887166976929,
+                    5.0
+                  ],
+                  "text": "Objective: Find gems",
+                  "type": "text"
+                }
+              ],
+              "color": [
+                238,
+                202,
+                161,
+                160
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "ObjectiveBtn",
+              "onClick": "Find Objective",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                73.7752685546875,
+                106.74783325195313
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.7200000286102295,
+                0.20000000298023224
+              ],
+              "texture": "Square.png",
+              "type": "gui_button"
+            },
+            {
+              "children": [
+                {
+                  "color": [
+                    90,
+                    51,
+                    43,
+                    255
+                  ],
+                  "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "ObjectiveArrow",
+                  "pivot": [
+                    0.5,
+                    0.5
+                  ],
+                  "position": [
+                    20.689655303955078,
+                    0.0
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    0.9310345649719238,
+                    0.9523810148239136
+                  ],
+                  "texture": "Square.png",
+                  "type": "sprite"
+                },
+                {
+                  "color": [
+                    238,
+                    202,
+                    161,
+                    255
+                  ],
+                  "enabled": true,
+                  "flipX": false,
+                  "flipY": false,
+                  "isScreenObject": true,
+                  "name": "ObjectiveLabelBG",
+                  "pivot": [
+                    0.5,
+                    0.5
+                  ],
+                  "position": [
+                    144.8275909423828,
+                    -4.761904716491699
+                  ],
+                  "rotation": 0.0,
+                  "scale": [
+                    0.3448275923728943,
+                    0.4761905074119568
+                  ],
+                  "texture": "GUI/ArrowVector.png",
+                  "type": "sprite"
+                }
+              ],
+              "color": [
+                255,
+                255,
+                255,
+                0
+              ],
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "isScreenObject": true,
+              "name": "ObjectiveHide",
+              "onClick": "Show/Hide Objective",
+              "pivot": [
+                0.5,
+                0.5
+              ],
+              "position": [
+                -184.2247314453125,
+                106.74783325195313
+              ],
+              "rotation": 0.0,
+              "scale": [
+                0.28999999165534973,
+                0.20999999344348907
+              ],
+              "texture": "Square.png",
+              "type": "gui_button"
+            }
+          ],
+          "enabled": true,
+          "isScreenObject": true,
+          "name": "ObjectiveBar2",
+          "position": [
+            -1617.4840087890625,
+            329.98382568359375
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ],
+          "type": "empty"
+        },
         {
           "children": [
             {
@@ -2672,9 +2990,9 @@
               "children": [
                 {
                   "color": [
-                    0,
-                    0,
-                    0,
+                    255,
+                    255,
+                    255,
                     255
                   ],
                   "enabled": true,
@@ -2727,9 +3045,9 @@
               "children": [
                 {
                   "color": [
-                    0,
-                    0,
-                    0,
+                    255,
+                    255,
+                    255,
                     255
                   ],
                   "enabled": true,
@@ -2781,9 +3099,9 @@
               "children": [
                 {
                   "color": [
-                    0,
-                    0,
-                    0,
+                    255,
+                    255,
+                    255,
                     255
                   ],
                   "enabled": true,

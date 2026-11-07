@@ -37,6 +37,6 @@ public:
 	std::string getListenerOwnerName() override;
 
 	void onDisable() override;
-
+	void blockOthers();   //disable every other listener (called once the level is fully built)
 };
 

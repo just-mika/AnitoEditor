@@ -8,7 +8,8 @@ const GUIToggle::ClickOption GUIToggle::OPTIONS[] = {
 	{ "Inventory", EventKey::INVENTORY_SCREEN },
 	{ "Objective", EventKey::OBJECTIVE_SCREEN },
 	{ "Gem Input", EventKey::GEM_INPUT_SCREEN },
-	{ "Find Objective", EventKey::OBJECTIVE_BUTTON }
+	{ "Find Objective", EventKey::OBJECTIVE_BUTTON },
+	{ "Show/Hide Objective", EventKey::TOGGLE_OBJECTIVE }
 };
 const int GUIToggle::OPTION_COUNT = std::size(OPTIONS);
 
@@ -27,9 +28,24 @@ void GUIToggle::perform()
 	ButtonInput* pInput = (ButtonInput*)pOwner->findComponentByName("ButtonInput");
 	if (pInput && pInput->getClicked())
 	{
-		std::cout << "Click" << std::endl;
+		//std::cout << "Click" << std::endl;
 
 		pInput->setClicked(false);
+
+		// show/hide the level's objective button(s): any button set to "Find Objective"
+		if (this->EKey == EventKey::TOGGLE_OBJECTIVE)
+		{
+			if (EventBroadcaster::getInstance()->isBlocking())
+				return;
+
+			for (AGameObject* pObject : GameObjectManager::getInstance()->getAllObjectsRecursively())
+			{
+				GUIToggle* pToggle = (GUIToggle*)pObject->findComponentByName("GUIToggle");
+				if (pToggle && pToggle->getKey() == EventKey::OBJECTIVE_BUTTON)
+					pObject->setEnabled(!pObject->getEnabled());
+			}
+			return;
+		}
 		std::unordered_map <std::string, void*> mapParam;
 		std::string strName = pOwner->getName();
 

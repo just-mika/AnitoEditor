@@ -4,6 +4,8 @@
 #include "SpriteRenderer.h"
 #include "DataAssetManager.h"
 #include "EventBroadcaster.h"
+#include "GUIToggle.h"
+
 void GemInputManager::perform()
 {
     // another screen is on top (the story, opened with Recall): ignore clicks and drops meant for it
@@ -74,6 +76,15 @@ void GemInputManager::perform()
         {
             std::cout << "Win" << std::endl;
             this->pGate->gateOpen();
+
+            // the objective is done: hide the objective bar (its arrow button and its show/hide button)
+            for (AGameObject* pObject : GameObjectManager::getInstance()->getAllObjectsRecursively())
+            {
+                GUIToggle* pToggle = (GUIToggle*)pObject->findComponentByName("GUIToggle");
+                if (pToggle && (pToggle->getKey() == EventKey::OBJECTIVE_BUTTON ||
+                    pToggle->getKey() == EventKey::TOGGLE_OBJECTIVE))
+                    pObject->setEnabled(false);
+            }
         }
         pSubmit->setClicked(false);
         std::unordered_map <std::string, void*> mapParam;

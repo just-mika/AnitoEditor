@@ -24,6 +24,7 @@
 #include "InteractButtonController.h"
 #include "VirtualJoystick.h"
 #include "AudioPlayer.h"
+#include "ObjectiveIntro.h"
 
 PlatformerLoadedScene::PlatformerLoadedScene() : LoadedScene(SceneTag::PLATFORMER_LOADED_SCENE) {}
 PlatformerLoadedScene::~PlatformerLoadedScene() {}
@@ -161,7 +162,7 @@ void PlatformerLoadedScene::setUpSubsystems()
     this->pObjectiveManager->initialize();   //registers for OBJECTIVE_BUTTON
 
     Sprite* pArrow = new Sprite("Arrow", "Arrow", Vector2D(1077.777f, 463.686f), 1.0f);
-    pArrow->setScale(Vector2D(.8f));
+    pArrow->setScale(Vector2D(.5f));
     pArrow->setIsSystemObject(true);
     gom->addObject(pArrow);
     pArrow->setEnabled(false);   //shown while it points somewhere
@@ -245,7 +246,34 @@ void PlatformerLoadedScene::rewire()
             }
 
         if (Gem* gem = dynamic_cast<Gem*>(o))
-            if (da && (!gem->getPickupText().empty() || !gem->getPickupText().empty()))
+            if (da && (!gem->getPickupTitle().empty() || !gem->getPickupText().empty()))
                 da->setGemTexts(gem->getName(), gem->getPickupTitle(), gem->getPickupText());
     }
+
+    // the level was rebuilt: the objective manager must forget the old Player
+    if (this->pObjectiveManager)
+        this->pObjectiveManager->resetSceneRefs();
+
+    if (this->pObjectiveManager)
+    {
+        EventBroadcaster::getInstance()->removeListener(this->pObjectiveManager);
+        EventBroadcaster::getInstance()->registerListener(this->pObjectiveManager);
+        
+        if (EventBroadcaster::getInstance()->isBlocking())
+            this->pObjectiveManager->setListenerEnabled(false);
+    	
+    	this->pObjectiveManager->resetSceneRefs();
+    }
+
+    // an open objective intro blocks everything else; it blocked when it was created,
+// so re-apply now that every listener (screens, ObjectiveManager) is registered
+    for (AGameObject* o : gom->getAllObjectsRecursively())
+        if (ObjectiveIntro* pIntro = dynamic_cast<ObjectiveIntro*>(o))
+            if (pIntro->isGloballyEnabled())
+                pIntro->blockOthers();
+
+    // scene-made HUD (the arrow, mobile controls) draws on top of the level:
+    // system objects sit at the front of the list, so move them to the end
+    for (AGameObject* pHUD : this->vecHUD)
+        gom->moveObject(pHUD, nullptr, (int)gom->getAllObjects().size());
 }

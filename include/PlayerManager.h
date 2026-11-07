@@ -22,6 +22,7 @@ public:
         pPlayer = nullptr;
         pController = nullptr;
     }
+    Player* getPlayer() const { return pPlayer; }
 
     /* * * * * * * * * * * * * * * * * * * * *
      *       SINGLETON-RELATED CONTENT       *
