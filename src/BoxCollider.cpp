@@ -60,8 +60,6 @@ bool BoxCollider::isColliding(ACollider* pCollider)
 	fBotB = CBoundsB.y;
 	fTopB = CBoundsB.y + CBoundsB.h;
 
-	// resting contact: a gap smaller than this still counts as touching
-	// (positions like 921.6 aren't exact in float, so "exactly on top" flickers otherwise)
 	const float kContact = 0.5f;
 
 	bool bIntersectX = fLeftA <= fRightB && fRightA >= fLeftB;
@@ -80,7 +78,7 @@ bool BoxCollider::isColliding(ACollider* pCollider)
 			if (fBot < fTop)
 			{
 				this->bCollideBottom = true;
-				this->intersection.y = std::max(0.0f, fTopB - fBotA);   //just touching: no push
+				this->intersection.y = std::max(0.0f, fTopB - fBotA);
 			}
 			else if (fTop < fBot)
 			{
@@ -180,7 +178,6 @@ bool BoxCollider::isCollidedTop() const
 	return this->bCollideTop;
 }
 
-// BoxCollider.cpp  (needs #include "imgui.h")
 void BoxCollider::drawInspector()
 {
 	float s[2] = { size.x, size.y };

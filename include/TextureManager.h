@@ -8,9 +8,11 @@
 class TextureManager
 {
 private:
+    SDL_Renderer* pRenderer = NULL;
+
     std::unordered_map<std::string, std::vector<SDL_Texture*>> mapTexture;
     std::vector<SDL_Texture*> vecTexture;
-    SDL_Renderer* pRenderer = NULL;
+    
     std::unordered_map<std::string, std::string> mapKeyToPath;   //key -> the file (or folder) it was loaded from
     std::unordered_map<std::string, std::string> mapPathToKey;   //lowercase path -> key
     static std::string lowerPath(const std::string& path);
@@ -19,14 +21,16 @@ public:
     void load(std::string assetPath, std::string strName);
     void loadFromFolder(std::string strPath, std::string strName);
     void loadFromText(std::string strName, std::string fontType, int nFontSize, std::string textureText, SDL_Color textColor);
-    //void loadFromFolder(std::string strFolderPath, std::string strName);
+
+    SDL_Texture* get(const std::string& strName);
+
     void unload(std::string strName);
     std::vector<SDL_Texture*> getTexture(std::string strName, int nStart = -1, int nEnd = -1);
-    SDL_Texture* get(const std::string& strName);
     std::vector<std::string> getTextureNames();
+
     std::string getKey(SDL_Texture* pTexture);
-    std::string getPathOfKey(const std::string& key) const;   //"" if unknown
-    std::string getKeyOfPath(const std::string& path) const;  //"" if that file isn't loaded
+    std::string getPathOfKey(const std::string& key) const;
+    std::string getKeyOfPath(const std::string& path) const;
 
     /* * * * * * * * * * * * * * * * * * * * *
      *       SINGLETON-RELATED CONTENT       *

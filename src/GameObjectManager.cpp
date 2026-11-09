@@ -3,11 +3,10 @@
 // ---------------------------------------------------------------------------
 
 #include "GameObjectManager.h"
+#include "ObjectFactory.h"
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-
-#include "ObjectFactory.h"
 
 // ---------------------------------------------------------------------------
 // Per-frame lifecycle
@@ -65,25 +64,25 @@ void GameObjectManager::cleanUpDeletedObjects()
 
         if (AGameObject* pParent = pObject->getParent())
         {
-            // a child: its parent's list is the only place that holds it,
-            // so take it out of there (otherwise the parent deletes it again later)
+            //child object, detach from parent
             pParent->detachChild(pObject);
         }
         else
         {
-            // a root: remove it from the ordered vector (O(G) erase)
-            auto vecIt = std::find(vecGameObject.begin(), vecGameObject.end(), pObject);
+            //root object, remove from GameObject list
+        	auto vecIt = std::find(vecGameObject.begin(), vecGameObject.end(), pObject);
             if (vecIt != vecGameObject.end())
                 vecGameObject.erase(vecIt);
 
             // and from the name map, only if the entry is this object
-            // (another root with the same name must not lose its entry)
             auto mapIt = mapGameObject.find(pObject->getName());
             if (mapIt != mapGameObject.end() && mapIt->second == pObject)
                 mapGameObject.erase(mapIt);
         }
 
         delete pObject;
+        // Note: pObject is a local copy; setting it to nullptr here would be
+        // a no-op on the original pointer, so we omit the misleading line.
     }
 }
 
@@ -158,6 +157,20 @@ AGameObject* GameObjectManager::findObjectByName(const std::string& strName) con
     return nullptr;
 }
 
+AGameObject* GameObjectManager::findObjectInTree(const std::string& strName) const
+{
+    // roots first (fast map lookup)
+    if (AGameObject* pRoot = findObjectByName(strName))
+        return pRoot;   //roots: fast map lookup
+
+    for (AGameObject* o : getAllObjectsRecursively())
+        if (o->getName() == strName)
+            return o;
+
+    return nullptr;
+}
+
+
 // setObjectName: rename an existing object in both containers.
 // Complexity: O(1) average.
 void GameObjectManager::setObjectName(const std::string& strName,
@@ -185,18 +198,6 @@ std::vector<AGameObject*>& GameObjectManager::getAllObjects()
     return vecGameObject;
 }
 
-AGameObject* GameObjectManager::findObjectInTree(const std::string& strName) const
-{
-    // roots first (fast map lookup)
-    if (AGameObject* pRoot = findObjectByName(strName))
-        return pRoot;   //roots: fast map lookup
-
-    for (AGameObject* o : getAllObjectsRecursively())
-        if (o->getName() == strName)
-            return o;
-
-    return nullptr;
-}
 
 std::vector<AGameObject*> GameObjectManager::getAllObjectsRecursively() const
 {

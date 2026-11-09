@@ -22,7 +22,6 @@ Animation::Animation(
 
 void Animation::play()
 {
-	//a finished one-shot animation would otherwise resume past its last frame
 	if (this->bFinished)
 		this->stop();
 
@@ -58,8 +57,10 @@ void Animation::step(float fDeltaTime)
 	switch (this->EType)
 	{
 	case AnimationType::ONCE:
-		if (this->nFrameIndex < nLast) this->nFrameIndex++;
-		if (this->nFrameIndex >= nLast) this->bFinished = true;
+		if (this->nFrameIndex < nLast) 
+			this->nFrameIndex++;
+		if (this->nFrameIndex >= nLast) 
+			this->bFinished = true;
 		break;
 
 	case AnimationType::LOOP:
@@ -70,15 +71,19 @@ void Animation::step(float fDeltaTime)
 	case AnimationType::YOYO_ONCE:
 		if (!this->bIsReverse)
 		{
-			if (this->nFrameIndex < nLast) this->nFrameIndex++;
-			if (this->nFrameIndex >= nLast) this->bIsReverse = true;
+			if (this->nFrameIndex < nLast) 
+				this->nFrameIndex++;
+			if (this->nFrameIndex >= nLast) 
+				this->bIsReverse = true;
 		}
 		else
 		{
-			if (this->nFrameIndex > 0) this->nFrameIndex--;
+			if (this->nFrameIndex > 0) 
+				this->nFrameIndex--;
 			if (this->nFrameIndex == 0)
 			{
-				if (this->EType == AnimationType::YOYO) this->bIsReverse = false;
+				if (this->EType == AnimationType::YOYO) 
+					this->bIsReverse = false;
 				else this->bFinished = true;   //YOYO_ONCE: back at the start, done
 			}
 		}
@@ -93,7 +98,9 @@ bool Animation::finished() const
 
 void Animation::setFrameRate(Uint8 nFrameRate)
 {
-	this->nFrameRate = (nFrameRate > 0) ? nFrameRate : 1;
+	if (nFrameRate > 0)
+		this->nFrameRate = nFrameRate;
+	else this->nFrameRate = 1;
 }
 
 void Animation::setType(AnimationType EType)
@@ -123,8 +130,10 @@ std::string Animation::getName() const
 
 SDL_Texture* Animation::getCurrentFrame() const
 {
-	if (this->vecFrames.empty()) return NULL;
-	if (this->nFrameIndex >= this->vecFrames.size()) return this->vecFrames.back();
+	if (this->vecFrames.empty()) 
+		return NULL;
+	if (this->nFrameIndex >= this->vecFrames.size()) 
+		return this->vecFrames.back();
 	return this->vecFrames[this->nFrameIndex];
 }
 

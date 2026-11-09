@@ -22,32 +22,32 @@ private:
     bool bCropEnabled;
     float fScrollOffset;
     float fViewHeight;
-
     int nWrapWidth = 0;
 
 public:
 	TextRenderer();
 	~TextRenderer();
+	void initialize(); // (when all resources are guaranteed to be loaded)
+    void onAttach() override; 
 
-	void initialize(); // (when all resources are guaranteed to be loaded).
 	void perform() override;
     void drawWidget() override;
+
     void loadFromText(std::string fontType, int nFontSize, std::string strText, SDL_Color textColor);
     void resetText();
-    void onAttach() override;
-    float getTextHeight();
-    void setCropEnabled (bool bbCropEnabled);
-    SDL_FRect getRect() const;
-public:
-    void setPivot(Vector2D pivot);
-    float getScrollOffset();
-    void setScrollOffset(float fOffset);
-    void setViewHeight(float fViewHeight);
-    float getViewHeight();
     void setColor(SDL_Color color) override;
-    Vector2D getTexSize() const { return texSize; }
 
+    void setPivot(Vector2D pivot);
     void setWrapWidth(int nWidth) { nWrapWidth = nWidth; }
     int getWrapWidth() const { return nWrapWidth; }
+    Vector2D getTexSize() const { return texSize; }
+    float getTextHeight();
+    SDL_FRect getRect() const;
+
+    void setCropEnabled (bool bbCropEnabled);
+    void setViewHeight(float fViewHeight);
+    float getViewHeight();
+    void setScrollOffset(float fOffset);
+    float getScrollOffset();
 };
 

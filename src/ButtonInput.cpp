@@ -66,8 +66,7 @@ void ButtonInput::perform()
         }
     }
 
-    // releasing outside still ends the press (otherwise it stays "held"
-    // and keeps dragging); it just doesn't count as a click
+    //releasing outside ends press
     if (!this->contains() &&
         (eEvent->type == SDL_EVENT_MOUSE_BUTTON_UP || eEvent->type == SDL_EVENT_FINGER_UP))
     {
@@ -143,9 +142,6 @@ void ButtonInput::onMouseButtonDown(Uint8 mouseButton)
 
 void ButtonInput::onMouseButtonUp(Uint8 mouseButton)
 {
-    // a click needs the press to start here too:
-    // releasing over this object after pressing somewhere else
-    // (e.g. dropping another token on it) isn't a click
     bool bWasPressed = this->bHolding;
 
     this->bHolding = false;
@@ -157,9 +153,13 @@ void ButtonInput::onMouseButtonUp(Uint8 mouseButton)
     this->bClicked = true;
 
     if (mouseButton == SDL_BUTTON_RIGHT)
+    {
         this->bRightClick = true;
+    }
     else if (mouseButton == SDL_BUTTON_LEFT)
+    {
         this->bLeftClick = true;
+    }
 }
 
 /*

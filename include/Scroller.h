@@ -6,27 +6,27 @@
 class Scroller:public AComponent
 {
 	private:
+		static constexpr float kDragThreshold = 10.0f;
 		Text* pScrollableText;
-		bool bDragging;
-		float fPrevMouseY;
-		float fPrevMouseX;
 		bool bVert;
 		bool bHori;
 
-		float fTopY;    //the text's starting local y (the top limit)
-		bool bHasTop;   //fTopY has been recorded
+		bool bDragging; //mouse is down on the text
+		bool bScrolling; 
+		float fPressY;
+		float fPrevMouseY;
+		float fPrevMouseX;
+		
 
-		bool bScrolling;              //moved past the threshold during this press
-		float fPressY;                //where the press started (y)
-		static constexpr float kDragThreshold = 10.0f;
+		float fTopY;    //the text's starting local y (the top limit)
+		bool bHasTop;   //if fTopY has been recorded
+
 	public:
 		Scroller(std::string strName, Text* pScrollableText);
 		~Scroller();
 	public:
-
 		// Inherited via AComponent
 		void perform() override;
-	public:
 		void setHori(bool bHori);
 		void setVert(bool bVert);
 };

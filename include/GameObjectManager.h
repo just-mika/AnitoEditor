@@ -43,12 +43,16 @@ public:
 
     // Returns nullptr (not a side-effecting operator[]) when name is absent.
     AGameObject* findObjectByName(const std::string& strName) const;
+    // like findObjectByName, but also searches inside groups (the name map only holds roots)
+    AGameObject* findObjectInTree(const std::string& strName) const;
+
 
     // Renames an existing object; no-op (with error log) if strName not found.
     void setObjectName(const std::string& strName, const std::string& strNewName);
 
     // O(1) � callers that iterate will pay O(G).
     std::vector<AGameObject*>& getAllObjects();
+    std::vector<AGameObject*> getAllObjectsRecursively() const;
 
     // --- Hierarchy editing (used by the editor's HierarchyScreen) -------------
     // Draw order is list order: index 0 is drawn first (behind), the last index is
@@ -66,11 +70,6 @@ public:
     // World position/scale/rotation are preserved. No-op if !canMoveObject().
     void moveObject(AGameObject* pObject, AGameObject* pNewParent, int nIndex);
     bool reparentObject(AGameObject* pObject, AGameObject* pNewParent);
-
-    // like findObjectByName, but also searches inside groups (the name map only holds roots)
-    AGameObject* findObjectInTree(const std::string& strName) const;
-
-    std::vector<AGameObject*> getAllObjectsRecursively() const;
 
     /* * * * * * * * * * * * * * * * * * * * *
      *       SINGLETON-RELATED CONTENT       *
