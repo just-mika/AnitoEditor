@@ -115,7 +115,7 @@ void PlatformerLoadedScene::onLoadResources()
 void PlatformerLoadedScene::onUnloadResources()
 {
     TextureManager* tm = TextureManager::getInstance();
-    for (const char* key : { "player_idle", "player_run", "player_jump", "player_fall", "Pause", "Pickup",
+    for (const char* key : { "Intro","player_idle", "player_run", "player_jump", "player_fall", "Pause", "Pickup",
                              "Inventory", "End_Level", "Trees_BG", "Gate", "Statue_Carabao",
                              "Grass_Tile_BC", "Grass_Tile_BL", "Grass_Tile_BR", "Grass_Tile_MC", "Grass_Tile_ML",
                              "Grass_Tile_MR", "Grass_Tile_TC", "Grass_Tile_TL", "Grass_Tile_TR",
@@ -256,7 +256,7 @@ void PlatformerLoadedScene::rewire()
 
     if (this->pObjectiveManager)
     {
-        EventBroadcaster::getInstance()->removeListener(this->pObjectiveManager);
+        EventBroadcaster::getInstance()->unregisterListener(this->pObjectiveManager);
         EventBroadcaster::getInstance()->registerListener(this->pObjectiveManager);
         
         if (EventBroadcaster::getInstance()->isBlocking())
