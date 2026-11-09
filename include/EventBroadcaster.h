@@ -17,16 +17,18 @@ class EventBroadcaster {
         void registerListener(EventListener* pListener);
         void unregisterListener(EventListener* pListener);
         void unregisterAllListeners();
+
         void broadcast(EventKey EKey, std::unordered_map<std::string, void*> mapParameter = {});
-        void disableOtherListenerExcept(EventListener* pListenerExcluded);
+        
+		void disableOtherListenerExcept(EventListener* pListenerExcluded);
         void enableListener(std::string strName);
         void enableAllListeners();
-        void removeListener(EventListener* pListener);   //safe to call from a destructor
-        bool isBlocking();   //true while a screen has disabled the other listeners
-        void enableListenersWithKey(EventKey key);   //e.g. let the Story through while another screen is open
-        std::vector<EventListener*> getEnabledListeners();
-        void restoreEnabledListeners(const std::vector<EventListener*>& vecEnabled);   //exactly these enabled, the rest disabled
+        void enableListenersWithKey(EventKey key);  
 
+        std::vector<EventListener*> getEnabledListeners();
+        void restoreEnabledListeners(const std::vector<EventListener*>& vecEnabled);
+        
+		bool isBlocking() const;
     private:
         int findListener(EventListener* pListener, std::vector<EventListener*> vecListener = {});
 

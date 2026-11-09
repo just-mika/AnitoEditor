@@ -6,16 +6,14 @@ void EventBroadcaster::registerListener(EventListener* pListener) {
     this->mapListener[EKey].push_back(pListener);
     this->vecListener.push_back(pListener);
 }
-void EventBroadcaster::unregisterListener(EventListener* pListener) {
-    EventKey EKey = pListener->getKey();
-    auto& vec = this->mapListener[EKey];
-    int nIndex = this->findListener(pListener, vec);
-    if (nIndex != -1)
-        vec.erase(vec.begin() + nIndex);
 
-    nIndex = this->findListener(pListener);
-    if (nIndex != -1)
-        this->vecListener.erase(this->vecListener.begin() + nIndex);
+void EventBroadcaster::unregisterListener(EventListener* pListener) {
+    for (auto& entry : this->mapListener) {
+        auto& vec = entry.second;
+        vec.erase(std::remove(vec.begin(), vec.end(), pListener), vec.end());
+    }
+    this->vecListener.erase(std::remove(this->vecListener.begin(), this->vecListener.end(), pListener),
+        this->vecListener.end());
 }
 
 void EventBroadcaster::unregisterAllListeners() {
@@ -77,22 +75,8 @@ int EventBroadcaster::findListener(EventListener* pListener, std::vector<EventLi
     return nIndex;
 }
 
-// removes every copy of this pointer from the broadcaster.
-// Unlike unregisterListener, it doesn't call getKey(): during a destructor the
-// derived class is already gone, so calling a virtual function there would crash.
-void EventBroadcaster::removeListener(EventListener* pListener)
-{
-    for (auto& entry : this->mapListener)
-    {
-        std::vector<EventListener*>& vec = entry.second;
-        vec.erase(std::remove(vec.begin(), vec.end(), pListener), vec.end());
-    }
-    this->vecListener.erase(std::remove(this->vecListener.begin(), this->vecListener.end(), pListener), this->vecListener.end());
-}
 
-// a screen (intro, pause, story...) disables every other listener while it's open,
-// so any disabled listener means one is open
-bool EventBroadcaster::isBlocking()
+bool EventBroadcaster::isBlocking() const
 {
     for (EventListener* pListener : this->vecListener)
         if (!pListener->isListenerEnabled())
@@ -115,18 +99,16 @@ std::vector<EventListener*> EventBroadcaster::getEnabledListeners()
     return vecEnabled;
 }
 
-// only compares pointers, so a saved listener that was deleted since is simply skipped
 void EventBroadcaster::restoreEnabledListeners(const std::vector<EventListener*>& vecEnabled)
 {
     for (EventListener* pListener : this->vecListener)
         pListener->setListenerEnabled(std::find(vecEnabled.begin(), vecEnabled.end(), pListener) != vecEnabled.end());
 }
 
-// every listener (PauseScreen, ObjectiveIntro, StoryWindow...) runs this when deleted
 EventListener::~EventListener()
 {
     if (EventBroadcaster::getInstance())
-        EventBroadcaster::getInstance()->removeListener(this);
+        EventBroadcaster::getInstance()->unregisterListener(this);
 }
 
 /* * * * * * * * * * * * * * * * * * * * *
