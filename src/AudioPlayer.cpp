@@ -183,6 +183,15 @@ void AudioPlayer::updateProgress()
     int nQueued = SDL_GetAudioStreamQueued(pStream);
     if (nQueued < 0) nQueued = 0;
 
+    if (EOnFinished == OnAudioFinished::LOOP)
+    {
+        SDL_AudioSpec spec = pClip->getSpec();
+        int nHalfSecond = SDL_AUDIO_FRAMESIZE(spec) * spec.freq / 2;
+        if (nQueued < nHalfSecond)
+            SDL_PutAudioStreamData(pStream, pClip->getBuffer(), pClip->getLength());
+        return;
+    }
+
     Uint32 totalBytes = pClip->getLength();
 
     // fProgress = fraction of the clip that has been *consumed*.

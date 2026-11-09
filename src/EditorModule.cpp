@@ -70,7 +70,7 @@ void Editor::EditorModule::togglePlayMode(){
     UIManager::getInstance()->setEnabled("OBJECT_PALETTE", !this->bIsPlaying);
 
     //only play music at play mode
-    AudioManager::getInstance()->setVolume(AudioGroupTag::MUSIC, this->bIsPlaying ? 1.0f : 0.0f);
+    AudioManager::getInstance()->setVolume(AudioGroupTag::MUSIC, this->bIsPlaying ? 0.4f : 0.0f);
 
     if (this->bIsPlaying) 
         LevelDataManager::getInstance()->beginPlay();
