@@ -1,3 +1,6 @@
+#include "EditorMode.h"
+#if EDITOR_MODE
+
 #include "EditorToolbarScreen.h"
 #include "EditorModule.h"
 #include "LevelDataManager.h"
@@ -162,3 +165,5 @@ void EditorToolbarScreen::draw()
 
     filePanel.draw(); //draw file selection panel (only visible if Save or Load is selected)
 }
+
+#endif

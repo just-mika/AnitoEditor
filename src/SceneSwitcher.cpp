@@ -8,6 +8,14 @@ SceneSwitcher::SceneSwitcher(SceneTag ETag) : AComponent("SceneSwitcher", Compon
 	this->pInput = NULL;
 }
 
+SceneSwitcher::SceneSwitcher(const std::string& strLevelFile) : AComponent("SceneSwitcher", ComponentType::SCRIPT)
+{
+	this->ETag = SceneTag::NONE;
+	this->strLevelFile = strLevelFile;
+	this->pInput = NULL;
+}
+
+
 SceneSwitcher::~SceneSwitcher()
 {
 
@@ -21,6 +29,9 @@ void SceneSwitcher::perform()
 	if (pInput->getClicked())
 	{
 		pInput->setClicked(false);
-		SceneTransitionManager::getInstance()->requestTransition(this->ETag, TransitionType::FADE);
+		if (!this->strLevelFile.empty())
+			SceneTransitionManager::getInstance()->requestTransition(this->strLevelFile, TransitionType::FADE);
+		else
+			SceneTransitionManager::getInstance()->requestTransition(this->ETag, TransitionType::FADE);
 	}
 }

@@ -13,20 +13,20 @@ PauseScreen::PauseScreen(std::string strName): AGameObject(strName)
 PauseScreen::~PauseScreen()
 {
 	TextureManager::getInstance()->unload("BrownButton");
-	TextureManager::getInstance()->unload("PausePanel");
 }
 
 void PauseScreen::initialize()
 {
 	TextureManager::getInstance()->load("GUI/button5.png", "BrownButton");
-	TextureManager::getInstance()->load("GUI/Panel.png", "PausePanel");
+	if (!TextureManager::getInstance()->get("Panel"))   //shared by all panel screens; decode once
+		TextureManager::getInstance()->load("GUI/Panel.png", "Panel");
 
 	// Menu: everything that appears after the pause animation finishes
 	EmptyObject* pMenu = new EmptyObject("Menu");
 	this->attachChild(pMenu);
 	pMenu->setIsScreenObject(true);
 
-	Background* pTransBack = new Background("TransparentBG", "PausePanel", Vector2D(1.0f));
+	Background* pTransBack = new Background("TransparentBG", "Panel", Vector2D(1.0f));
 	pMenu->attachChild(pTransBack);
 	pTransBack->setIsScreenObject(true);
 	pTransBack->setLocalPos(Vector2D(-1059, -543));

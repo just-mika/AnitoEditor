@@ -256,11 +256,20 @@ bool LevelDataManager::loadLevel(const std::string& fileName)
 
 	std::string text;
 	//find and read file in writableDir or kBundledDir
-	if (!readFile(writableDir() + fileName, text) && !readFile(kBundledDir + fileName, text))
+
+#if !defined(SDL_PLATFORM_ANDROID)
+	if (readFile(writableDir() + fileName, text))
+		SDL_Log("[LevelData] read %s", (writableDir() + fileName).c_str());
+	else
+#endif 
+		if (readFile(kBundledDir + fileName, text))
+			SDL_Log("[LevelData] read %s%s", kBundledDir, fileName.c_str());
+		else if (!readFile(writableDir() + fileName, text) && !readFile(kBundledDir + fileName, text))
 	{
 		SDL_Log("[LevelData] '%s' not found", fileName.c_str());
 		return false;
 	}
+
 
 	//parse loaded text to a JSON
 	json level = json::parse(text, nullptr, false);
@@ -306,7 +315,6 @@ bool LevelDataManager::loadLevel(const std::string& fileName)
 	//build the level from the parsed json
 	if (!buildFromJson(level))
 		return false;
-	//
 	activeScene->rewire();
 
 	currentFile = fileName;
@@ -358,6 +366,8 @@ bool LevelDataManager::buildFromJson(const json& level)
 	//iterate through all objects of the level
 	for (const json& oj : level["objects"])
 	{
+		Uint64 tObj = SDL_GetTicks();
+
 		AGameObject* o = createFromJson(oj); //create object from json
 		if (!o) 
 			continue;
@@ -386,6 +396,10 @@ bool LevelDataManager::buildFromJson(const json& level)
 		gom->addObject(o);
 		applyFields(o, oj);
 		applyChildren(o, oj);
+		Uint64 dObj = SDL_GetTicks() - tObj;
+		if (dObj > 100)
+			SDL_Log("[Timing] %s (%s): %llu ms", o->getName().c_str(),
+				oj.value("type", "").c_str(), (unsigned long long)dObj);
 	}
 
 	//load tilemap if a tilemap is found in the JSON
@@ -460,20 +474,23 @@ void LevelDataManager::applyFields(AGameObject* o, const json& j)
 
 	if (Text* t = dynamic_cast<Text*>(o))
 	{
-		if (j.contains("font")) 
+		t->setMessage("");
+
+		if (j.contains("font"))
 			t->setFontName(j["font"].get<std::string>());
 		if (j.contains("fontSize"))
 			t->setFontSize(j["fontSize"].get<int>());
 		if (j.contains("wrapWidth"))
 			t->setWrapWidth(j["wrapWidth"].get<int>());
-		if (j.contains("text"))
-			t->setMessage(j["text"].get<std::string>());
 		if (j.contains("color"))
 		{
 			const json& c = j["color"];
 			t->setColor({ c.at(0).get<Uint8>(), c.at(1).get<Uint8>(),
 							c.at(2).get<Uint8>(), c.at(3).get<Uint8>() });
 		}
+
+		if (j.contains("text"))
+			t->setMessage(j["text"].get<std::string>());   //renders once, with every setting applied
 	}
 
 	if (PuzzleToken* t = dynamic_cast<PuzzleToken*>(o))
@@ -533,6 +550,8 @@ void LevelDataManager::applyChildren(AGameObject* parent, const json& j)
 
 	for (const json& cj : j["children"])
 	{
+		Uint64 tChild = SDL_GetTicks();
+
 		const std::string name = cj.value("name", "");
 		AGameObject* child = nullptr;
 
@@ -552,6 +571,8 @@ void LevelDataManager::applyChildren(AGameObject* parent, const json& j)
 			if (!child) continue;
 			parent->attachChild(child);
 		}
+		Uint64 tCreated = SDL_GetTicks();
+
 		applyFields(child, cj);
 		applyChildren(child, cj);
 	}
@@ -824,7 +845,6 @@ void LevelDataManager::loadTilemap(const std::string& mapPath)
 		gom->cleanUpDeletedObjects();
 		return;
 	}
-
 	//objects draw in list order: put the tiles after the system managers and the backdrop
 	//(backgrounds and plain sprites at the start of the list), before the first gameplay object
 	int index = 0;

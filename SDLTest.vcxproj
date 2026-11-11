@@ -136,7 +136,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\AssetBrowserPanel.cpp" />
+    <ClCompile Include="src\DialogueBox.cpp" />
+    <ClCompile Include="src\DialogueRenderer.cpp" />
+    <ClCompile Include="src\DialogueScreen.cpp" />
+    <ClCompile Include="src\DialogueToggle.cpp" />
+    <ClCompile Include="src\Diary.cpp" />
+    <ClCompile Include="src\DiaryToggle.cpp" />
     <ClCompile Include="src\EditorToolbarScreen.cpp" />
+    <ClCompile Include="src\ExitMenu.cpp" />
+    <ClCompile Include="src\Fairy.cpp" />
     <ClCompile Include="src\HierarchyScreen.cpp" />
     <ClCompile Include="src\InteractButtonController.cpp" />
     <ClCompile Include="src\ADataAsset.cpp" />
@@ -161,7 +169,13 @@
     <ClCompile Include="src\LevelDataManager.cpp" />
     <ClCompile Include="src\LevelEndGUI.cpp" />
     <ClCompile Include="src\LevelFilePanel.cpp" />
+    <ClCompile Include="src\Librarian.cpp" />
+    <ClCompile Include="src\Light2D.cpp" />
+    <ClCompile Include="src\Lightmap.cpp" />
     <ClCompile Include="src\LoadedScene.cpp" />
+    <ClCompile Include="src\LobbyPlayer.cpp" />
+    <ClCompile Include="src\LobbyScene.cpp" />
+    <ClCompile Include="src\LobbyTransition.cpp" />
     <ClCompile Include="src\ManifestLoader.cpp" />
     <ClCompile Include="src\ObjectFactory.cpp" />
     <ClCompile Include="src\ObjectiveButton_Controller.cpp" />
@@ -200,6 +214,7 @@
     <ClCompile Include="src\MathUtils.cpp" />
     <ClCompile Include="src\ObjectiveManager.cpp" />
     <ClCompile Include="src\ObjectPalette.cpp" />
+    <ClCompile Include="src\PageChangeToggle.cpp" />
     <ClCompile Include="src\PauseScreen.cpp" />
     <ClCompile Include="src\PerformanceMetricsScreen.cpp" />
     <ClCompile Include="src\PlatformerLevel1Scene.cpp" />
@@ -214,6 +229,7 @@
     <ClCompile Include="src\PlayerManager.cpp" />
     <ClCompile Include="src\PuzzleEnd.cpp" />
     <ClCompile Include="src\PuzzleLoadedScene.cpp" />
+    <ClCompile Include="src\RadialLight.cpp" />
     <ClCompile Include="src\Sprite.cpp" />
     <ClCompile Include="src\AComponent.cpp" />
     <ClCompile Include="src\AGameObject.cpp" />
@@ -245,6 +261,7 @@
     <ClCompile Include="src\TiledImporter.cpp" />
     <ClCompile Include="src\TileMap.cpp" />
     <ClCompile Include="src\TileMapRenderer.cpp" />
+    <ClCompile Include="src\Title_Scene.cpp" />
     <ClCompile Include="src\TokenController.cpp" />
     <ClCompile Include="src\TweenAnimator.cpp" />
     <ClCompile Include="src\UIManager.cpp" />
@@ -263,6 +280,12 @@
     <ClInclude Include="include\CollectableGemDataAsset.h" />
     <ClInclude Include="include\DataAssetManager.h" />
     <ClInclude Include="include\AAnimator.h" />
+    <ClInclude Include="include\DialogueBox.h" />
+    <ClInclude Include="include\DialogueRenderer.h" />
+    <ClInclude Include="include\DialogueScreen.h" />
+    <ClInclude Include="include\DialogueToggle.h" />
+    <ClInclude Include="include\Diary.h" />
+    <ClInclude Include="include\DiaryToggle.h" />
     <ClInclude Include="include\EditorToolbarScreen.h" />
     <ClInclude Include="include\EngineTime.h" />
     <ClInclude Include="include\EnumAudioGroupTag.h" />
@@ -280,6 +303,8 @@
     <ClInclude Include="imgui\include\imstb_truetype.h" />
     <ClInclude Include="include\AButton.h" />
     <ClInclude Include="include\CameraController.h" />
+    <ClInclude Include="include\ExitMenu.h" />
+    <ClInclude Include="include\Fairy.h" />
     <ClInclude Include="include\Gate.h" />
     <ClInclude Include="include\Gem.h" />
     <ClInclude Include="include\GemController.h" />
@@ -327,7 +352,13 @@
     <ClInclude Include="include\LevelDataManager.h" />
     <ClInclude Include="include\LevelEndGUI.h" />
     <ClInclude Include="include\LevelFilePanel.h" />
+    <ClInclude Include="include\Librarian.h" />
+    <ClInclude Include="include\Light2D.h" />
+    <ClInclude Include="include\Lightmap.h" />
     <ClInclude Include="include\LoadedScene.h" />
+    <ClInclude Include="include\LobbyPlayer.h" />
+    <ClInclude Include="include\LobbyScene.h" />
+    <ClInclude Include="include\LobbyTransition.h" />
     <ClInclude Include="include\ManifestLoader.h" />
     <ClInclude Include="include\MathUtils.h" />
     <ClInclude Include="include\ObjectFactory.h" />
@@ -335,6 +366,7 @@
     <ClInclude Include="include\ObjectiveIntro.h" />
     <ClInclude Include="include\ObjectiveManager.h" />
     <ClInclude Include="include\ObjectPalette.h" />
+    <ClInclude Include="include\PageChangeToggle.h" />
     <ClInclude Include="include\PauseScreen.h" />
     <ClInclude Include="include\PerformanceMetricsScreen.h" />
     <ClInclude Include="include\PlatformerLevel1Scene.h" />
@@ -353,6 +385,7 @@
     <ClInclude Include="include\PuzzleLevel1Scene.h" />
     <ClInclude Include="include\PuzzleLoadedScene.h" />
     <ClInclude Include="include\PuzzleToken.h" />
+    <ClInclude Include="include\RadialLight.h" />
     <ClInclude Include="include\RendererContext.h" />
     <ClInclude Include="include\RigidBody.h" />
     <ClInclude Include="include\Runner.h" />
@@ -376,6 +409,7 @@
     <ClInclude Include="include\TileMap.h" />
     <ClInclude Include="include\TileMapRenderer.h" />
     <ClInclude Include="include\Sprite.h" />
+    <ClInclude Include="include\Title_Scene.h" />
     <ClInclude Include="include\TokenController.h" />
     <ClInclude Include="include\TweenAnimator.h" />
     <ClInclude Include="include\UIManager.h" />

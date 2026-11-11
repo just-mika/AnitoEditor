@@ -9,6 +9,7 @@
 
 #include <fstream>
 #include "json.hpp"
+#include "Settings.h"
 
 using json = nlohmann::json;
 
@@ -26,23 +27,50 @@ static void addTileCollider(TileMap* pTileMap, int& nColliders,
 	nColliders++;
 }
 
+static std::string normalizePath(const std::string& path)
+{
+	std::vector<std::string> parts;
+	std::string part;
+	for (size_t i = 0; i <= path.size(); i++)
+	{
+		if (i == path.size() || path[i] == '/' || path[i] == '\\')
+		{
+			if (part == "..") { if (!parts.empty()) parts.pop_back(); }
+			else if (!part.empty() && part != ".") parts.push_back(part);
+			part.clear();
+		}
+		else
+			part += path[i];
+	}
+
+	std::string result;
+	for (size_t i = 0; i < parts.size(); i++)
+	{
+		if (i > 0) result += "/";
+		result += parts[i];
+	}
+	return result;
+}
+
 bool importTiledMap(const std::string& mapPath, TileMap* pTileMap)
 {
 	TileMapRenderer* pTMR = (TileMapRenderer*)pTileMap->findComponentByName("TileMapRenderer");
 	if (!pTMR)
 		return false;
 
-	//read and parse file
-	std::ifstream file("Assets/" + mapPath);
-	if (!file)
+	//read and parse file (SDL_LoadFile also reads from inside the Android APK)
+	std::string fullPath = ASSET_ROOT + mapPath;
+	size_t nSize = 0;
+	void* pData = SDL_LoadFile(fullPath.c_str(), &nSize);
+	if (!pData)
 	{
-		SDL_Log("[Tiled] can't open %s", mapPath.c_str());
+		SDL_Log("[Tiled] can't open %s: %s", mapPath.c_str(), SDL_GetError());
 		return false;
 	}
 
-	std::stringstream ss;
-	ss << file.rdbuf();
-	json map = json::parse(ss.str(), nullptr, false);
+	json map = json::parse((const char*)pData, (const char*)pData + nSize, nullptr, false);
+	SDL_free(pData);
+
 	if (map.is_discarded())
 	{
 		SDL_Log("[Tiled] %s is not a valid JSON", mapPath.c_str());
@@ -96,7 +124,7 @@ bool importTiledMap(const std::string& mapPath, TileMap* pTileMap)
 			if (assetsPos != std::string::npos)
 				imagePath = image.substr(assetsPos + 7);   //7 = length of "Assets/"
 			else
-				imagePath = mapDir + image;
+				imagePath = normalizePath(mapDir + image);
 
 			if (!tm->get(imagePath))
 				tm->load(imagePath, imagePath);   //the path doubles as the texture key

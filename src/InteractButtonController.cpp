@@ -7,20 +7,17 @@
 #include <vector>
 #include <string>
 #include <iostream>
+
+#include "EventBroadcaster.h"
+#include "Player.h"
+
 static PlayerInput* findPlayerInputSafe()
 {
-    GameObjectManager* gm = GameObjectManager::getInstance();
-    if (!gm) return nullptr;
+    PlayerManager* pm = PlayerManager::getInstance();
+    if (!pm || !pm->getPlayer()) return nullptr;
 
-    AGameObject* pPlayer = GameObjectManager::getInstance()->findObjectByName("Player");
-    if (pPlayer != nullptr)
-    {
-        // use findComponentByName (returns AComponent*) then dynamic_cast
-        AComponent* comp = pPlayer->findComponentByName("PlayerInput");
-        PlayerInput* input = dynamic_cast<PlayerInput*>(comp);
-        if (input) return input;
-    }
-    return nullptr;
+    AComponent* comp = pm->getPlayer()->findComponentByName("PlayerInput");
+    return dynamic_cast<PlayerInput*>(comp);
 }
 
 InteractButtonController::InteractButtonController() :AComponent("InteractButtonController", ComponentType::SCRIPT)
@@ -42,7 +39,13 @@ void InteractButtonController::onAttach()
 
 void InteractButtonController::perform()
 {
-        if (!this->playerInput || !this->pRenderer) return;
+    this->playerInput = findPlayerInputSafe();   //the player can be rebuilt (reload, undo), so look it up each frame
+    
+    bool bBlocked = EventBroadcaster::getInstance()->isBlocking();
+    if (this->pRenderer) this->pRenderer->setColor({ 255, 255, 255, (Uint8)(bBlocked ? 0 : 255) });
+    if (bBlocked) return;
+
+	if (!this->playerInput || !this->pRenderer) return;
         if (!this->pOwner->getEnabled()) return;  
 
         if (this->bJustEnabled)

@@ -1,3 +1,6 @@
+#include "EditorMode.h"
+#if EDITOR_MODE
+
 #include "AssetBrowserPanel.h"
 #include "LevelDataManager.h"
 #include "EditorModule.h"
@@ -171,3 +174,4 @@ void AssetBrowserPanel::applyTexture(const std::string& path)
         LevelDataManager::setObjectTexture(selected, path);
 }
 
+#endif

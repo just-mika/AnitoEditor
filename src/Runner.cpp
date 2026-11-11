@@ -36,6 +36,8 @@
 #include <streambuf>
 
 // scenes
+#include "Title_Scene.h"
+#include "LobbyScene.h"
 #include "LevelDataManager.h"
 #include "PlatformerLevel1Scene.h"
 #include "PuzzleLevel1Scene.h"
@@ -74,7 +76,11 @@ Runner::Runner()
 	// debug
 	std::cout << "Screen size: " << screenWidth << "x" << screenHeight << std::endl;
 
+#if EDITOR_MODE
 	this->strWindowTitle = "Anito Editor";
+#else
+	this->strWindowTitle = "Babaylan Tayles";
+#endif
 	float scaleX = (float)screenWidth / gameWidth;
 	float scaleY = (float)screenHeight / gameHeight;
 	float scale = (std::min)(scaleX, scaleY);
@@ -82,12 +88,19 @@ Runner::Runner()
     int windowWidth = (int)(gameWidth * scale);
     int windowHeight = (int)(gameHeight * scale);
 
-    pWindow = SDL_CreateWindow(
-            strWindowTitle.c_str(),
-            windowWidth,
-            windowHeight,
-			SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED
-    );
+#if EDITOR_MODE
+	SDL_WindowFlags windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;   
+#else
+	SDL_WindowFlags windowFlags = SDL_WINDOW_FULLSCREEN;  
+#endif
+
+	pWindow = SDL_CreateWindow(
+		strWindowTitle.c_str(),
+		windowWidth,
+		windowHeight,
+		windowFlags
+	);
+
 
     pRenderer = SDL_CreateRenderer(pWindow, NULL);
     if (!pRenderer) {
@@ -98,6 +111,8 @@ Runner::Runner()
 
 	this->pGameView = SDL_CreateTexture(pRenderer, SDL_PIXELFORMAT_RGBA32,
 		SDL_TEXTUREACCESS_TARGET, (int)gameWidth, (int)gameHeight);
+
+	SDL_SetTextureBlendMode(this->pGameView, SDL_BLENDMODE_NONE);
 
 	//initialize systems
 	std::cout << "[Runner] Initializing systems..." << std::endl;
@@ -352,22 +367,22 @@ void Runner::render()
 // registerScenes: startup cost O(S) where S = number of scenes registered
 void Runner::registerScenes()
 {
-	auto platformerL1 = new PlatformerLevel1Scene();
-	auto puzzleL1 = new PuzzleLevel1Scene();
-	auto puzzleLoaded = new PuzzleLoadedScene();
-	auto platformerLoaded = new PlatformerLoadedScene();
-
-	SceneManager::getInstance()->registerScene(platformerL1);
-	SceneManager::getInstance()->registerScene(puzzleL1);
-	SceneManager::getInstance()->registerScene(puzzleLoaded);
-	SceneManager::getInstance()->registerScene(platformerLoaded);
+	SceneManager::getInstance()->registerScene(new Title_Scene());
+	SceneManager::getInstance()->registerScene(new LobbyScene());
+	SceneManager::getInstance()->registerScene(new PlatformerLevel1Scene());
+	SceneManager::getInstance()->registerScene(new PuzzleLevel1Scene());
+	SceneManager::getInstance()->registerScene(new PuzzleLoadedScene());
+	SceneManager::getInstance()->registerScene(new PlatformerLoadedScene());
 
 	// --- load time tracking --- 
 	// // start timer before load, end after load completes 
 	MetricsManager::getInstance()->startLoadTimer(); 
 
 	//load initial scene
-	//SceneManager::getInstance()->loadScene(SceneTag::LOADED_SCENE);
+#if !EDITOR_MODE
+	//game build: start at the title screen; the lobby doors open the JSON levels
+	SceneManager::getInstance()->loadScene(SceneTag::TITLE_SCENE);
+#endif
 	
 	MetricsManager::getInstance()->endLoadTimer();
 }
@@ -389,11 +404,11 @@ void Runner::updateLayout()
 			SDL_LOGICAL_PRESENTATION_LETTERBOX);
 	}
 
-	float top = kToolbarH, bottom = kBottomBarH;
+	float top = 0.0f, bottom = 0.0f;
 #if EDITOR_MODE
-	if (Editor::EditorModule::getInstance() &&
-		Editor::EditorModule::getInstance()->isPlaying()) {
-		top = 0.0f; bottom = 0.0f;
+	if (!(Editor::EditorModule::getInstance() &&
+		Editor::EditorModule::getInstance()->isPlaying())) {
+		top = kToolbarH; bottom = kBottomBarH;
 	}
 #endif
 	float areaH = uiHeight - top - bottom;

@@ -1,5 +1,12 @@
 #pragma once
 #include "SDL3/SDL.h"
+
+#if defined(__ANDROID__)
+#define ASSET_ROOT ""            // APK assets: the Assets folder's contents are the root
+#else
+#define ASSET_ROOT "Assets/"
+#endif
+
 extern bool showWidgets;
 static float gameHeight = 1080;
 static float gameWidth = 1920;

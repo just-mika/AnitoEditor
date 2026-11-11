@@ -4,9 +4,12 @@
 
 #include "SceneTransitionManager.h"
 #include "SceneManager.h"
+#include "LevelDataManager.h"
 #include <iostream>
 #include "EditorMode.h"
+#if EDITOR_MODE
 #include "EditorModule.h"
+#endif
 
 SceneTransitionManager* SceneTransitionManager::P_SHARED_INSTANCE = nullptr;
 
@@ -44,6 +47,7 @@ void SceneTransitionManager::requestTransition(SceneTag nextScene, TransitionTyp
     }
 
     this->targetScene = nextScene;
+    this->strTargetFile.clear();
     this->type = type;
     this->alpha = 0.0f;
     this->speed = 0.02f;
@@ -51,6 +55,14 @@ void SceneTransitionManager::requestTransition(SceneTag nextScene, TransitionTyp
     this->halfway = false;
 
     std::cout << "[SceneTransitionManager] Transition started." << std::endl;
+}
+
+void SceneTransitionManager::requestTransition(const std::string& strLevelFile, TransitionType type) {
+    if (inTransition) return;
+
+    this->requestTransition(SceneTag::NONE, type);
+    if (this->inTransition)
+        this->strTargetFile = strLevelFile;
 }
 
 // update: O(1) per call to advance alpha. At midpoint, triggers scene load
@@ -69,7 +81,17 @@ void SceneTransitionManager::update() {
         std::cout << "[SceneTransitionManager] Midpoint reached, loading new scene..." << std::endl;
         
         // Potential heavy operation: blocky if loadScene blocks.
-        SceneManager::getInstance()->loadScene(targetScene);
+
+        if (!this->strTargetFile.empty())
+        {
+            LevelDataManager::getInstance()->requestLoad(this->strTargetFile);
+            LevelDataManager::getInstance()->applyPending();
+            this->strTargetFile.clear();
+        }
+	    else
+	    {
+	        SceneManager::getInstance()->loadScene(targetScene);
+	    }
         SceneManager::getInstance()->checkLoadScene(); // Force-load immediately
 
         // Reverse fade direction

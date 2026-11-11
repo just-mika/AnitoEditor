@@ -25,9 +25,10 @@ void GemInputPreview::setPreviewText(std::string strGemName)
 
 void GemInputPreview::initialize()
 {
-	TextureManager::getInstance()->load("GUI/Panel.png", "PreviewPanel");
+	if (!TextureManager::getInstance()->get("Panel"))   //shared by all panel screens; decode once
+		TextureManager::getInstance()->load("GUI/Panel.png", "Panel");
 
-	Sprite* pPreviewBG = new Sprite("GemInput_PreviewWindow", "PreviewPanel");
+	Sprite* pPreviewBG = new Sprite("GemInput_PreviewWindow", "Panel");
 	this->attachChild(pPreviewBG);
 	pPreviewBG->setIsScreenObject(true);
 	pPreviewBG->setLocalPos(Vector2D(-536, 50));
@@ -107,5 +108,4 @@ std::string GemInputPreview::getListenerOwnerName()
 
 GemInputPreview::~GemInputPreview()
 {
-	TextureManager::getInstance()->unload("PreviewPanel");
 }

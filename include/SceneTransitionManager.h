@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+
 #include "EnumSceneTag.h"
 #include "Settings.h"
 #include <SDL3/SDL.h>
@@ -18,9 +20,11 @@ private:
     float speed = 0.02f;           // fade step per frame
     TransitionType type = TransitionType::NONE;
     SceneTag targetScene;
+    std::string strTargetFile;
 
 public:
     void requestTransition(SceneTag nextScene, TransitionType type = TransitionType::FADE);
+    void requestTransition(const std::string& strLevelFile, TransitionType type = TransitionType::FADE);
 
     void update();
     void draw(SDL_Renderer* pRenderer);

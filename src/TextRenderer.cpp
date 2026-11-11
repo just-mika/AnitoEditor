@@ -1,6 +1,8 @@
-#include "TextRenderer.h"
-
+#if EDITOR_MODE
 #include "EditorModule.h"
+#endif
+
+#include "TextRenderer.h"
 
 TextRenderer::TextRenderer():ARenderer("TextRenderer")
 {
@@ -156,8 +158,10 @@ void TextRenderer::perform()
         }
     }
 }
+
 void TextRenderer::drawWidget()
 {
+#if EDITOR_MODE
     if (this->getOwner() != Editor::EditorModule::getInstance()->getSelectedObject())
         return;
 
@@ -173,6 +177,7 @@ void TextRenderer::drawWidget()
 
         SDL_RenderRect(pRenderer, &r);
     }
+#endif
 }
 
 void TextRenderer::loadFromText(std::string fontType, int nFontSize, std::string strText, SDL_Color textColor)
@@ -201,8 +206,10 @@ void TextRenderer::loadFromText(std::string fontType, int nFontSize, std::string
     }
 
     // break lines that are wider than this many pixels (in font pixels, before scaling); 0 = only at \n
-    SDL_Surface* textSurface = TTF_RenderText_Blended_Wrapped(font, strText.c_str(), strText.size(), textColor, this->nWrapWidth);
-
+    Uint64 tRender = SDL_GetTicks();
+    // render in white; the real color is applied when drawing (perform), so changing color never re-renders
+    SDL_Color white = { 255, 255, 255, 255 };
+    SDL_Surface* textSurface = TTF_RenderText_Blended_Wrapped(font, strText.c_str(), strText.size(), white, this->nWrapWidth);
     if (!textSurface) {
         const char* err = nullptr;
 #ifdef TTF_GetError
@@ -221,7 +228,7 @@ void TextRenderer::loadFromText(std::string fontType, int nFontSize, std::string
     }
 
     SDL_Texture* newTex = SDL_CreateTextureFromSurface(this->pRenderer, textSurface);
-    SDL_DestroySurface(textSurface); // use SDL_DestroySurface (SDL_FreeSurface alias is okay but caused macro confusion)
+    SDL_DestroySurface(textSurface);
 
     if (!newTex) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[TextRenderer] CreateTextureFromSurface failed: %s", SDL_GetError());
@@ -288,8 +295,7 @@ float TextRenderer::getViewHeight()
 
 void TextRenderer::setColor(SDL_Color color)
 {
-    ARenderer::setColor(color);
-    this->loadFromText(this->strFontType, this->nFontSize, this->strText, color);
+    ARenderer::setColor(color); 
 }
 
 SDL_FRect TextRenderer::getRect() const

@@ -15,6 +15,8 @@
 #include <fstream>
 #include <cstdio>
 
+#include "Settings.h"
+
 // paths are compared in lowercase, since Windows file names aren't case-sensitive
 // (a scene may load "bottom.png" while the file on disk is "bottom.PNG")
 std::string TextureManager::lowerPath(const std::string& path)
@@ -66,16 +68,41 @@ void TextureManager::load(std::string assetPath, std::string strName)
     SDL_Texture* pTexture = nullptr;
 
     // Desktop implementation
-    std::string fullPath = "Assets/" + assetPath;
+    std::string fullPath = ASSET_ROOT + assetPath;
+    Uint64 tLoad = SDL_GetTicks();
     SDL_Surface* surface = IMG_Load(fullPath.c_str());
 
+    if (!surface && fullPath.size() > 4)
+    {
+        std::string altPath = fullPath;
+        std::string ext = altPath.substr(altPath.size() - 4);
+        if (ext == ".png") altPath.replace(altPath.size() - 4, 4, ".PNG");
+        else if (ext == ".PNG") altPath.replace(altPath.size() - 4, 4, ".png");
+        surface = IMG_Load(altPath.c_str());
+    }
+
     if (surface) {
+        int w = surface->w, h = surface->h;
         pTexture = SDL_CreateTextureFromSurface(this->pRenderer, surface);
+        auto itScale = this->mapTexScale.find(assetPath);
+        if (itScale != this->mapTexScale.end())
+            SDL_SetFloatProperty(SDL_GetTextureProperties(pTexture), "anito.texscale", itScale->second);
+    	
+    	Uint64 dLoad = SDL_GetTicks() - tLoad;
+        if (dLoad > 50)
+            SDL_Log("[Timing] image %s (%dx%d): %llu ms", assetPath.c_str(), w, h, (unsigned long long)dLoad);
         SDL_DestroySurface(surface);
+
+        if (!pTexture) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                "CreateTexture failed for %s (%dx%d): %s", assetPath.c_str(), w, h, SDL_GetError());
+            return;
+        }
         SDL_Log("[TextureManager] Successfully loaded: %s", assetPath.c_str());
-    } else {
+    }
+    else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "IMG_Load failed for %s: %s", assetPath.c_str(), SDL_GetError());
+            "IMG_Load failed for %s: %s", assetPath.c_str(), SDL_GetError());
         return;
     }
 
@@ -277,7 +304,7 @@ bool TextureManager::tryLoadFile(const std::string& path, const std::string& nam
     // Build the probe path using the same logic as load() so we check the
     // real location on disk rather than the raw asset-relative path.
 
-    const std::string probePath = "Assets/" + path;
+    const std::string probePath = ASSET_ROOT + path;
 
     size_t probeSize = 0;
     void* probeData = SDL_LoadFile(probePath.c_str(), &probeSize);
@@ -421,6 +448,17 @@ void TextureManager::initialize(SDL_Renderer* pRenderer)
 {
     P_SHARED_INSTANCE = new TextureManager();
     P_SHARED_INSTANCE->pRenderer = pRenderer;
+
+    SDL_PropertiesID props = SDL_GetRendererProperties(pRenderer);
+    SDL_Log("[TextureManager] max texture size: %d",
+        (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0));
+	
+    for (const std::string& line : readAssetManifest("texture_scales.txt"))
+    {
+        size_t space = line.rfind(' ');
+        if (space != std::string::npos)
+            P_SHARED_INSTANCE->mapTexScale[line.substr(0, space)] = std::stof(line.substr(space + 1));
+    }
 }
 
 void TextureManager::destroy()

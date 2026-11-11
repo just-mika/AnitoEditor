@@ -23,17 +23,18 @@ InventoryGUI::InventoryGUI(std::string strName):AGameObject(strName)
 
 InventoryGUI::~InventoryGUI()
 {
-	TextureManager::getInstance()->unload("InventoryPanel");
 	TextureManager::getInstance()->unload("GemHighlight");
 }
 
 // Layout copied from the editor (all values are LOCAL, same as the save file)
 void InventoryGUI::initialize()
 {
-	TextureManager::getInstance()->load("GUI/Panel.png", "InventoryPanel");
+	if (!TextureManager::getInstance()->get("Panel"))   //shared by all panel screens; decode once
+		TextureManager::getInstance()->load("GUI/Panel.png", "Panel");
+
 	TextureManager::getInstance()->load("gems/gem_highlight.png", "GemHighlight");
 
-	Background* pTransBack = new Background("TransparentBG", "InventoryPanel", Vector2D(1.0f));
+	Background* pTransBack = new Background("TransparentBG", "Panel", Vector2D(1.0f));
 	this->attachChild(pTransBack);
 	pTransBack->setLocalPos(Vector2D(-6, -10));
 	pTransBack->setLocalScale(Vector2D(0.39f, 0.37f));

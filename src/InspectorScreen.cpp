@@ -1,3 +1,6 @@
+#include "EditorMode.h"
+#if EDITOR_MODE
+
 #include "InspectorScreen.h"
 #include "SceneManager.h"
 #include "GameObjectManager.h"
@@ -567,3 +570,5 @@ void InspectorScreen::showComponents()
         ImGui::PopID();
     }
 }
+
+#endif

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cstdio>
 #include "ManifestLoader.h"
+#include "Settings.h"
 
 TTF_Font* FontManager::getFont(const std::string fontKey, int fontSize)
 {
@@ -19,7 +20,7 @@ TTF_Font* FontManager::getFont(const std::string fontKey, int fontSize)
 
 void FontManager::loadFont(const std::string fileName, const std::string fontKey, int fontSize)
 {
-    const std::string assetPath = "Assets/Fonts/" + fileName;
+    const std::string assetPath = ASSET_ROOT "Fonts/" + fileName;
     std::string fullKey = fontKey + "_" + std::to_string(fontSize);
 
     if (mapFonts.contains(fullKey)) return;

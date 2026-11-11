@@ -15,7 +15,9 @@ private:
     
     std::unordered_map<std::string, std::string> mapKeyToPath;   //key -> the file (or folder) it was loaded from
     std::unordered_map<std::string, std::string> mapPathToKey;   //lowercase path -> key
-    static std::string lowerPath(const std::string& path);
+    std::unordered_map<std::string, float> mapTexScale;   //path -> how much the file was shrunk (from texture_scales.txt)
+	
+	static std::string lowerPath(const std::string& path);
 
 public:
     void load(std::string assetPath, std::string strName);

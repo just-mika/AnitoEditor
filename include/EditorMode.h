@@ -11,4 +11,8 @@
 #endif
 
 // Toggle editor mode (set to 1 to enable, 0 to disable)
-#define EDITOR_MODE (EDITOR_MODULE_AVAILABLE && 1)   // <- put 1 or 0 here
+#if defined(__ANDROID__) || defined(__APPLE__) && TARGET_OS_IPHONE
+#define EDITOR_MODE 0                                  
+#else
+#define EDITOR_MODE (EDITOR_MODULE_AVAILABLE && 1)  // <- put 1 or 0 here
+#endif

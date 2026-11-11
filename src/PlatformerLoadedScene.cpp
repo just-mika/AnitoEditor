@@ -110,12 +110,13 @@ void PlatformerLoadedScene::onLoadResources()
 
     // GemInputManager reads this when it is created, so it must exist first
     DataAssetManager::getInstance()->addDataAsset("CollectableGemDataAsset", new CollectableGemDataAsset());
+
 }
 
 void PlatformerLoadedScene::onUnloadResources()
 {
     TextureManager* tm = TextureManager::getInstance();
-    for (const char* key : { "Intro","player_idle", "player_run", "player_jump", "player_fall", "Pause", "Pickup",
+    for (const char* key : { "Panel", "Intro","player_idle", "player_run", "player_jump", "player_fall", "Pause", "Pickup",
                              "Inventory", "End_Level", "Trees_BG", "Gate", "Statue_Carabao",
                              "Grass_Tile_BC", "Grass_Tile_BL", "Grass_Tile_BR", "Grass_Tile_MC", "Grass_Tile_ML",
                              "Grass_Tile_MR", "Grass_Tile_TC", "Grass_Tile_TL", "Grass_Tile_TR",
@@ -177,6 +178,7 @@ void PlatformerLoadedScene::setUpSubsystems()
     pJumpBtn->setPos(Vector2D(1750, 900));
     pJumpBtn->setScale(Vector2D(.15f));
     pJumpBtn->attachComponent(new JumpButtonController());
+    pJumpBtn->setEnabled(false);
     this->vecHUD.push_back(pJumpBtn);
 
     // PlayerController finds this by name ("InteractBtn") and shows it near interactables
@@ -197,12 +199,10 @@ void PlatformerLoadedScene::setUpSubsystems()
     pJoyThumb->setIsScreenObject(true);
     pJoyBase->attachChild(pJoyThumb);
     gom->addObject(pJoyBase);
-    pJoyBase->attachComponent(new VirtualJoystick(150.0f));
+    pJoyBase->attachComponent(new VirtualJoystick(250.0f));
+    pJoyBase->setEnabled(false);
     this->vecHUD.push_back(pJoyBase);
 #endif
-
-    // ---- music (the editor keeps it muted until Play) ----
-    AudioManager::getInstance()->play(new AudioPlayer("Jungle", "BGM", AudioGroupTag::MUSIC, OnAudioFinished::LOOP));
 }
 
 // Called after clearScene() and BEFORE the level's objects are built.
@@ -276,4 +276,14 @@ void PlatformerLoadedScene::rewire()
     // system objects sit at the front of the list, so move them to the end
     for (AGameObject* pHUD : this->vecHUD)
         gom->moveObject(pHUD, nullptr, (int)gom->getAllObjects().size());
+
+    //music starts once the level is built; rewire also runs on undo/restart, so don't restart it
+    if (!AudioManager::getInstance()->isPlaying("BGM"))
+        AudioManager::getInstance()->play(new AudioPlayer("Jungle", "BGM", AudioGroupTag::MUSIC, OnAudioFinished::LOOP));
+
+#if defined(SDL_PLATFORM_ANDROID)
+    //the level is built: show the touch controls (the interact button stays hidden until the player reaches something)
+    if (AGameObject* pJump = gom->findObjectByName("JumpBtn")) pJump->setEnabled(true);
+    if (AGameObject* pJoy = gom->findObjectByName("VirtualJoystickBase")) pJoy->setEnabled(true);
+#endif
 }

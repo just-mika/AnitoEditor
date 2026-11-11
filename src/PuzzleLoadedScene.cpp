@@ -17,6 +17,8 @@ PuzzleLoadedScene::~PuzzleLoadedScene() {}
 
 void PuzzleLoadedScene::onLoadResources()
 {
+    Uint64 t0 = SDL_GetTicks();
+
     TextureManager* tm = TextureManager::getInstance();
     tm->load("Square.png", "Square");
     tm->load("GUI/button6.png", "Close_Button");
@@ -41,6 +43,8 @@ void PuzzleLoadedScene::onLoadResources()
     tm->loadFromFolder("animations/level_intro", "Intro");
     tm->loadFromFolder("animations/pause_animation", "Pause");
     tm->loadFromFolder("animations/low_order_success", "Puzzle_End");
+
+    SDL_Log("[Timing] puzzle onLoadResources: %llu ms", (unsigned long long)(SDL_GetTicks() - t0));
 }
 
 void PuzzleLoadedScene::onUnloadResources()
@@ -49,7 +53,7 @@ void PuzzleLoadedScene::onUnloadResources()
     for (const char* key : { "Square", "Close_Button", "BG", "Dragon_Head", "Dragon_Tail", "Dragon_Tile",
                              "Full_Dragon", "Token_Blank", "Token_Horns", "Token_Claws", "Token_Eyes",
         "Token_Heart", "Token_Mouth", "Token_Scales", "Token_Fire", "Token_Claw", "Token_Wing",
-                             "Pause_Button", "Story_Button", "Tablet", "Intro", "Pause", "Puzzle_End" })
+                             "Pause_Button", "Story_Button", "Tablet", "Panel", "Intro", "Pause", "Puzzle_End" })
         tm->unload(key);
     FontManager::getInstance()->unloadAllFonts();
 }

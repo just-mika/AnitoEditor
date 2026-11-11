@@ -1,3 +1,6 @@
+#include "EditorMode.h"
+#if EDITOR_MODE
+
 #include "EditorModule.h"
 #include "TextureManager.h"
 #include "GameObjectManager.h"
@@ -30,7 +33,6 @@ static const float GIZMO_RING = GIZMO_LENGTH + 1.0f * GIZMO_SCALE;
 static const float GIZMO_RING_GRAB = 10.0f * GIZMO_SCALE;
 static const float GIZMO_CORNER = 10.0f * GIZMO_SCALE;
 
-bool showWidgets = false;
 
 bool Editor::EditorModule::isPlaying() const {
     return this->bIsPlaying;
@@ -966,3 +968,5 @@ Editor::EditorModule* Editor::EditorModule::getInstance()
     return P_SHARED_INSTANCE;
 }
 /* * * * * * * * * * * * * * * * * * * * */
+
+#endif

@@ -3,6 +3,7 @@
 #include <vector>
 #include "json.hpp"
 #include "LoadedScene.h"
+#include "Settings.h"
 #include "SpriteRenderer.h"
 #include "Vector2D.h"
 
@@ -71,7 +72,7 @@ private:
 
     static constexpr const char* kOrg = "AnitoEditor";
     static constexpr const char* kApp = "BabaylanTales";
-    static constexpr const char* kBundledDir = "Assets/levels/";
+    static constexpr const char* kBundledDir = ASSET_ROOT "levels/";
     std::vector<std::string> pathTextures;   //textures loaded by ensureTexture
 
     std::string pendingLoad;

@@ -76,6 +76,19 @@ void InputManager::processEvents(SDL_Event* e)
             setMouseFinger(e->motion.windowID, e->motion.x, e->motion.y);
         break;
     }
+
+    case SDL_EVENT_FINGER_DOWN:
+    case SDL_EVENT_FINGER_MOTION:
+    {
+        activeTouchMap[e->tfinger.fingerID] = e->tfinger;
+        break;
+    }
+    case SDL_EVENT_FINGER_UP:
+    case SDL_EVENT_FINGER_CANCELED:
+    {
+        activeTouchMap.erase(e->tfinger.fingerID);
+        break;
+    }
     default:
         break;
     }

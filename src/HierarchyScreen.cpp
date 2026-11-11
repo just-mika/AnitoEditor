@@ -1,3 +1,6 @@
+#include "EditorMode.h"
+#if EDITOR_MODE
+
 #include "HierarchyScreen.h"
 #include "SceneManager.h"
 #include "GameObjectManager.h"
@@ -253,3 +256,5 @@ void HierarchyScreen::draw()
     ImGui::End();
     ImGui::PopStyleColor(3);
 }
+
+#endif

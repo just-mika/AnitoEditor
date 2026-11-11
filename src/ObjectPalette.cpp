@@ -1,3 +1,6 @@
+#include "EditorMode.h"
+#if EDITOR_MODE
+
 #include "ObjectPalette.h"
 #include "GameObjectManager.h"
 #include "LevelDataManager.h"
@@ -305,3 +308,5 @@ void ObjectPalette::setMousePos(Vector2D mousePos)
 {
     this->mousePos = mousePos;
 }
+
+#endif

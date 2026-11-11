@@ -8,6 +8,8 @@
 #include <string>
 #include <iostream>
 
+#include "EventBroadcaster.h"
+
 // Helper: safe search for PlayerInput by scanning active game objects
 static PlayerInput* findPlayerInputSafe()
 {
@@ -46,6 +48,10 @@ void JumpButtonController::onAttach()
 // perform() is called each frame / per event; only search once if not found
 void JumpButtonController::perform()
 {
+    bool bBlocked = EventBroadcaster::getInstance()->isBlocking();
+    if (this->pRenderer) this->pRenderer->setColor({ 255, 255, 255, (Uint8)(bBlocked ? 0 : 255) });
+    if (bBlocked) return;
+
     Uint64 fingerId = 0;
     float x, y = 0.0f;
     bool isAnyFingerInRect = InputManager::getInstance()->isAnyFingerInRect(this->pRenderer->getRect(), fingerId);

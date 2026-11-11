@@ -1,3 +1,6 @@
+#include "EditorMode.h"
+#if EDITOR_MODE
+
 #include "LevelFilePanel.h"
 #include "LevelDataManager.h"
 #include "imgui.h"
@@ -227,3 +230,5 @@ std::string LevelFilePanel::sanitizeStem(const std::string& raw)
     }
     return out;
 }
+
+#endif

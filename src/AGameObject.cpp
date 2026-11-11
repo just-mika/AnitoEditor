@@ -7,6 +7,8 @@
 
 #include "MathUtils.h"
 
+bool showWidgets = false;
+
 AGameObject::AGameObject(std::string strName)
 {
     this->strName = strName;

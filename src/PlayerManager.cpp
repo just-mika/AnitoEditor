@@ -23,7 +23,6 @@ void PlayerManager::perform()
 
     if (pressingA && !pressingD) pController->Move(-1.0f);
     else if (pressingD && ! pressingA) pController->Move(1.0f);
-    else pController->Move(0.0);
 }
 
 PlayerManager* PlayerManager::P_SHARED_INSTANCE = NULL;

@@ -2,13 +2,17 @@
 // Responsibilities: per-object transform and texture draw.
 // ---------------------------------------------------------------------------
 
+#include "imgui.h"
+#if EDITOR_MODE
+#include "EditorModule.h"
+#endif
+
 #include <iostream>
 #include "SpriteRenderer.h"
 #include "TextureManager.h"
 #include "RendererContext.h"
 #include "AGameObject.h"
 #include "Settings.h"
-#include "EditorModule.h"
 
 // Constructor: texture lookup may be O(T) where T is number of
 // textures stored under a name (small in typical cases). Overall O(1) prep.
@@ -36,7 +40,8 @@ SpriteRenderer::SpriteRenderer(const std::string& textureName, SDL_Color color)
     if (pTexture) {
         float fw, fh;
         if (SDL_GetTextureSize(pTexture, &fw, &fh)) {
-            this->texSize = Vector2D(fw, fh);
+            this->fTexScale = SDL_GetFloatProperty(SDL_GetTextureProperties(pTexture), "anito.texscale", 1.0f);
+            this->texSize = Vector2D(fw / this->fTexScale, fh / this->fTexScale);
         }
     }
     else {
@@ -65,7 +70,8 @@ void SpriteRenderer::initialize() {
 
         float fw, fh;
         if (SDL_GetTextureSize(pTexture, &fw, &fh)) {
-            this->texSize = Vector2D(fw, fh);
+            this->fTexScale = SDL_GetFloatProperty(SDL_GetTextureProperties(pTexture), "anito.texscale", 1.0f);
+            this->texSize = Vector2D(fw / this->fTexScale, fh / this->fTexScale);
         }
 
         if (mDestRect.w <= 0) mDestRect.w = this->texSize.x;
@@ -98,13 +104,14 @@ void SpriteRenderer::perform() {
         this->dAngle = -owner->getRot();
 
         SDL_FRect srcRect = {};
-        srcRect.x = this->mCropRect.x * this->texSize.x;
-        srcRect.y = this->mCropRect.y * this->texSize.y;
-        srcRect.w = this->mCropRect.w * this->texSize.x;
-        srcRect.h = this->mCropRect.h * this->texSize.y;
+        srcRect.x = this->mCropRect.x * this->texSize.x * this->fTexScale;
+        srcRect.y = this->mCropRect.y * this->texSize.y * this->fTexScale;
+        srcRect.w = this->mCropRect.w * this->texSize.x * this->fTexScale;
+        srcRect.h = this->mCropRect.h * this->texSize.y * this->fTexScale;
 
         Vector2D scale = owner->getScale();
-        Vector2D size = Vector2D(srcRect.w, srcRect.h) * scale;
+        Vector2D size = Vector2D(this->mCropRect.w * this->texSize.x,
+            this->mCropRect.h * this->texSize.y) * scale;   //drawn at the original size
         Vector2D pos = owner->getPos();
         pos -= size * this->pivot;
 
@@ -146,8 +153,10 @@ void SpriteRenderer::perform() {
         }
 }
 
+
 void SpriteRenderer::drawWidget()
 {
+#if EDITOR_MODE
     Camera* pCam = CameraManager::getInstance()->getCurrentCamera();
     AGameObject* owner = this->getOwner();
     AGameObject* selected = Editor::EditorModule::getInstance()->getSelectedObject();
@@ -196,6 +205,7 @@ void SpriteRenderer::drawWidget()
         SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, 255);
         SDL_RenderFillRect(pRenderer, &pivotRect);
     }
+#endif
 }
 
 void SpriteRenderer::setTexture(SDL_Texture* pTexture)
@@ -285,8 +295,10 @@ void SpriteRenderer::setTextureKey(const std::string& strKey)
     pTexture = textures[0];
 
     float fw, fh;
-    if (SDL_GetTextureSize(pTexture, &fw, &fh))
-        texSize = Vector2D(fw, fh);
+    if (SDL_GetTextureSize(pTexture, &fw, &fh)) {
+        this->fTexScale = SDL_GetFloatProperty(SDL_GetTextureProperties(pTexture), "anito.texscale", 1.0f);
+        this->texSize = Vector2D(fw / this->fTexScale, fh / this->fTexScale);
+    }
 }
 
 void SpriteRenderer::drawInspector()

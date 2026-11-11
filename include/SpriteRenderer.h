@@ -18,6 +18,7 @@ private:
     Vector2D texSize;
     Vector2D crop;
     Vector2D pivot;
+    float fTexScale = 1.0f;   //<1 when the file on disk was shrunk
 
 public:
     SpriteRenderer(const std::string& strTexName, SDL_Color color = { 255, 255, 255, 255 });

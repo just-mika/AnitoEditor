@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <fstream>
 #include "ManifestLoader.h"
+#include "Settings.h"
 
 // Helper function to log SDL errors
 void logSDLError(const char* context)
@@ -12,7 +13,7 @@ void logSDLError(const char* context)
 
 void AudioManager::load(std::string strPath, std::string strName)
 {
-    const std::string assetPath = "Assets/" + strPath;
+    const std::string assetPath = ASSET_ROOT + strPath;
     SDL_Log("[AudioManager] Loading audio asset: %s", assetPath.c_str());
 
     // Try to load raw bytes (works for APK assets)

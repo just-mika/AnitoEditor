@@ -11,6 +11,8 @@
 #include <vector>
 #include <iostream>
 
+#include "EventBroadcaster.h"
+
 // Helper: safe scan for PlayerInput (same idea as jump controller)
 static PlayerInput* findPlayerInputSafe()
 {
@@ -57,6 +59,16 @@ void VirtualJoystick::onAttach()
 
 void VirtualJoystick::perform()
 {
+    bool bBlocked = EventBroadcaster::getInstance()->isBlocking();
+    SDL_Color c = { 255, 255, 255, (Uint8)(bBlocked ? 0 : 255) };
+    if (this->pBase) this->pBase->setColor(c);
+    if (this->pThumb) this->pThumb->setColor(c);   //Sprite::setColor passes it to its renderer
+    if (bBlocked)
+    {
+        if (this->active) { this->active = false; resetTouch(); }
+        return;
+    }
+
     // lazy-resolve if not found yet
     if (!playerInput)
         playerInput = findPlayerInputSafe();
