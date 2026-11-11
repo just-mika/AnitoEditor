@@ -438,4 +438,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/Assets
+/Assets/levels/saves
+/Assets_originals

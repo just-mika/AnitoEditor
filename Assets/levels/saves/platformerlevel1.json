@@ -929,9 +929,9 @@
               "children": [
                 {
                   "color": [
-                    157,
-                    107,
-                    97,
+                    111,
+                    52,
+                    44,
                     255
                   ],
                   "enabled": true,
@@ -1057,9 +1057,9 @@
                 },
                 {
                   "color": [
-                    142,
-                    27,
-                    27,
+                    111,
+                    52,
+                    44,
                     255
                   ],
                   "enabled": true,
@@ -1867,9 +1867,9 @@
               "children": [
                 {
                   "color": [
-                    174,
-                    109,
-                    109,
+                    111,
+                    52,
+                    44,
                     255
                   ],
                   "enabled": true,
@@ -3234,9 +3234,9 @@
                 },
                 {
                   "color": [
-                    180,
-                    20,
-                    20,
+                    111,
+                    52,
+                    44,
                     255
                   ],
                   "enabled": true,
@@ -3320,14 +3320,14 @@
               "children": [
                 {
                   "color": [
-                    139,
-                    58,
-                    47,
+                    111,
+                    52,
+                    44,
                     255
                   ],
                   "enabled": true,
                   "font": "JainiPurva-Regular.ttf",
-                  "fontSize": 72,
+                  "fontSize": 36,
                   "isScreenObject": true,
                   "name": "Message",
                   "position": [
@@ -3336,8 +3336,8 @@
                   ],
                   "rotation": 0.0,
                   "scale": [
-                    0.25850000977516174,
-                    0.7092198729515076
+                    0.5169712901115417,
+                    1.4184397459030151
                   ],
                   "text": "The Story of the Moth\n\nOne night, the whole family had gone to bed early-except for my\nmother and me. I don't know why, but the two of us stayed up,\nsitting quietly together.\n\nThe candles were already put out using a curved tin blower. The\nroom was dim, lit only by a coconut oil lamp.\n\nThat night, my mother was teaching me how to read a book called El\nAmigo de los Niños. She grew impatient because I was reading\npoorly. She also scolded me for drawing silly pictures in the book.\n\nThen she said, \"Just listen,\" and began to read aloud herself.\n\nI got tired of listening to words I didn't understand. I turned my eyes\nto the little flame instead. It danced cheerfully. Some small moths\nwere flying around it in circles.\n\nI happened to yawn. My mother saw that I was losing interest, so she\nstopped reading.\n\n\"I'll read you a very nice story now,\" she said.\n\n\"You must listen.\"\n\nI opened my eyes wide. This sounded new and exciting. She began\nreading a fable about an old moth and a young moth, translating it\ninto Tagalog as she read.\n\nFrom the very first sentence, I was interested. I stared at the lamp\nand watchede the moths flying around it.\n\nThe story was like this:\n\nA mother moth once warned her daughter not to go near a flame. The\nlight may look beautiful and inviting, but it was dangerous. It could\nburn anyone who got too close.\n\nThe mother moth said she herself had once flown too near the flame\nand barely escaped. She had half-burned her wings.\n\nThe young moth promised to obey. But soon, she began to wonder,\n\n\"Why is my mother trying to scare me? Why should I close my eyes to\nsuch a pretty light?\"\n\n\"Old people are always afraid of everything! What harm can it do me\nif I go near-just carefully? I'll have such a good story to tell if I look\ncloser.\"\n\nSo she flew around the flame. At first, it felt pleasantly warm. That\ngave her more courage, so she flew closer and closer.\n\nBut then she got too near. Dazzled by the light, she fell into the flame\nand died.\n\nAs my mother tucked me into bed, she said:\n\n\"Don't be like the young moth. Don't disobey, or you may get hurt the\nsame way.\"\n\nI don't remember if I answered her. But the story opened my eyes.\n\nI never saw moths the same way again. They were no longer just\nsmall insects. Now I believed they could talk. They could warn and\ngive advice-just like my mother.\n\nThe flame also looked different to me. It seemed more beautiful. It\nglowed brighter and felt more magical. I finally understood why\nmoths flew around the light.\n\n-THE END-",
                   "type": "text"
@@ -3465,128 +3465,6 @@
             1.0
           ],
           "type": "story_window"
-        },
-        {
-          "children": [
-            {
-              "color": [
-                255,
-                255,
-                255,
-                255
-              ],
-              "enabled": true,
-              "flipX": false,
-              "flipY": false,
-              "isScreenObject": true,
-              "name": "GemInput_PreviewWindow",
-              "pivot": [
-                0.5,
-                0.5
-              ],
-              "position": [
-                -536.0,
-                50.0
-              ],
-              "rotation": 0.0,
-              "scale": [
-                0.10000000149011612,
-                0.17000000178813934
-              ],
-              "texture": "GUI/Panel.png",
-              "type": "sprite"
-            },
-            {
-              "color": [
-                0,
-                0,
-                0,
-                255
-              ],
-              "enabled": true,
-              "font": "JainiPurva-Regular.ttf",
-              "fontSize": 60,
-              "isScreenObject": true,
-              "name": "GemInput_PreviewText",
-              "position": [
-                -536.0,
-                0.0
-              ],
-              "rotation": 0.0,
-              "scale": [
-                0.7699999809265137,
-                0.7699999809265137
-              ],
-              "text": "Preview \n Text",
-              "type": "text",
-              "wrapWidth": 400
-            },
-            {
-              "color": [
-                255,
-                255,
-                255,
-                255
-              ],
-              "enabled": true,
-              "flipX": false,
-              "flipY": false,
-              "isScreenObject": true,
-              "name": "GemInput_ClosePreview",
-              "pivot": [
-                0.5,
-                0.5
-              ],
-              "position": [
-                -536.0,
-                232.0
-              ],
-              "rotation": 0.0,
-              "scale": [
-                0.10000000149011612,
-                0.10000000149011612
-              ],
-              "texture": "GUI/button6.png",
-              "type": "gui_button"
-            },
-            {
-              "color": [
-                180,
-                20,
-                20,
-                255
-              ],
-              "enabled": true,
-              "font": "JainiPurva-Regular.ttf",
-              "fontSize": 50,
-              "isScreenObject": true,
-              "name": "GemInput_ClosePreviewText",
-              "position": [
-                -536.0,
-                231.0
-              ],
-              "rotation": 0.0,
-              "scale": [
-                1.0,
-                1.0
-              ],
-              "text": "Close",
-              "type": "text"
-            }
-          ],
-          "enabled": false,
-          "isScreenObject": true,
-          "name": "Gem_Input_Preview",
-          "position": [
-            -748.4840087890625,
-            524.9838256835938
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0
-          ],
-          "type": "gem_input_preview"
         }
       ],
       "enabled": true,
