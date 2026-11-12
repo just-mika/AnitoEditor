@@ -13,7 +13,8 @@ using json = nlohmann::json;
 class LevelDataManager
 {
 public:
-    bool saveLevel(const std::string& fileName);
+    //bool saveLevel(const std::string& fileName);
+    bool saveLevel(const std::string& fileName, bool bFinal = false);
     void requestLoad(const std::string& fileName);
     void applyPending();
     std::vector<std::string> listLevelFiles() const;
@@ -73,7 +74,8 @@ private:
     static constexpr const char* kOrg = "AnitoEditor";
     static constexpr const char* kApp = "BabaylanTales";
     static constexpr const char* kBundledDir = ASSET_ROOT "levels/";
-    std::vector<std::string> pathTextures;   //textures loaded by ensureTexture
+    static constexpr const char* kFinalDir = ASSET_ROOT "levels/final/";
+	std::vector<std::string> pathTextures;   //textures loaded by ensureTexture
 
     std::string pendingLoad;
     std::string currentFile;

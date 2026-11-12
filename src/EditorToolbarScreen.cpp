@@ -130,11 +130,14 @@ void EditorToolbarScreen::draw()
             ImGui::OpenPopup("NewLevelPopup");
         ImGui::SameLine();
 
-        //draw "Save" button (for save current level to a JSON)
+        //draw "Save" button (opens save options)
         ImGui::BeginDisabled(!ldm->hasActiveScene());
         if (ImGui::Button("Save", ImVec2(button_width, 0)))
             filePanel.openSave();
         ImGui::EndDisabled();
+
+        //draw "Load" button (for loading JSON file to level)
+        ImGui::SameLine();
 
         //draw "Load" button (for loading JSON file to level)
         ImGui::SameLine();

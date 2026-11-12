@@ -69,7 +69,13 @@ void LevelFilePanel::drawSavePopup()
     ImGui::BeginDisabled(cur.empty());
     if (ImGui::Button("Save", ImVec2(-FLT_MIN, kButtonH)))
     {
-        saveAs(stemOf(cur));            // overwrite the open file
+        saveAs(stemOf(cur));            // overwrite the open file (draft, saves/)
+        ImGui::CloseCurrentPopup();
+    }
+
+    if (ImGui::Button("Save as Final", ImVec2(-FLT_MIN, kButtonH)))
+    {
+        saveAs(stemOf(cur), true);      // publish to final/ (packed into builds)
         ImGui::CloseCurrentPopup();
     }
     ImGui::EndDisabled();
@@ -172,11 +178,11 @@ void LevelFilePanel::drawStatusToast()
 
 // ------------------------------------------------------------------ helpers
 
-bool LevelFilePanel::saveAs(const std::string& stem)
+bool LevelFilePanel::saveAs(const std::string& stem, bool bFinal)
 {
     const std::string fileName = stem + ".json";
-    const bool ok = LevelDataManager::getInstance()->saveLevel(fileName);
-    setStatus(ok ? "Saved " + fileName : "Save failed: " + fileName);
+    const bool ok = LevelDataManager::getInstance()->saveLevel(fileName, bFinal);
+    setStatus(ok ? (bFinal ? "Published " : "Saved ") + fileName : "Save failed: " + fileName);
     return ok;
 }
 

@@ -42,6 +42,6 @@ private:
     void drawLoadPopup();
     void drawStatusToast();
 
-    bool saveAs(const std::string& stem);   // stem without ".json"
+    bool saveAs(const std::string& stem, bool bFinal = false);
     void setStatus(const std::string& msg);
 };

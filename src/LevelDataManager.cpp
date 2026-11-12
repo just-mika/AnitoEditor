@@ -50,7 +50,7 @@ LevelDataManager* LevelDataManager::getInstance()
 }
 
 //saves level given a filename
-bool LevelDataManager::saveLevel(const std::string& fileName)
+bool LevelDataManager::saveLevel(const std::string& fileName, bool bFinal)
 {
 	//dont save if theres no active scene
 	if (!activeScene)
@@ -77,7 +77,14 @@ bool LevelDataManager::saveLevel(const std::string& fileName)
 	level["genre"] = activeScene->getGenre(); //get genre (either puzzle or platformer)
 	
 	//set file path
-	const std::string path = writableDir() + fileName;
+		//set file path: drafts go to saves/, published levels to final/
+	std::string dir = writableDir();
+	if (bFinal)
+	{
+		dir = kFinalDir;
+		SDL_CreateDirectory(dir.c_str());
+	}
+	const std::string path = dir + fileName;
 	//dump formed JSON to text
 	const std::string text = level.dump(2);
 
@@ -257,6 +264,20 @@ bool LevelDataManager::loadLevel(const std::string& fileName)
 	std::string text;
 	//find and read file in writableDir or kBundledDir
 
+	bool bRead = false;
+#if !defined(__ANDROID__)
+	bRead = readFile(writableDir() + fileName, text);
+#endif
+	if (!bRead) bRead = readFile(kFinalDir + fileName, text);
+	if (!bRead) bRead = readFile(kBundledDir + fileName, text);
+	if (!bRead)
+	{
+		SDL_Log("[LevelData] '%s' not found", fileName.c_str());
+		return false;
+	}
+
+	//parse loaded text to a JSON
+	json level = json::parse(text, nullptr, false);
 #if !defined(SDL_PLATFORM_ANDROID)
 	if (readFile(writableDir() + fileName, text))
 		SDL_Log("[LevelData] read %s", (writableDir() + fileName).c_str());
@@ -270,9 +291,6 @@ bool LevelDataManager::loadLevel(const std::string& fileName)
 		return false;
 	}
 
-
-	//parse loaded text to a JSON
-	json level = json::parse(text, nullptr, false);
 	
 	//JSON failed to load
 	if (level.is_discarded() || !level.contains("objects") || !level["objects"].is_array())
@@ -668,11 +686,10 @@ static SDL_EnumerationResult enumerateLevelFile(void* userdata, const char* dirn
 
 std::vector<std::string> LevelDataManager::listLevelFiles() const
 {
-	std::vector<std::string> files;
-	SDL_EnumerateDirectory(writableDir().c_str(), enumerateLevelFile, &files);
-
-	SDL_EnumerateDirectory(kBundledDir, enumerateLevelFile, &files);
-
+		std::vector<std::string> files;
+		SDL_EnumerateDirectory(writableDir().c_str(), enumerateLevelFile, &files);
+		SDL_EnumerateDirectory(kFinalDir, enumerateLevelFile, &files);
+		SDL_EnumerateDirectory(kBundledDir, enumerateLevelFile, &files);
 	std::sort(files.begin(), files.end());
 	files.erase(std::unique(files.begin(), files.end()), files.end());   // writable + bundled overlap
 	return files;
